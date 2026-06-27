@@ -1456,35 +1456,7 @@ body, .sidebar, .mobile-nav, .glass-card, .form-control, .form-select, .btn, .da
   }
 }
 
-.sync-badge {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
 
-.sync-badge.guest {
-  background-color: var(--color-warning);
-  box-shadow: 0 0 8px var(--color-warning);
-  animation: pulse-sync-warning 1.8s infinite alternate;
-}
-
-.sync-badge.synced {
-  background-color: var(--color-success);
-  box-shadow: 0 0 8px var(--color-success);
-  animation: pulse-sync-success 1.8s infinite alternate;
-}
-
-@keyframes pulse-sync-warning {
-  0% { box-shadow: 0 0 2px rgba(245, 158, 11, 0.4); opacity: 0.6; }
-  100% { box-shadow: 0 0 10px rgba(245, 158, 11, 0.9); opacity: 1; }
-}
-
-@keyframes pulse-sync-success {
-  0% { box-shadow: 0 0 2px rgba(16, 185, 129, 0.4); opacity: 0.6; }
-  100% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.9); opacity: 1; }
-}
 
 /* Landing Page Overrides & Grid Styles */
 .landing-active .sidebar {

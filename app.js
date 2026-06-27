@@ -40,7 +40,7 @@ function loadState() {
   }
 }
 
-// Save State to LocalStorage and Cloud
+// Save State to LocalStorage and Cloud Database
 function saveState() {
   localStorage.setItem('healthverse_state', JSON.stringify(appState));
   syncStateToCloud();
@@ -52,18 +52,12 @@ function syncStateToCloud() {
 
   if (syncTimeout) clearTimeout(syncTimeout);
   
-  const badge = document.getElementById('sync-indicator-badge');
-  if (badge) {
-    badge.className = 'sync-badge guest';
-    badge.title = 'Syncing state to database...';
-  }
-
   syncTimeout = setTimeout(async () => {
     try {
       const cleanState = { ...appState };
       delete cleanState.userSession;
 
-      const res = await fetch('/api/user/state', {
+      await fetch('/api/user/state', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,27 +65,8 @@ function syncStateToCloud() {
         },
         body: JSON.stringify({ state: cleanState })
       });
-      
-      const badge = document.getElementById('sync-indicator-badge');
-      if (res.ok) {
-        if (badge) {
-          badge.className = 'sync-badge synced';
-          badge.title = 'Cloud Synced - Safe & Secure';
-        }
-      } else {
-        console.error("Cloud sync failed:", res.status);
-        if (badge) {
-          badge.className = 'sync-badge guest';
-          badge.title = 'Sync failed. Will retry next save.';
-        }
-      }
     } catch (err) {
-      console.error("Cloud sync error:", err);
-      const badge = document.getElementById('sync-indicator-badge');
-      if (badge) {
-        badge.className = 'sync-badge guest';
-        badge.title = 'Connection error. Will retry next save.';
-      }
+      console.error("Error saving state to database:", err);
     }
   }, 1000);
 }
@@ -743,9 +718,16 @@ function setupNavigation() {
       
       const targetId = this.getAttribute('href').substring(1);
       
-      // If profile is not set and attempting to visit pages other than onboarding, login, or home
-      if (!appState.profile && targetId !== 'profile-panel' && targetId !== 'login-panel' && targetId !== 'home-panel') {
-        alert("Please set up your AI Fitness Profile first to unlock HealthVerse AI!");
+      // Auth Guard: If not signed in, restrict access to the app (allow only home-panel and login-panel)
+      if (!appState.userSession && targetId !== 'home-panel' && targetId !== 'login-panel') {
+        alert("Please Sign In first to access HealthVerse AI!");
+        switchView('login-panel');
+        return;
+      }
+
+      // Configurator Guard: If signed in but profile is not set, force them to onboarding wizard unless visiting login or home
+      if (appState.userSession && !appState.profile && targetId !== 'profile-panel' && targetId !== 'login-panel' && targetId !== 'home-panel') {
+        alert("Please configure your Wellness Profile to unlock the dashboard!");
         switchView('profile-panel');
         return;
       }
@@ -757,7 +739,7 @@ function setupNavigation() {
 
 function switchView(panelId) {
   // Toggle landing page active class on body to hide/show sidebar
-  if (panelId === 'home-panel') {
+  if (panelId === 'home-panel' || panelId === 'login-panel') {
     document.body.classList.add('landing-active');
   } else {
     document.body.classList.remove('landing-active');
@@ -793,8 +775,6 @@ function switchView(panelId) {
 // Update DOM elements on dashboard & sidebar based on current state
 function updateUI() {
   // Update Auth States
-  const syncBanner = document.getElementById('dashboard-sync-banner');
-  const syncBadge = document.getElementById('sync-indicator-badge');
   const sidebarAvatarImg = document.getElementById('sidebar-user-avatar-img');
   const sidebarAvatarText = document.getElementById('sidebar-user-avatar');
   const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
@@ -808,11 +788,6 @@ function updateUI() {
   const authLoggedView = document.getElementById('auth-logged-view');
 
   if (appState.userSession) {
-    if (syncBanner) syncBanner.style.display = 'none';
-    if (syncBadge) {
-      syncBadge.className = 'sync-badge synced';
-      syncBadge.title = 'Cloud Synced - Safe & Secure';
-    }
     if (sidebarAvatarImg) {
       sidebarAvatarImg.src = appState.userSession.user.picture || '';
       sidebarAvatarImg.style.display = 'block';
@@ -836,18 +811,13 @@ function updateUI() {
       if (email) email.textContent = appState.userSession.user.email || '';
     }
   } else {
-    if (syncBanner) syncBanner.style.display = 'block';
-    if (syncBadge) {
-      syncBadge.className = 'sync-badge guest';
-      syncBadge.title = 'Guest Mode - Local Saving Only';
-    }
     if (sidebarAvatarImg) sidebarAvatarImg.style.display = 'none';
     if (sidebarAvatarText) sidebarAvatarText.style.display = 'flex';
     if (sidebarLogoutBtn) sidebarLogoutBtn.style.display = 'none';
 
-    if (navLoginText) navLoginText.textContent = 'Cloud Login';
+    if (navLoginText) navLoginText.textContent = 'Sign In';
     if (navLoginIcon) navLoginIcon.setAttribute('data-lucide', 'log-in');
-    if (mobileNavLoginText) mobileNavLoginText.textContent = 'Login';
+    if (mobileNavLoginText) mobileNavLoginText.textContent = 'Sign In';
     if (mobileNavLoginIcon) mobileNavLoginIcon.setAttribute('data-lucide', 'log-in');
 
     if (authUnloggedView) authUnloggedView.style.display = 'flex';
@@ -1882,9 +1852,13 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchFreshCloudState();
   }
 
-  // Primary routing: if session or profile exists, go directly to dashboard. Otherwise, show public home page.
-  if (appState.userSession || appState.profile) {
-    switchView('dashboard-panel');
+  // Primary routing: if session exists, load dashboard (or profile config if fresh). Otherwise, show public home page.
+  if (appState.userSession) {
+    if (appState.profile) {
+      switchView('dashboard-panel');
+    } else {
+      switchView('profile-panel');
+    }
   } else {
     switchView('home-panel');
   }
