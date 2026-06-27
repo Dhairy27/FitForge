@@ -287,31 +287,72 @@
       <!-- ================= 0. AUTH / LOGIN PANEL ================= -->
       <section id="login-panel" class="view-panel">
         <div class="section-header">
-          <h1 class="section-title"><span class="gradient-text">Sign In to HealthVerse</span></h1>
-          <p class="section-desc">Access your personalized fitness profile, logs, and workout schedules.</p>
+          <h1 class="section-title"><span class="gradient-text" id="auth-title">Sign In to HealthVerse</span></h1>
+          <p class="section-desc" id="auth-desc">Access your personalized fitness profile, logs, and workout schedules.</p>
         </div>
 
-        <div class="glass-card auth-container" style="max-width: 500px; margin: 3rem auto; padding: 2.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;">
+        <div class="glass-card auth-container" style="max-width: 480px; margin: 2rem auto; padding: 2.5rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem;">
           <div class="auth-icon-glow">
-            <i data-lucide="lock" style="width: 48px; height: 48px; color: var(--color-primary);"></i>
+            <i data-lucide="lock" id="auth-lock-icon" style="width: 48px; height: 48px; color: var(--color-primary);"></i>
           </div>
           
-          <div class="auth-text">
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-heading);">Welcome Back</h2>
-            <p style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Sign in with your Google account to access your personal dashboard, generate workout schedules, and view nutrition logs.
+          <div class="auth-text" style="width:100%;">
+            <h2 id="auth-card-title" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--color-heading);">Welcome Back</h2>
+            <p id="auth-card-desc" style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.6;">
+              Sign in with your Google account or email credentials to access your dashboard.
             </p>
           </div>
 
           <!-- Unauthenticated View -->
-          <div id="auth-unlogged-view" style="width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+          <div id="auth-unlogged-view" style="width: 100%; display: flex; flex-direction: column; gap: 1rem;">
+            
+            <!-- Standard credentials Form -->
+            <form id="auth-credentials-form" style="width: 100%; display: flex; flex-direction: column; gap: 0.85rem; text-align: left;">
+              <!-- Name Input (Signup Mode Only) -->
+              <div class="form-group" id="auth-field-name" style="display: none; margin-bottom: 0;">
+                <label class="form-label" for="auth-input-name">Full Name</label>
+                <input type="text" id="auth-input-name" class="form-control" placeholder="e.g. John Doe">
+              </div>
+
+              <!-- Email Input -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="auth-input-email">Email Address</label>
+                <input type="email" id="auth-input-email" class="form-control" placeholder="name@example.com" required>
+              </div>
+
+              <!-- Password Input -->
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" for="auth-input-password">Password</label>
+                <input type="password" id="auth-input-password" class="form-control" placeholder="••••••••" required>
+              </div>
+
+              <!-- Confirm Password Input (Signup Mode Only) -->
+              <div class="form-group" id="auth-field-confirm-password" style="display: none; margin-bottom: 0;">
+                <label class="form-label" for="auth-input-confirm-password">Confirm Password</label>
+                <input type="password" id="auth-input-confirm-password" class="form-control" placeholder="••••••••">
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.85rem;">
+                Sign In
+              </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="auth-divider" style="display: flex; align-items: center; text-align: center; color: var(--color-text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin: 0.25rem 0; width: 100%;">
+              <span style="flex-grow: 1; height: 1px; background: var(--color-border); margin-right: 0.75rem;"></span>
+              or continue with
+              <span style="flex-grow: 1; height: 1px; background: var(--color-border); margin-left: 0.75rem;"></span>
+            </div>
+
             <!-- Google Button Target -->
-            <div id="google-signin-btn-container" style="display: flex; justify-content: center; width: 100%; min-height: 44px; margin: 0.5rem 0;">
+            <div id="google-signin-btn-container" style="display: flex; justify-content: center; width: 100%; min-height: 44px;">
               <div id="google-signin-btn"></div>
             </div>
             
-            <div style="font-size: 0.8rem; color: var(--color-text-muted);">
-              Secure single sign-on powered by Google.
+            <!-- Switch mode trigger -->
+            <div id="auth-mode-switch-text" style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 0.5rem;">
+              Don't have an account? <a href="#" id="auth-mode-toggle-link" style="color: var(--color-primary); font-weight: 600; text-decoration: underline;">Sign Up</a>
             </div>
           </div>
 

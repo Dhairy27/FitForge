@@ -1695,6 +1695,172 @@ function initWebcamScanner() {
 }
 
 
+let authMode = 'login';
+
+function initCredentialsAuth() {
+  const form = document.getElementById('auth-credentials-form');
+  const toggleLink = document.getElementById('auth-mode-toggle-link');
+  const nameField = document.getElementById('auth-field-name');
+  const confirmPasswordField = document.getElementById('auth-field-confirm-password');
+  
+  const authTitle = document.getElementById('auth-title');
+  const authDesc = document.getElementById('auth-desc');
+  const authCardTitle = document.getElementById('auth-card-title');
+  const authCardDesc = document.getElementById('auth-card-desc');
+  const authLockIcon = document.getElementById('auth-lock-icon');
+  const authSubmitBtn = document.getElementById('auth-submit-btn');
+
+  const inputName = document.getElementById('auth-input-name');
+  const inputEmail = document.getElementById('auth-input-email');
+  const inputPassword = document.getElementById('auth-input-password');
+  const inputConfirmPassword = document.getElementById('auth-input-confirm-password');
+
+  if (!form || !toggleLink) return;
+
+  // Toggle Mode Listener
+  toggleLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (authMode === 'login') {
+      authMode = 'signup';
+      if (authTitle) authTitle.textContent = 'Create Your Account';
+      if (authDesc) authDesc.textContent = 'Join HealthVerse AI to design customized workouts and track nutrition plans.';
+      if (authCardTitle) authCardTitle.textContent = 'Register Account';
+      if (authCardDesc) authCardDesc.textContent = 'Fill in your details to set up your personal credentials profile.';
+      if (authSubmitBtn) authSubmitBtn.textContent = 'Create Account';
+      
+      if (nameField) nameField.style.display = 'block';
+      if (confirmPasswordField) confirmPasswordField.style.display = 'block';
+      
+      if (inputName) inputName.required = true;
+      if (inputConfirmPassword) inputConfirmPassword.required = true;
+
+      toggleLink.textContent = 'Sign In';
+      document.getElementById('auth-mode-switch-text').innerHTML = 
+        `Already have an account? <a href="#" id="auth-mode-toggle-link" style="color: var(--color-primary); font-weight: 600; text-decoration: underline;">Sign In</a>`;
+      
+      if (authLockIcon) authLockIcon.setAttribute('data-lucide', 'user-plus');
+    } else {
+      authMode = 'login';
+      if (authTitle) authTitle.textContent = 'Sign In to HealthVerse';
+      if (authDesc) authDesc.textContent = 'Access your personalized fitness profile, logs, and workout schedules.';
+      if (authCardTitle) authCardTitle.textContent = 'Welcome Back';
+      if (authCardDesc) authCardDesc.textContent = 'Sign in with your Google account or email credentials to access your dashboard.';
+      if (authSubmitBtn) authSubmitBtn.textContent = 'Sign In';
+      
+      if (nameField) nameField.style.display = 'none';
+      if (confirmPasswordField) confirmPasswordField.style.display = 'none';
+      
+      if (inputName) inputName.required = false;
+      if (inputConfirmPassword) inputConfirmPassword.required = false;
+
+      toggleLink.textContent = 'Sign Up';
+      document.getElementById('auth-mode-switch-text').innerHTML = 
+        `Don't have an account? <a href="#" id="auth-mode-toggle-link" style="color: var(--color-primary); font-weight: 600; text-decoration: underline;">Sign Up</a>`;
+      
+      if (authLockIcon) authLockIcon.setAttribute('data-lucide', 'lock');
+    }
+
+    // Re-bind click listener after replacing innerHTML
+    const newToggleLink = document.getElementById('auth-mode-toggle-link');
+    if (newToggleLink && newToggleLink !== toggleLink) {
+      newToggleLink.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        toggleLink.click();
+      });
+    }
+
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  });
+
+  // Form Submit Listener
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = inputEmail.value.trim();
+    const password = inputPassword.value;
+    const name = inputName ? inputName.value.trim() : '';
+    const confirmPassword = inputConfirmPassword ? inputConfirmPassword.value : '';
+
+    if (authMode === 'signup') {
+      if (!name) {
+        alert("Please enter your name.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert("Passwords do not match. Please verify.");
+        return;
+      }
+    }
+
+    if (password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
+
+    const originalBtnText = authSubmitBtn.textContent;
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.innerHTML = '<div class="scanner-spinner" style="margin: 0.15rem auto; width:18px; height:18px; border-width:2px; border-top-color:white;"></div>';
+
+    try {
+      const endpoint = authMode === 'signup' ? '/api/auth/register' : '/api/auth/login';
+      const bodyPayload = authMode === 'signup' ? { name, email, password } : { email, password };
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyPayload)
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || 'Authentication failed');
+      }
+
+      const authData = await response.json();
+
+      appState.userSession = {
+        token: authData.token,
+        user: authData.user
+      };
+
+      if (authData.state) {
+        appState = {
+          ...authData.state,
+          userSession: appState.userSession,
+          theme: authData.state.theme || appState.theme
+        };
+        applyTheme();
+      } else {
+        syncStateToCloud();
+      }
+
+      saveState();
+      updateUI();
+
+      alert(authMode === 'signup' ? 'Account registered successfully!' : `Welcome back, ${authData.user.name}!`);
+
+      if (appState.profile) {
+        switchView('dashboard-panel');
+      } else {
+        switchView('profile-panel');
+      }
+
+      form.reset();
+
+    } catch (err) {
+      console.error("Credentials Authentication error:", err);
+      alert(`Authentication Failed: ${err.message}`);
+    } finally {
+      authSubmitBtn.disabled = false;
+      authSubmitBtn.textContent = originalBtnText;
+    }
+  });
+}
+
 // --- GOOGLE SIGN-IN INTERFACES ---
 
 async function initGoogleSignIn() {
@@ -1810,6 +1976,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initWeightLogAction();
   initThemeToggle();
   initWebcamScanner();
+  initCredentialsAuth();
 
   // Attach Developer Reset Data button listener
   const resetBtn = document.getElementById('dev-reset-data-btn');
