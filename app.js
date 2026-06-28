@@ -774,6 +774,13 @@ function switchView(panelId) {
 
 // Update DOM elements on dashboard & sidebar based on current state
 function updateUI() {
+  // Lock navigation if logged in but profile is not configured
+  if (appState.userSession && !appState.profile) {
+    document.body.classList.add('onboarding-locked');
+  } else {
+    document.body.classList.remove('onboarding-locked');
+  }
+
   // Update Auth States
   const sidebarAvatarImg = document.getElementById('sidebar-user-avatar-img');
   const sidebarAvatarText = document.getElementById('sidebar-user-avatar');
@@ -1722,10 +1729,8 @@ function initCredentialsAuth() {
     e.preventDefault();
     if (authMode === 'login') {
       authMode = 'signup';
-      if (authTitle) authTitle.textContent = 'Create Your Account';
-      if (authDesc) authDesc.textContent = 'Join HealthVerse AI to design customized workouts and track nutrition plans.';
-      if (authCardTitle) authCardTitle.textContent = 'Register Account';
-      if (authCardDesc) authCardDesc.textContent = 'Fill in your details to set up your personal credentials profile.';
+      if (authCardTitle) authCardTitle.textContent = 'Create Your Account';
+      if (authCardDesc) authCardDesc.textContent = 'Join HealthVerse AI to design customized workouts and track nutrition plans.';
       if (authSubmitBtn) authSubmitBtn.textContent = 'Create Account';
       
       if (nameField) nameField.style.display = 'block';
@@ -1741,9 +1746,7 @@ function initCredentialsAuth() {
       if (authLockIcon) authLockIcon.setAttribute('data-lucide', 'user-plus');
     } else {
       authMode = 'login';
-      if (authTitle) authTitle.textContent = 'Sign In to HealthVerse';
-      if (authDesc) authDesc.textContent = 'Access your personalized fitness profile, logs, and workout schedules.';
-      if (authCardTitle) authCardTitle.textContent = 'Welcome Back';
+      if (authCardTitle) authCardTitle.textContent = 'Sign In to HealthVerse';
       if (authCardDesc) authCardDesc.textContent = 'Sign in with your Google account or email credentials to access your dashboard.';
       if (authSubmitBtn) authSubmitBtn.textContent = 'Sign In';
       
@@ -1950,12 +1953,10 @@ async function handleCredentialResponse(response) {
 }
 
 function logoutUser() {
-  if (confirm("Are you sure you want to sign out? Your cloud data will remain safe, but local data will be reset to guest defaults.")) {
-    localStorage.removeItem('healthverse_state');
-    appState = { ...DEFAULT_STATE };
-    saveState();
-    window.location.reload();
-  }
+  localStorage.removeItem('healthverse_state');
+  appState = { ...DEFAULT_STATE };
+  saveState();
+  window.location.reload();
 }
 
 // --- INITIALIZATION ENTRYPOINT ---

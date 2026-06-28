@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Dhairy27/HealthVerse-AI#readme",
   "dependencies": {
+    "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.4.0"
   }
