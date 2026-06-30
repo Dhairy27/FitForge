@@ -1,1017 +1,242 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HealthVerse AI - Personalized Wellness Platform</title>
-  <!-- Tailwind is avoided as requested; standard vanilla CSS styling is imported -->
-  <link rel="stylesheet" href="style.css">
-  <!-- Chart.js CDN for premium charts rendering -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Google Identity Services (GIS) for Google Sign-In -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>HealthVerse AI</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&amp;family=JetBrains+Mono:wght@600&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#bdc7d9",
+                        "primary-fixed": "#d9e3f6",
+                        "surface-container-highest": "#313539",
+                        "on-error": "#690005",
+                        surface: "#0f1417",
+                        "on-secondary": "#2900a0",
+                        "on-secondary-fixed-variant": "#4029bb",
+                        "secondary-fixed-dim": "#c6bfff",
+                        "on-primary": "#27313f",
+                        "on-primary-fixed-variant": "#3d4756",
+                        "surface-container-high": "#262b2e",
+                        "inverse-surface": "#dfe3e7",
+                        "surface-dim": "#0f1417",
+                        "secondary-container": "#4029bb",
+                        "on-background": "#dfe3e7",
+                        "error-container": "#93000a",
+                        "surface-tint": "#bdc7d9",
+                        "on-tertiary-container": "#8e9091",
+                        "on-tertiary": "#2e3132",
+                        background: "#0f1417",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed": "#e4dfff",
+                        "primary-container": "#1f2937",
+                        "outline-variant": "#44474c",
+                        "tertiary-container": "#26292a",
+                        outline: "#8f9196",
+                        "surface-bright": "#353a3d",
+                        "tertiary-fixed": "#e1e3e4",
+                        "on-tertiary-fixed": "#191c1d",
+                        tertiary: "#c5c7c8",
+                        "surface-container-lowest": "#0a0f12",
+                        "inverse-on-surface": "#2c3134",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "on-surface-variant": "#c5c6cc",
+                        "on-secondary-fixed": "#160066",
+                        "surface-container": "#1b2023",
+                        "surface-variant": "#313539",
+                        "on-surface": "#dfe3e7",
+                        primary: "#bdc7d9",
+                        "on-primary-container": "#8690a1",
+                        error: "#ffb4ab",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "inverse-primary": "#555f6f",
+                        "surface-container-low": "#171c1f",
+                        "on-secondary-container": "#b4abff",
+                        secondary: "#c6bfff",
+                        "on-primary-fixed": "#121c2a"
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "stack-lg": "32px",
+                        "margin-desktop": "40px",
+                        "stack-md": "16px",
+                        "container-max": "1280px",
+                        "margin-mobile": "20px",
+                        "stack-sm": "8px",
+                        gutter: "24px",
+                        unit: "8px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["JetBrains Mono"],
+                        "stats-xl": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        headline: ["Inter"],
+                        display: ["Inter"],
+                        body: ["Inter"],
+                        label: ["Jetbrains Mono"]
+                    },
+                    fontSize: {
+                        "label-caps": ["12px", {lineHeight: "16px", letterSpacing: "0.1em", fontWeight: "600"}],
+                        "stats-xl": ["40px", {lineHeight: "40px", letterSpacing: "-0.05em", fontWeight: "900"}],
+                        "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700"}],
+                        "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}],
+                        "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.04em", fontWeight: "800"}],
+                        "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}],
+                        "display-lg-mobile": ["36px", {lineHeight: "42px", letterSpacing: "-0.03em", fontWeight: "800"}]
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="stylesheet" href="style.css">
 </head>
-
-<body>
-
-  <!-- Background Gradients (SVG definitions for progress colors) -->
-  <svg style="width:0; height:0; position:absolute;" aria-hidden="true">
-    <defs>
-      <linearGradient id="cyanPurpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#06b6d4" />
-        <stop offset="100%" stop-color="#8b5cf6" />
-      </linearGradient>
-    </defs>
-  </svg>
-
-  <div class="app-container">
-
-    <!-- SIDEBAR NAVIGATION (Desktop) -->
-    <aside class="sidebar">
-      <div class="logo-container">
-        <div class="logo-icon">
-          <i data-lucide="activity"></i>
-        </div>
-        <div class="logo-text">Health<span>Verse</span></div>
-      </div>
-
-      <ul class="nav-links">
-        <li class="nav-item active">
-          <a href="#dashboard-panel">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#profile-panel">
-            <i data-lucide="user-cog"></i>
-            <span>AI Profile</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#workout-panel">
-            <i data-lucide="dumbbell"></i>
-            <span>Workout Hub</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#scanner-panel">
-            <i data-lucide="scan-line"></i>
-            <span>AI Meal Scanner</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="#analytics-panel">
-            <i data-lucide="line-chart"></i>
-            <span>Analytics & Logs</span>
-          </a>
-        </li>
-        <li class="nav-item" id="nav-item-login">
-          <a href="#login-panel">
-            <i data-lucide="log-in" id="nav-login-icon"></i>
-            <span id="nav-login-text">Sign In</span>
-          </a>
-        </li>
-      </ul>
-
-      <!-- Sidebar Footer User Badge -->
-      <div class="sidebar-footer">
-        <div class="user-badge">
-          <img id="sidebar-user-avatar-img" src="" alt="Avatar"
-            style="display:none; width:40px; height:40px; border-radius:50%; border:2px solid var(--color-primary); object-fit:cover; flex-shrink:0;">
-          <div class="user-avatar" id="sidebar-user-avatar">H</div>
-          <div class="user-info">
-            <span class="user-name">Guest User</span>
-            <div style="display:flex; align-items:center; gap:0.35rem; margin-top:0.1rem;">
-              <span class="user-goal-tag">Setup Profile</span>
+<body class="antialiased min-h-screen flex flex-col font-sans">
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-surface/60 backdrop-blur-xl border-b border-white/10 hidden md:flex">
+        <div class="flex justify-between items-center px-margin-desktop py-4 max-w-container-max mx-auto w-full">
+            <div class="flex items-center gap-4">
+                <img alt="HealthVerse AI Logo" class="h-8 w-8 object-contain" src="logo.svg">
+                <span class="font-display-lg text-display-lg font-black text-primary-fixed-dim tracking-tighter" style="font-size: 24px; line-height: 32px;">HealthVerse AI</span>
             </div>
-          </div>
+            <div class="flex gap-8"></div>
+            <div class="flex gap-4 items-center">
+                <a href="login.html" class="bg-transparent border border-secondary-fixed-dim text-secondary-fixed font-label-caps text-label-caps px-4 py-2 rounded-DEFAULT hover:bg-secondary-fixed-dim/10 transition-colors active:scale-95 block text-center">LOG IN</a>
+                <a href="signup.html" class="bg-primary-fixed text-on-primary-fixed font-label-caps text-label-caps px-4 py-2 rounded-DEFAULT hover:bg-primary-fixed-dim transition-colors active:scale-95 glow-effect block text-center">SIGN UP</a>
+            </div>
         </div>
-        <!-- Theme Toggle Switch -->
-        <div class="theme-toggle-container"
-          style="display:flex; justify-content:space-between; align-items:center; margin-top:1.25rem; padding:0 0.5rem;">
-          <span style="font-size:0.85rem; font-weight:600; color:var(--color-text-muted);">Theme Mode</span>
-          <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Theme">
-            <i data-lucide="sun" class="sun-icon"></i>
-            <i data-lucide="moon" class="moon-icon"></i>
-          </button>
-        </div>
-
-        <!-- Sidebar Actions -->
-        <div class="sidebar-actions" style="display:flex; gap:0.5rem; margin-top:0.75rem;">
-          <!-- Developer Reset Option -->
-          <button id="dev-reset-data-btn" class="btn btn-secondary"
-            style="flex:1; font-size:0.72rem; padding:0.45rem 0.25rem; border-color:rgba(239, 68, 68, 0.15); color:var(--color-danger); display:flex; align-items:center; justify-content:center; gap:0.25rem;">
-            <i data-lucide="refresh-cw" style="width:11px; height:11px;"></i> Reset
-          </button>
-
-          <!-- Sidebar Logout Button -->
-          <button id="sidebar-logout-btn" class="btn btn-secondary"
-            style="display:none; flex:1; font-size:0.72rem; padding:0.45rem 0.25rem; border-color:rgba(239, 68, 68, 0.15); color:var(--color-danger); display:flex; align-items:center; justify-content:center; gap:0.25rem;">
-            <i data-lucide="log-out" style="width:11px; height:11px;"></i> Exit
-          </button>
-        </div>
-      </div>
-    </aside>
-
-    <!-- MOBILE BOTTOM NAVIGATION (Hidden on Desktop) -->
-    <nav class="mobile-nav">
-      <ul class="mobile-nav-links">
-        <li class="mobile-nav-item active">
-          <a href="#dashboard-panel">
-            <i data-lucide="layout-dashboard"></i>
-            <span>Dashboard</span>
-          </a>
-        </li>
-        <li class="mobile-nav-item">
-          <a href="#profile-panel">
-            <i data-lucide="user-cog"></i>
-            <span>Profile</span>
-          </a>
-        </li>
-        <li class="mobile-nav-item">
-          <a href="#workout-panel">
-            <i data-lucide="dumbbell"></i>
-            <span>Workout</span>
-          </a>
-        </li>
-        <li class="mobile-nav-item">
-          <a href="#scanner-panel">
-            <i data-lucide="scan-line"></i>
-            <span>Scanner</span>
-          </a>
-        </li>
-        <li class="mobile-nav-item">
-          <a href="#analytics-panel">
-            <i data-lucide="line-chart"></i>
-            <span>Logs</span>
-          </a>
-        </li>
-        <li class="mobile-nav-item" id="mobile-nav-item-login">
-          <a href="#login-panel">
-            <i data-lucide="log-in" id="mobile-nav-login-icon"></i>
-            <span id="mobile-nav-login-text">Sign In</span>
-          </a>
-        </li>
-      </ul>
     </nav>
 
-    <!-- MAIN VIEW CONTAINER -->
-    <main class="main-content">
-
-      <!-- ================= 00. PUBLIC HOME/LANDING PANEL ================= -->
-      <section id="home-panel" class="view-panel">
-        <!-- Landing Top Navbar -->
-        <header class="landing-header-nav">
-          <a href="#home-panel" class="logo-container" style="margin-bottom:0; padding-left:0; text-decoration:none; display:flex; align-items:center; gap:0.5rem;">
-            <div class="logo-icon">
-              <i data-lucide="activity"></i>
-            </div>
-            <div class="logo-text" style="color:var(--color-heading); font-size:1.25rem; font-weight:800; font-family:var(--font-header); letter-spacing:-0.02em;">Health<span style="color:var(--color-primary);">Verse</span></div>
-          </a>
-          <div class="landing-nav-actions" style="display:flex; gap:0.75rem; align-items:center;">
-            <a href="#login-panel" class="btn btn-secondary"
-              style="padding:0.5rem 1rem; font-size:0.85rem; border-radius:10px;">
-              <i data-lucide="log-in" style="width:14px; height:14px;"></i> Sign In
-            </a>
-            <a href="#login-panel" class="btn btn-primary"
-              style="padding:0.5rem 1.2rem; font-size:0.85rem; border-radius:10px;">
-              Get Started <i data-lucide="arrow-right" style="width:14px; height:14px;"></i>
-            </a>
-          </div>
-        </header>
-
-        <!-- Landing Hero Section -->
-        <div class="landing-hero">
-          <div class="landing-hero-content">
-            <span class="landing-badge"><i data-lucide="sparkles"
-                style="width:12px; height:12px; color:var(--color-secondary);"></i> AI-POWERED PERSONAL FITNESS
-              PLATFORM</span>
-            <h1 class="landing-hero-title">Elevate Your Fitness & Wellness with <span class="gradient-text">HealthVerse
-                AI</span></h1>
-            <p class="landing-hero-desc">
-              Experience the future of wellness. HealthVerse AI calculates your precise biological targets, designs
-              personalized routines, and scans your meals using advanced computer vision.
+    <!-- Hero Section -->
+    <main class="flex-grow flex flex-col items-center justify-center pt-32 pb-20 px-margin-mobile md:px-margin-desktop w-full max-w-container-max mx-auto relative overflow-hidden">
+        <!-- Background Graphic Elements -->
+        <div class="absolute inset-0 z-0 opacity-20 pointer-events-none flex items-center justify-center">
+            <div class="w-[800px] h-[800px] rounded-full border-[1px] border-primary-fixed-dim/30 absolute scale-150"></div>
+            <div class="w-[600px] h-[600px] rounded-full border-[1px] border-primary-fixed-dim/20 absolute scale-125"></div>
+        </div>
+        <div class="z-10 text-center flex flex-col items-center gap-stack-lg w-full">
+            <img alt="HealthVerse AI Logo" class="w-32 h-32 md:w-48 md:h-48 object-contain mb-4 filter drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]" src="logo.svg">
+            <h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary max-w-3xl leading-tight">
+                The Future of Fitness is <span class="text-primary-fixed text-glow block md:inline mt-2 md:mt-0">AI-Driven.</span>
+            </h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-4">
+                Elite digital coaching powered by real-time biometric analysis. Optimize your training, nutrition, and recovery with uncompromising precision.
             </p>
-            <div class="landing-hero-actions">
-              <a href="#login-panel" class="btn btn-primary btn-large" style="padding: 1rem 2rem; font-size: 1.05rem;">
-                <i data-lucide="zap"></i> Get Started Now
-              </a>
-              <a href="#features-anchor" class="btn btn-secondary btn-large"
-                style="padding: 1rem 2rem; font-size: 1.05rem;">
-                <i data-lucide="arrow-down"></i> Explore Features
-              </a>
-            </div>
-          </div>
-
-          <div class="landing-glow-1"></div>
-          <div class="landing-glow-2"></div>
-        </div>
-
-        <!-- App Features Grid -->
-        <div class="landing-features-section" id="features-anchor">
-          <div class="landing-section-header" style="text-align:center; margin-bottom:3rem;">
-            <span
-              style="font-size:0.75rem; font-weight:700; color:var(--color-primary); text-transform:uppercase; letter-spacing:0.1em; display:block;">Core
-              Pillars</span>
-            <h2 style="font-size:2rem; font-weight:800; color:var(--color-heading); margin-top:0.25rem;">Intelligent
-              Tools for Your Journey</h2>
-            <p style="color:var(--color-text-muted); max-width:600px; margin:0.5rem auto 0; font-size:0.95rem;">
-              HealthVerse AI consolidates your nutrition, workouts, calculations, and tracking logs into a single
-              premium interface.</p>
-          </div>
-
-          <div class="landing-features-grid">
-            <!-- Feature 1 -->
-            <div class="glass-card landing-feature-card interactive">
-              <div class="feature-icon-box" style="background:rgba(139, 92, 246, 0.15); color:var(--color-primary);">
-                <i data-lucide="user-cog"></i>
-              </div>
-              <h3>AI Bio Configurator</h3>
-              <p>Creates a custom profile based on biological details using scientific MSJ metabolic formulas to
-                evaluate TDEE, BMR, and macro limits.</p>
-            </div>
-
-            <!-- Feature 2 -->
-            <div class="glass-card landing-feature-card interactive">
-              <div class="feature-icon-box" style="background:rgba(6, 182, 212, 0.15); color:var(--color-secondary);">
-                <i data-lucide="scan-line"></i>
-              </div>
-              <h3>AI Meal Scanner</h3>
-              <p>Upload files or capture live photos to estimate calorie counts, macronutrients, health scores, and
-                retrieve smart, healthy alternative food swaps.</p>
-            </div>
-
-            <!-- Feature 3 -->
-            <div class="glass-card landing-feature-card interactive">
-              <div class="feature-icon-box" style="background:rgba(236, 72, 153, 0.15); color:var(--color-accent);">
-                <i data-lucide="dumbbell"></i>
-              </div>
-              <h3>Goal-Oriented Workouts</h3>
-              <p>Dynamic schedules structured for biological objectives (lose fat, hypertrophy, or endurance run) with
-                checklists and live timer overlays.</p>
-            </div>
-
-            <!-- Feature 4 -->
-            <div class="glass-card landing-feature-card interactive">
-              <div class="feature-icon-box" style="background:rgba(16, 185, 129, 0.15); color:var(--color-success);">
-                <i data-lucide="line-chart"></i>
-              </div>
-              <h3>Progress Analytics</h3>
-              <p>Beautiful, glowing trend lines track historical weight shifts and evaluate weekly caloric intakes vs
-                daily target limit indicators.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Dashboard Mockup Showcase -->
-        <div class="landing-showcase-section">
-          <div class="glass-card landing-showcase-card">
-            <div class="showcase-header">
-              <div class="showcase-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-              </div>
-              <div class="showcase-title">HealthVerse Dashboard Preview</div>
-            </div>
-            <div class="showcase-body">
-              <div class="mockup-grid">
-                <div class="mockup-left">
-                  <div class="mockup-widget"
-                    style="padding:1rem; display:flex; align-items:center; gap:0.75rem; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:10px;">
-                    <i data-lucide="scale" style="color:var(--color-secondary); width:24px; height:24px;"></i>
-                    <div style="text-align:left;">
-                      <span
-                        style="font-size:0.65rem; color:var(--color-text-muted); text-transform:uppercase; display:block;">Weight
-                        Tracker</span>
-                      <span style="font-weight:700; color:var(--color-heading); font-size:1rem;">78.5 kg</span>
-                    </div>
-                  </div>
-                  <div class="mockup-widget"
-                    style="padding:1rem; margin-top:0.75rem; display:flex; align-items:center; gap:0.75rem; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:10px;">
-                    <i data-lucide="flame" style="color:var(--color-accent); width:24px; height:24px;"></i>
-                    <div style="text-align:left;">
-                      <span
-                        style="font-size:0.65rem; color:var(--color-text-muted); text-transform:uppercase; display:block;">Target
-                        Intake</span>
-                      <span style="font-weight:700; color:var(--color-heading); font-size:1rem;">1,850 kcal</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="mockup-right"
-                  style="flex:1; padding:1.25rem; background:var(--color-card-inner-bg); border:1px solid var(--color-card-inner-border); border-radius:12px; display:flex; flex-direction:column; gap:0.75rem;">
-                  <div style="font-size:0.75rem; font-weight:600; color:var(--color-heading); text-align:left;">TODAY'S
-                    WORKOUT PLAN</div>
-                  <div
-                    style="font-size:0.85rem; padding:0.6rem; background:rgba(var(--color-primary-rgb), 0.05); border:1px solid rgba(var(--color-primary-rgb), 0.15); border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:600;">HIIT Full Body Blast</span>
-                    <span style="color:var(--color-secondary); font-size:0.75rem; font-weight:700;">5 Exercises</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 0. AUTH / LOGIN PANEL ================= -->
-      <section id="login-panel" class="view-panel">
-        <div class="glass-card auth-container" style="max-width: 450px; margin: 0 auto; padding: 1.75rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.85rem;">
-          <div class="auth-icon-glow">
-            <i data-lucide="lock" id="auth-lock-icon" style="width: 36px; height: 36px; color: var(--color-primary);"></i>
-          </div>
-          
-          <div class="auth-text" style="width:100%;">
-            <h2 id="auth-card-title" style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem; color: var(--color-heading);">Sign In to HealthVerse</h2>
-            <p id="auth-card-desc" style="color: var(--color-text-muted); font-size: 0.9rem; line-height: 1.6;">
-              Sign in with your Google account or email credentials to access your dashboard.
-            </p>
-          </div>
-
-          <!-- Unauthenticated View -->
-          <div id="auth-unlogged-view" style="width: 100%; display: flex; flex-direction: column; gap: 1rem;">
-
-            <!-- Standard credentials Form -->
-            <form id="auth-credentials-form"
-              style="width: 100%; display: flex; flex-direction: column; gap: 0.85rem; text-align: left;">
-              <!-- Name Input (Signup Mode Only) -->
-              <div class="form-group" id="auth-field-name" style="display: none; margin-bottom: 0;">
-                <label class="form-label" for="auth-input-name">Full Name</label>
-                <input type="text" id="auth-input-name" class="form-control" placeholder="e.g. John Doe">
-              </div>
-
-              <!-- Email Input -->
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" for="auth-input-email">Email Address</label>
-                <input type="email" id="auth-input-email" class="form-control" placeholder="name@example.com" required>
-              </div>
-
-              <!-- Password Input -->
-              <div class="form-group" style="margin-bottom: 0;">
-                <label class="form-label" for="auth-input-password">Password</label>
-                <input type="password" id="auth-input-password" class="form-control" placeholder="••••••••" required>
-              </div>
-
-              <!-- Confirm Password Input (Signup Mode Only) -->
-              <div class="form-group" id="auth-field-confirm-password" style="display: none; margin-bottom: 0;">
-                <label class="form-label" for="auth-input-confirm-password">Confirm Password</label>
-                <input type="password" id="auth-input-confirm-password" class="form-control" placeholder="••••••••">
-              </div>
-
-              <!-- Submit Button -->
-              <button type="submit" id="auth-submit-btn" class="btn btn-primary"
-                style="width: 100%; margin-top: 0.5rem; padding: 0.85rem;">
-                Sign In
-              </button>
-            </form>
-
-            <!-- Divider -->
-            <div class="auth-divider"
-              style="display: flex; align-items: center; text-align: center; color: var(--color-text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin: 0.25rem 0; width: 100%;">
-              <span style="flex-grow: 1; height: 1px; background: var(--color-border); margin-right: 0.75rem;"></span>
-              or continue with
-              <span style="flex-grow: 1; height: 1px; background: var(--color-border); margin-left: 0.75rem;"></span>
-            </div>
-
-            <!-- Google Button Target -->
-            <div id="google-signin-btn-container"
-              style="display: flex; justify-content: center; width: 100%; min-height: 44px;">
-              <div id="google-signin-btn"></div>
-            </div>
-
-            <!-- Switch mode trigger -->
-            <div id="auth-mode-switch-text"
-              style="font-size: 0.85rem; color: var(--color-text-muted); margin-top: 0.5rem;">
-              Don't have an account? <a href="#" id="auth-mode-toggle-link"
-                style="color: var(--color-primary); font-weight: 600; text-decoration: underline;">Sign Up</a>
-            </div>
-          </div>
-
-          <!-- Authenticated View -->
-          <div id="auth-logged-view"
-            style="width: 100%; display: none; flex-direction: column; align-items: center; gap: 1.25rem;">
-            <div
-              style="background: var(--color-card-inner-bg); border: 1px solid var(--color-card-inner-border); padding: 1.25rem; border-radius: 16px; width: 100%; display: flex; align-items: center; gap: 1rem;">
-              <img id="auth-user-picture" src="" alt="Profile"
-                style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--color-primary); object-fit: cover;">
-              <div style="text-align: left; display: flex; flex-direction: column; gap: 0.15rem;">
-                <span id="auth-user-name"
-                  style="font-weight: 700; color: var(--color-heading); font-size: 1.05rem;">User Name</span>
-                <span id="auth-user-email"
-                  style="font-size: 0.8rem; color: var(--color-text-muted);">email@gmail.com</span>
-              </div>
-            </div>
-
-            <div style="display: flex; gap: 0.75rem; width: 100%;">
-              <button id="auth-goto-dash-btn" class="btn btn-primary" style="flex: 2;">
-                Go to Dashboard
-              </button>
-              <button id="auth-logout-btn" class="btn btn-secondary"
-                style="flex: 1; border-color: rgba(239, 68, 68, 0.2); color: var(--color-danger);">
-                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i> Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 1. ONBOARDING & PROFILE PANEL ================= -->
-      <section id="profile-panel" class="view-panel active">
-        <div class="section-header">
-          <h1 class="section-title"><span class="gradient-text">AI Wellness Configurator</span></h1>
-          <p class="section-desc">Create your customized profile. HealthVerse AI uses these biological details to
-            construct your exercises schedule and energy demands.</p>
-        </div>
-
-        <div class="glass-card wizard-container" id="profile-wizard" data-gender="" data-activity="" data-goal="">
-          <!-- Wizard Step Progress -->
-          <div class="wizard-progress">
-            <div class="wizard-progress-bar" id="wizard-progress-bar"></div>
-          </div>
-
-          <!-- Step 1: Body Metrics -->
-          <div class="wizard-step active" data-step="0">
-            <div class="wizard-header">
-              <h2 class="wizard-title">Physical Characteristics</h2>
-              <p style="color:var(--color-text-muted); font-size:0.9rem;">Let's collect details to evaluate your resting
-                metabolic rate.</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="p-name">Full Name</label>
-              <input type="text" id="p-name" class="form-control" placeholder="e.g. John Doe">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Biological Gender</label>
-              <div class="wizard-options-grid gender-select-container">
-                <div class="wizard-option-card" data-value="male">
-                  <i data-lucide="mars"></i>
-                  <span class="wizard-option-title">Male</span>
-                </div>
-                <div class="wizard-option-card" data-value="female">
-                  <i data-lucide="venus"></i>
-                  <span class="wizard-option-title">Female</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="p-age">Age (yrs)</label>
-                <input type="number" id="p-age" class="form-control" min="12" max="110" placeholder="e.g. 28">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="p-height">Height (cm)</label>
-                <input type="number" id="p-height" class="form-control" min="90" max="250" placeholder="e.g. 175">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="p-weight">Weight (kg)</label>
-                <input type="number" id="p-weight" class="form-control" min="30" max="300" placeholder="e.g. 78">
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 2: Activity & Objectives -->
-          <div class="wizard-step" data-step="1">
-            <div class="wizard-header">
-              <h2 class="wizard-title">Lifestyle & Objectives</h2>
-              <p style="color:var(--color-text-muted); font-size:0.9rem;">Specify daily energy levels and your primary
-                wellness targets.</p>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Physical Activity Level</label>
-              <div class="wizard-options-grid activity-select-container">
-                <div class="wizard-option-card" data-value="sedentary">
-                  <i data-lucide="armchair"></i>
-                  <span class="wizard-option-title">Sedentary</span>
-                  <span class="wizard-option-desc">Desk job, little to no exercise</span>
-                </div>
-                <div class="wizard-option-card" data-value="moderate">
-                  <i data-lucide="footprints"></i>
-                  <span class="wizard-option-title">Moderately Active</span>
-                  <span class="wizard-option-desc">Exercise 3-5 times per week</span>
-                </div>
-                <div class="wizard-option-card" data-value="active">
-                  <i data-lucide="zap"></i>
-                  <span class="wizard-option-title">Very Active</span>
-                  <span class="wizard-option-desc">Hard exercises/sports daily</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Primary Fitness Goal</label>
-              <div class="wizard-options-grid goal-select-container">
-                <div class="wizard-option-card" data-value="lose_fat">
-                  <i data-lucide="flame"></i>
-                  <span class="wizard-option-title">Lose Body Fat</span>
-                  <span class="wizard-option-desc">Create calorie deficits safely</span>
-                </div>
-                <div class="wizard-option-card" data-value="gain_muscle">
-                  <i data-lucide="swords"></i>
-                  <span class="wizard-option-title">Build Muscle</span>
-                  <span class="wizard-option-desc">Caloric surplus for hypertrophy</span>
-                </div>
-                <div class="wizard-option-card" data-value="endurance">
-                  <i data-lucide="timer"></i>
-                  <span class="wizard-option-title">Stamina / Endurance</span>
-                  <span class="wizard-option-desc">Enhance energy capacity & speed</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 3: Summary -->
-          <div class="wizard-step" data-step="2">
-            <div class="wizard-header">
-              <h2 class="wizard-title"
-                style="background: linear-gradient(135deg, var(--color-secondary), var(--color-primary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:800;">
-                Your AI Target Profile</h2>
-              <p style="color:var(--color-text-muted); font-size:0.9rem;">Below are target limits calculated
-                specifically for your body.</p>
-            </div>
-
-            <div
-              style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:1.25rem; margin-bottom:1.5rem;">
-              <div
-                style="background:var(--color-card-inner-bg); border:1px solid var(--color-card-inner-border); padding:1rem 1.25rem; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <div style="font-size:0.75rem; color:var(--color-text-muted); text-transform:uppercase;">Calculated
-                    BMI</div>
-                  <div id="sum-bmi"
-                    style="font-size:1.6rem; font-weight:800; font-family:var(--font-header); color:var(--color-heading);">
-                    24.2</div>
-                </div>
-                <span id="sum-bmi-status" style="font-size:0.85rem; font-weight:700; color:var(--color-success);">Normal
-                  Range</span>
-              </div>
-
-              <div
-                style="background:var(--color-card-inner-bg); border:1px solid var(--color-card-inner-border); padding:1rem 1.25rem; border-radius:12px;">
-                <div style="font-size:0.75rem; color:var(--color-text-muted); text-transform:uppercase;">Basal Metabolic
-                  Rate (BMR)</div>
-                <div id="sum-bmr" style="font-size:1.4rem; font-weight:700; color:var(--color-heading);">1,750 kcal
-                </div>
-              </div>
-
-              <div
-                style="background:var(--color-card-inner-bg); border:1px solid var(--color-card-inner-border); padding:1rem 1.25rem; border-radius:12px;">
-                <div style="font-size:0.75rem; color:var(--color-text-muted); text-transform:uppercase;">Daily
-                  Maintenance (TDEE)</div>
-                <div id="sum-tdee" style="font-size:1.4rem; font-weight:700; color:var(--color-heading);">2,350 kcal
-                </div>
-              </div>
-
-              <div
-                style="background:rgba(139, 92, 246, 0.1); border:1px solid rgba(139, 92, 246, 0.2); padding:1.25rem; border-radius:12px;">
-                <div style="font-size:0.8rem; color:var(--color-primary); font-weight:600; text-transform:uppercase;">
-                  Daily Calorie Goal</div>
-                <div id="sum-target-cal"
-                  style="font-size:1.8rem; font-weight:800; color:var(--color-heading); font-family:var(--font-header);">
-                  1,850 kcal</div>
-              </div>
-            </div>
-
-            <!-- Macros Split Cards -->
-            <div style="margin-top:1.5rem;">
-              <h3
-                style="font-size:1.05rem; margin-bottom:0.75rem; color:var(--color-heading); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">
-                Target Macronutrients Breakdown</h3>
-              <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:1rem;">
-                <div
-                  style="background:rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.15); border-radius:12px; padding:1rem; text-align:center;">
-                  <div style="font-size:0.75rem; color:var(--color-primary); font-weight:600;">Protein</div>
-                  <div id="sum-target-p" style="font-size:1.5rem; font-weight:800; margin-top:0.25rem;">160g</div>
-                </div>
-                <div
-                  style="background:rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.15); border-radius:12px; padding:1rem; text-align:center;">
-                  <div style="font-size:0.75rem; color:var(--color-secondary); font-weight:600;">Carbohydrates</div>
-                  <div id="sum-target-c" style="font-size:1.5rem; font-weight:800; margin-top:0.25rem;">185g</div>
-                </div>
-                <div
-                  style="background:rgba(236, 72, 153, 0.05); border: 1px solid rgba(236, 72, 153, 0.15); border-radius:12px; padding:1rem; text-align:center;">
-                  <div style="font-size:0.75rem; color:var(--color-accent); font-weight:600;">Dietary Fats</div>
-                  <div id="sum-target-f" style="font-size:1.5rem; font-weight:800; margin-top:0.25rem;">51g</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Wizard Navigation -->
-          <div class="wizard-footer">
-            <button id="wizard-prev-btn" class="btn btn-secondary" disabled>
-              <i data-lucide="arrow-left"></i> Back
-            </button>
-            <button id="wizard-next-btn" class="btn btn-primary">
-              Next Step <i data-lucide="arrow-right"></i>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <!-- ================= 2. DASHBOARD PANEL ================= -->
-      <section id="dashboard-panel" class="view-panel">
-        <div class="section-header">
-          <h1 class="section-title">Welcome back, <span class="gradient-text user-name">Champ</span></h1>
-          <p class="section-desc">Track your fitness journey. Daily calorie ceilings and routines are updated below.</p>
-        </div>
-
-
-        <!-- Setup Alert shown if profile not set -->
-        <div class="glass-card" id="dashboard-setup-tip"
-          style="border-color:rgba(245, 158, 11, 0.3); background:rgba(245, 158, 11, 0.05); display:none;">
-          <div style="display:flex; align-items:center; gap:1rem;">
-            <i data-lucide="alert-triangle" style="color:var(--color-warning); font-size:1.5rem; flex-shrink:0;"></i>
-            <div>
-              <h3 style="color:var(--color-heading); font-size:1.05rem;">Finish Setting Up Your Profile</h3>
-              <p style="color:var(--color-text-muted); font-size:0.85rem; margin-top:0.25rem;">To unlocked personalized
-                workouts, targeted calorie budgets, and tracking analytics, click <a href="#profile-panel"
-                  style="color:var(--color-secondary); font-weight:600; text-decoration:underline;">here</a> to config
-                your bio details.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Active Stats Grid -->
-        <div class="dashboard-grid" id="dashboard-stats-grid">
-
-          <!-- Core metrics row -->
-          <div class="col-4 glass-card mini-stat-card">
-            <div class="stat-icon-box" style="background:rgba(6, 182, 212, 0.15); color:var(--color-secondary);">
-              <i data-lucide="scale"></i>
-            </div>
-            <div class="stat-details">
-              <span class="stat-val" id="dash-weight-val">78.5 kg</span>
-              <span class="stat-lbl">Weight</span>
-            </div>
-          </div>
-          <div class="col-4 glass-card mini-stat-card">
-            <div class="stat-icon-box" style="background:rgba(139, 92, 246, 0.15); color:var(--color-primary);">
-              <i data-lucide="percent"></i>
-            </div>
-            <div class="stat-details">
-              <span class="stat-val" id="dash-bmi-val">24.2</span>
-              <span class="stat-lbl">BMI Index</span>
-            </div>
-          </div>
-          <div class="col-4 glass-card mini-stat-card">
-            <div class="stat-icon-box" style="background:rgba(236, 72, 153, 0.15); color:var(--color-accent);">
-              <i data-lucide="heart"></i>
-            </div>
-            <div class="stat-details">
-              <span class="stat-val" id="dash-tdee-val">2,350 kcal</span>
-              <span class="stat-lbl">Daily Burn (TDEE)</span>
-            </div>
-          </div>
-
-          <!-- Circular Calorie Tracker Widget -->
-          <div class="col-8 glass-card">
-            <h3 style="font-size:1.15rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;"><i
-                data-lucide="flame" style="color:var(--color-accent)"></i> Daily Calorie & Macronutrients Tracker</h3>
-
-            <div class="calorie-circle-container">
-              <!-- Animated SVG Ring -->
-              <div class="ring-wrapper">
-                <svg class="ring-svg" viewBox="0 0 160 160">
-                  <circle class="ring-bg" cx="80" cy="80" r="70"></circle>
-                  <circle class="ring-progress" id="dash-calories-circle-progress" cx="80" cy="80" r="70"></circle>
-                </svg>
-                <div class="ring-text">
-                  <div class="ring-val" id="dash-calories-consumed">0</div>
-                  <div class="ring-lbl">consumed</div>
-                  <div style="font-size:0.7rem; color:var(--color-text-muted); margin-top:0.25rem;">Target: <span
-                      id="dash-calories-target">2000</span></div>
-                </div>
-              </div>
-
-              <!-- Macros Breakdown meters -->
-              <div class="macros-container">
-                <!-- Protein -->
-                <div class="macro-bar-item">
-                  <div class="macro-info">
-                    <span class="macro-name protein"><i data-lucide="shield"></i> Protein</span>
-                    <span class="macro-val" id="dash-protein-val">0g / 150g</span>
-                  </div>
-                  <div class="macro-progress-bg">
-                    <div class="macro-progress-fill protein" id="dash-protein-progress"></div>
-                  </div>
-                </div>
-                <!-- Carbs -->
-                <div class="macro-bar-item">
-                  <div class="macro-info">
-                    <span class="macro-name carbs"><i data-lucide="wheat"></i> Carbohydrates</span>
-                    <span class="macro-val" id="dash-carbs-val">0g / 210g</span>
-                  </div>
-                  <div class="macro-progress-bg">
-                    <div class="macro-progress-fill carbs" id="dash-carbs-progress"></div>
-                  </div>
-                </div>
-                <!-- Fats -->
-                <div class="macro-bar-item">
-                  <div class="macro-info">
-                    <span class="macro-name fats"><i data-lucide="droplet"></i> Fats</span>
-                    <span class="macro-val" id="dash-fats-val">0g / 55g</span>
-                  </div>
-                  <div class="macro-progress-bg">
-                    <div class="macro-progress-fill fats" id="dash-fats-progress"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Action Widgets Panel -->
-          <div class="col-4 glass-card" style="display:flex; flex-direction:column; justify-content:space-between;">
-            <div>
-              <h3 style="font-size:1.15rem; margin-bottom:1.25rem;">Quick Operations</h3>
-              <div class="actions-grid">
-                <a href="#workout-panel" class="action-card fitness">
-                  <div class="action-icon">
-                    <i data-lucide="dumbbell"></i>
-                  </div>
-                  <span class="action-title">Start Workout</span>
+            <div class="flex flex-col sm:flex-row gap-4 mt-8 w-full sm:w-auto">
+                <a href="signup.html" class="bg-primary-fixed text-on-primary-fixed font-label-caps text-label-caps px-8 py-4 rounded-DEFAULT hover:bg-primary-fixed-dim transition-colors active:scale-95 glow-effect text-center block">
+                    START FREE TRIAL
                 </a>
-                <a href="#scanner-panel" class="action-card nutrition">
-                  <div class="action-icon">
-                    <i data-lucide="camera"></i>
-                  </div>
-                  <span class="action-title">Scan a Meal</span>
+                <a href="#features" class="bg-transparent border border-secondary-fixed-dim text-secondary-fixed font-label-caps text-label-caps px-8 py-4 rounded-DEFAULT hover:bg-secondary-fixed-dim/10 transition-colors active:scale-95 text-center block">
+                    EXPLORE FEATURES
                 </a>
-              </div>
             </div>
-
-            <button id="dash-log-weight-btn" class="btn btn-primary" style="width:100%; margin-top:1.5rem;">
-              <i data-lucide="plus"></i> Record Current Weight
-            </button>
-          </div>
         </div>
-      </section>
-
-      <!-- ================= 3. WORKOUT PLANNER PANEL ================= -->
-      <section id="workout-panel" class="view-panel">
-        <div class="section-header">
-          <h1 class="section-title"><span class="gradient-text">AI Exercises Scheduler</span></h1>
-          <p class="section-desc">Generate muscle development or caloric deficit routines tailored to your fitness
-            objectives.</p>
-        </div>
-
-        <!-- Days Navigation tabs -->
-        <div class="routine-days-container" id="routine-days-tabs">
-          <!-- Populated by app.js -->
-        </div>
-
-        <!-- Detailed Exercises listing for selected day -->
-        <div id="routine-details-container">
-          <!-- Populated dynamically by app.js -->
-        </div>
-      </section>
-
-      <!-- ================= 4. AI MEAL SCANNER PANEL ================= -->
-      <section id="scanner-panel" class="view-panel">
-        <div class="section-header">
-          <h1 class="section-title"><span class="gradient-text">AI Meal Nutrition Scanner</span></h1>
-          <p class="section-desc">Upload a picture of your dish. Our computer vision models scan physical items to
-            estimate calories, macros, and healthier options.</p>
-        </div>
-
-        <div class="scanner-container">
-
-          <!-- Image Upload Interaction Card -->
-          <div class="glass-card" style="margin-bottom: 0;">
-            <h3 style="font-size:1.15rem; margin-bottom:1rem;">Capture or Upload Dish</h3>
-
-            <!-- Hidden File Input -->
-            <input type="file" id="scanner-file-input" style="display:none;" accept="image/*">
-
-            <!-- Drag Zone -->
-            <div class="upload-zone" id="scanner-dropzone">
-              <div class="upload-icon">
-                <i data-lucide="upload-cloud"></i>
-              </div>
-              <div>
-                <div class="upload-zone-title">Upload a picture of your meal</div>
-                <div class="upload-zone-text">Drag & drop here, or click to browse files</div>
-              </div>
-              <div style="font-size:0.75rem; color:var(--color-text-muted);">Supports PNG, JPG, or JPEG formats. Or scan
-                with camera/presets.</div>
-            </div>
-
-            <!-- Webcam Capture Button -->
-            <button id="webcam-trigger-btn" class="btn btn-secondary" style="width:100%; margin-top:1rem;">
-              <i data-lucide="camera"></i> Scan with Device Camera
-            </button>
-
-            <!-- Demo Preset Chips selector -->
-            <div style="margin-top:1.5rem;">
-              <span
-                style="font-size:0.75rem; text-transform:uppercase; color:var(--color-text-muted); font-weight:600; display:block; margin-bottom:0.5rem;">No
-                photo? Click one of these demo preset meals:</span>
-
-              <div class="presets-grid" id="scanner-preset-chips">
-                <!-- Preset chips representing popular items -->
-                <div class="preset-chip" data-food="salad">
-                  <i data-lucide="leaf" style="color:var(--color-success); font-size:1rem;"></i>
-                  <span>Salad</span>
-                </div>
-                <div class="preset-chip" data-food="burger">
-                  <i data-lucide="drumstick" style="color:var(--color-danger); font-size:1rem;"></i>
-                  <span>Burger</span>
-                </div>
-                <div class="preset-chip" data-food="salmon">
-                  <i data-lucide="fish" style="color:var(--color-secondary); font-size:1rem;"></i>
-                  <span>Salmon</span>
-                </div>
-                <div class="preset-chip" data-food="pizza">
-                  <i data-lucide="pizza" style="color:var(--color-accent); font-size:1rem;"></i>
-                  <span>Pizza</span>
-                </div>
-                <div class="preset-chip" data-food="toast">
-                  <i data-lucide="egg" style="color:var(--color-warning); font-size:1rem;"></i>
-                  <span>Toast</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Upload / Scan Action triggers -->
-            <div id="scanner-action-container" style="margin-top: 1.5rem; display:none;">
-              <!-- Trigger buttons populated by app.js -->
-            </div>
-          </div>
-
-          <!-- Nutritional Scan Outputs Card -->
-          <div class="glass-card" id="scanner-results-card" style="display:none; margin-bottom: 0;">
-            <div
-              style="display:flex; justify-content:space-between; align-items:center; border-bottom:var(--glass-border); padding-bottom:1rem; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.5rem;">
-              <div>
-                <span
-                  style="font-size:0.75rem; text-transform:uppercase; color:var(--color-secondary); font-weight:700; tracking-wide:1px;">AI
-                  Detection Complete</span>
-                <h3 id="res-food-name"
-                  style="font-size:1.4rem; color:var(--color-heading); font-weight:700; margin-top:0.15rem;">Detected
-                  Food Item</h3>
-              </div>
-              <span id="res-health-score" class="health-score-badge A">Health Score: A</span>
-            </div>
-
-            <!-- Macros details breakdown -->
-            <div
-              style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; text-align:center; margin-bottom:1.5rem;">
-              <div
-                style="background:var(--color-card-inner-bg); border:1px solid var(--color-card-inner-border); padding:0.6rem 0.4rem; border-radius:10px;">
-                <div id="res-cal" style="font-size:1.15rem; font-weight:700; color:var(--color-heading);">0 kcal</div>
-                <div style="font-size:0.65rem; color:var(--color-text-muted); text-transform:uppercase;">Calories</div>
-              </div>
-              <div
-                style="background:rgba(139, 92, 246, 0.05); border:1px solid rgba(139, 92, 246, 0.1); padding:0.6rem 0.4rem; border-radius:10px;">
-                <div id="res-protein" style="font-size:1.15rem; font-weight:700; color:var(--color-primary);">0g</div>
-                <div style="font-size:0.65rem; color:var(--color-text-muted); text-transform:uppercase;">Protein</div>
-                <div id="res-protein-pct" style="font-size:0.6rem; color:var(--color-text-muted);">0%</div>
-              </div>
-              <div
-                style="background:rgba(6, 182, 212, 0.05); border:1px solid rgba(6, 182, 212, 0.1); padding:0.6rem 0.4rem; border-radius:10px;">
-                <div id="res-carbs" style="font-size:1.15rem; font-weight:700; color:var(--color-secondary);">0g</div>
-                <div style="font-size:0.65rem; color:var(--color-text-muted); text-transform:uppercase;">Carbs</div>
-                <div id="res-carbs-pct" style="font-size:0.6rem; color:var(--color-text-muted);">0%</div>
-              </div>
-              <div
-                style="background:rgba(236, 72, 153, 0.05); border:1px solid rgba(236, 72, 153, 0.1); padding:0.6rem 0.4rem; border-radius:10px;">
-                <div id="res-fats" style="font-size:1.15rem; font-weight:700; color:var(--color-accent);">0g</div>
-                <div style="font-size:0.65rem; color:var(--color-text-muted); text-transform:uppercase;">Fats</div>
-                <div id="res-fats-pct" style="font-size:0.6rem; color:var(--color-text-muted);">0%</div>
-              </div>
-            </div>
-
-            <!-- Healthier Alternatives Recommendation listings -->
-            <div>
-              <h4
-                style="font-size:0.9rem; text-transform:uppercase; font-weight:600; color:var(--color-heading); margin-bottom:0.75rem; letter-spacing:0.05em; display:flex; align-items:center; gap:0.5rem;">
-                <i data-lucide="sparkles" style="color:var(--color-secondary)"></i> Recommended Health Swaps</h4>
-              <div id="res-swaps-list">
-                <!-- Populated dynamically by app.js -->
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      <!-- ================= 5. ANALYTICS & LOGS PANEL ================= -->
-      <section id="analytics-panel" class="view-panel">
-        <div class="section-header">
-          <h1 class="section-title"><span class="gradient-text">Progress Analytics</span></h1>
-          <p class="section-desc">Examine weekly intake patterns and weight change tracking metrics over time.</p>
-        </div>
-
-        <!-- Charts row -->
-        <div class="dashboard-grid">
-          <div class="col-6 glass-card">
-            <h3 style="font-size:1.15rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;"><i
-                data-lucide="scale" style="color:var(--color-secondary)"></i> Weight Trend Tracking</h3>
-            <div class="chart-container">
-              <canvas id="weightHistoryChart"></canvas>
-            </div>
-          </div>
-          <div class="col-6 glass-card">
-            <h3 style="font-size:1.15rem; margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;"><i
-                data-lucide="line-chart" style="color:var(--color-primary)"></i> Weekly Calorie Log vs Target</h3>
-            <div class="chart-container">
-              <canvas id="calorieHistoryChart"></canvas>
-            </div>
-          </div>
-
-          <!-- Nutrition & Workouts journals -->
-          <div class="col-6 glass-card" style="margin-bottom:0;">
-            <h3 style="font-size:1.15rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem;"><i
-                data-lucide="sandwich" style="color:var(--color-accent)"></i> Daily Meal Logs</h3>
-            <div class="logs-list" id="meals-log-list">
-              <!-- Logs items loaded by app.js -->
-            </div>
-          </div>
-
-          <div class="col-6 glass-card" style="margin-bottom:0;">
-            <h3 style="font-size:1.15rem; margin-bottom:1.25rem; display:flex; align-items:center; gap:0.5rem;"><i
-                data-lucide="calendar" style="color:var(--color-secondary)"></i> Completed Workouts</h3>
-            <div class="logs-list" id="workouts-log-list">
-              <!-- Logs items loaded by app.js -->
-            </div>
-          </div>
-        </div>
-      </section>
-
     </main>
 
-    <!-- ================= INTERACTIVE WORKOUT OVERLAY ================= -->
-    <div class="active-workout-overlay" id="active-workout-panel">
-
-      <div class="active-workout-header">
-        <div>
-          <span
-            style="font-size:0.75rem; text-transform:uppercase; color:var(--color-secondary); font-weight:700; tracking-wide:1px;">Active
-            Workout Session</span>
-          <h2 id="active-workout-title"
-            style="font-size:1.6rem; color:var(--color-heading); font-weight:800; margin-top:0.15rem;">Workout</h2>
+    <!-- Features Section -->
+    <section id="features" class="w-full bg-surface-container-low py-24 px-margin-mobile md:px-margin-desktop border-t border-white/5 relative z-10">
+        <div class="max-w-container-max mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="font-headline-md text-headline-md text-primary mb-4">Precision Engineered for Performance</h2>
+                <div class="h-1 w-16 bg-primary-fixed mx-auto rounded-full"></div>
+            </div>
+            <!-- Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+                <!-- Feature 1 -->
+                <div class="glass-panel rounded-xl p-8 flex flex-col h-full group hover:-translate-y-1 transition-transform duration-300">
+                    <div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center border border-white/5 mb-6 group-hover:border-primary-fixed/50 transition-colors">
+                        <span class="material-symbols-outlined text-primary-fixed text-2xl" data-icon="assignment_ind">assignment_ind</span>
+                    </div>
+                    <h3 class="font-headline-md text-headline-md text-primary mb-3" style="font-size: 20px;">Personal Details Onboarding</h3>
+                    <p class="font-body-md text-body-md text-on-surface-variant flex-grow mb-6">
+                        Seamlessly input your biometric data, goals, and constraints. Our AI builds a comprehensive physiological profile to tailor every recommendation.
+                    </p>
+                    <div class="w-full h-32 rounded-lg overflow-hidden border border-white/10 relative">
+                        <img class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" data-alt="A sleek, dark-mode user interface screen showing a futuristic biometric onboarding flow. The screen displays glowing electric lime input fields and a subtle 3D wireframe rendering of a human body, set against a deep slate gray background. High-tech, minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCBoA8KjkiiQrTr4qA2L8-1wKgARp1SHEPAvmUUS9wlDUVGPgfkc_h1EsHKGZsK6f4vXHTboYffIUU4v2GVn83c5d2bVFYdB4TgxAaeQMt3FJTfa3PivsoWLr4CXt2X9r2ZRErBEWNyD-BqLbo2yjW6-aX9SO06A4nu8-8MnXatg0FKS10RIorqM2abI8Dpep3Q6TXsZKi7olQBz_89XrRf8nJdh0bGZHT_B-kMU1bGcr68v8D2CLWqVv4chujjTkHn9U-D_tIzc9lS">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#1A1C1E] to-transparent"></div>
+                    </div>
+                </div>
+                <!-- Feature 2 -->
+                <div class="glass-panel rounded-xl p-8 flex flex-col h-full group hover:-translate-y-1 transition-transform duration-300 md:col-span-2">
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center border border-white/5 group-hover:border-secondary-fixed/50 transition-colors">
+                            <span class="material-symbols-outlined text-secondary-fixed text-2xl" data-icon="calendar_month">calendar_month</span>
+                        </div>
+                        <span class="font-label-caps text-label-caps text-secondary-fixed px-3 py-1 bg-secondary-fixed/10 rounded-full">CORE AI</span>
+                    </div>
+                    <h3 class="font-headline-md text-headline-md text-primary mb-3" style="font-size: 24px;">Adaptive Exercise Scheduling</h3>
+                    <p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-lg">
+                        Dynamic programming that evolves with your progress. The AI adjusts volume, intensity, and recovery periods based on daily feedback and performance metrics.
+                    </p>
+                    <div class="w-full flex-grow rounded-lg overflow-hidden border border-white/10 relative min-h-[160px]">
+                        <div class="absolute inset-0 bg-cover bg-center opacity-60" data-alt="A wide, dynamic shot of a high-end, dark-themed gym interior. A glowing digital schedule interface is holographically projected in the foreground, showing workout blocks in neon blue and green. Heavy iron dumbbells and a sleek power rack are softly illuminated in the background. Cinematic lighting, intense atmosphere." style="background-image: url(&quot;https://lh3.googleusercontent.com/aida-public/AB6AXuAU4I5ddobKp7a483b8jwpTzQvVcAWHgK7YEH8Oat_p6sIt4mkVRZYZcu7cNx3OU6OE6oSF8GBnOafBV4t3RXruOJiYLjXsmhUWd7hszC3OSrtYI19t6xSi_9jMsXm413vjUKKPWwvMCLlKnL6-VDr9ESRhS4dJadHHtdAswdk0SUDhuxMONcCZ0maDir5_l_0ryYCb1q6HFxazG0o1OisnuiTwjdmFhHYhGLSkfd-J7p33yHhMRK9ovtQNQaRmRLPbDffjnopmNu7T&quot;);"></div>
+                        <div class="absolute inset-0 bg-gradient-to-r from-[#1A1C1E] via-[#1A1C1E]/80 to-transparent flex items-center p-6">
+                            <div class="space-y-3 w-full max-w-xs">
+                                <div class="bg-surface/80 p-3 rounded-md border border-white/5 flex items-center justify-between">
+                                    <span class="text-sm text-primary">Hypertrophy Block</span>
+                                    <span class="text-xs text-primary-fixed">Active</span>
+                                </div>
+                                <div class="bg-surface/50 p-3 rounded-md border border-white/5 flex items-center justify-between opacity-50">
+                                    <span class="text-sm text-primary">Active Recovery</span>
+                                    <span class="text-xs text-on-surface-variant">Scheduled</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Feature 3 -->
+                <div class="glass-panel rounded-xl p-8 flex flex-col h-full group hover:-translate-y-1 transition-transform duration-300 md:col-span-3 lg:col-span-1 lg:col-start-2">
+                    <div class="w-12 h-12 rounded-lg bg-surface flex items-center justify-center border border-white/5 mb-6 group-hover:border-primary-fixed/50 transition-colors">
+                        <span class="material-symbols-outlined text-primary-fixed text-2xl" data-icon="camera_enhance">camera_enhance</span>
+                    </div>
+                    <h3 class="font-headline-md text-headline-md text-primary mb-3" style="font-size: 20px;">AI Food Scanner</h3>
+                    <p class="font-body-md text-body-md text-on-surface-variant flex-grow mb-6">
+                        Instantly analyze macronutrients and caloric density with a single photo. Our computer vision model tracks your nutritional intake with unprecedented accuracy.
+                    </p>
+                    <div class="w-full h-40 rounded-lg overflow-hidden border border-white/10 relative">
+                        <img class="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" data-alt="A close-up, top-down view of a smartphone screen displaying a sleek dark-mode AI scanning interface over a perfectly prepped macro-balanced meal (grilled chicken, quinoa, roasted greens). A glowing green targeting reticle and floating nutritional stats overlay the image. Professional studio lighting highlighting textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA16xunRVNs4fpKGJ_QQxMWz7AxgBk0rV_EaUDqe9suNPBpKEKh2tBZuv4gDBlJFzG_Ke1M8L1vQUnNQG7csdqXuOAbZQOIXqnO9D-6rMtP9xvuBw7fWJdGGllG1hK5ErHVliw2Z3X5WZKb8SGSeNgP8rhDxHpfPr6nHcdey0UAEcyXKVCJ1rwnV5jFGvoApwTjq5oCh9HnfU1ZjitA00wHwld8FbMfma-F60h3bThOqh7KHhbL5RrmAN52RNqQDexbFp-DZ1DY4kgx">
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <!-- Timer clock widget -->
-        <div class="timer-box">
-          <i data-lucide="clock" style="width:18px; height:18px;"></i>
-          <span id="active-timer-label">00:00</span>
-        </div>
-      </div>
+    <!-- Bottom Nav Mobile -->
+    <nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-2 bg-surface/80 backdrop-blur-2xl border-t border-white/10 rounded-t-xl z-50 md:hidden">
+        <a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity active:scale-90 duration-150" href="#">
+            <span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+            <span class="font-label-caps text-[10px]">Home</span>
+        </a>
+        <a class="flex flex-col items-center justify-center bg-primary-fixed text-on-primary-fixed rounded-full p-2 scale-110 shadow-[0_0_20px_rgba(14,165,233,0.4)] active:scale-95 transition-all duration-150" href="#">
+            <span class="material-symbols-outlined" data-icon="event_note">event_note</span>
+            <span class="sr-only">Planner</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity active:scale-90 duration-150" href="#">
+            <span class="material-symbols-outlined mb-1" data-icon="photo_camera">photo_camera</span>
+            <span class="font-label-caps text-[10px]">Scanner</span>
+        </a>
+        <a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:opacity-100 transition-opacity active:scale-90 duration-150" href="#">
+            <span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+            <span class="font-label-caps text-[10px]">Profile</span>
+        </a>
+    </nav>
 
-      <!-- Active checklist for completion tracking -->
-      <div class="active-exercises-container">
-        <h3
-          style="font-size:1.1rem; color:var(--color-heading); font-weight:600; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.5rem;">
-          <i data-lucide="check-square" style="color:var(--color-primary)"></i> Exercise Completion Checklist</h3>
-        <div id="active-exercises-list">
-          <!-- Populated by app.js -->
-        </div>
-      </div>
-
-      <!-- Finish Actions bar -->
-      <div class="active-workout-footer">
-        <button id="active-quit-btn" class="btn btn-secondary" style="flex: 1;">
-          <i data-lucide="slash"></i> Terminate Workout
-        </button>
-        <button id="active-complete-btn" class="btn btn-teal" style="flex: 2;">
-          <i data-lucide="check-circle-2"></i> Mark Workout Done
-        </button>
-      </div>
-
-    </div>
-
-  </div>
-
-  <!-- Main JavaScript App Controller -->
-  <script src="app.js"></script>
-
-  <!-- WEBCAM CAMERA MODAL OVERLAY -->
-  <div class="webcam-modal-backdrop" id="webcam-modal" style="display:none;">
-    <div class="webcam-modal">
-      <h3 style="font-size:1.3rem; font-weight:700; color:var(--color-heading);">Device Camera Scan</h3>
-      <p style="font-size:0.85rem; color:var(--color-text-muted);">Center your dish in the camera frame and capture.</p>
-
-      <div class="webcam-video-container">
-        <video id="webcam-stream" autoplay playsinline></video>
-      </div>
-
-      <div style="display:flex; gap:0.75rem; width:100%;">
-        <button id="webcam-close-btn" class="btn btn-secondary" style="flex:1;">
-          Cancel
-        </button>
-        <button id="webcam-capture-btn" class="btn btn-primary" style="flex:2;">
-          <i data-lucide="camera"></i> Capture Photo
-        </button>
-      </div>
-    </div>
-  </div>
+    <script src="app.js"></script>
 </body>
-
 </html>

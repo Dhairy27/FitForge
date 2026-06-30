@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>Login - HealthVerse AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=Jetbrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-fixed": "#e1e3e4",
+                        "secondary-fixed-dim": "#c6bfff",
+                        "on-surface": "#dfe3e7",
+                        "inverse-surface": "#dfe3e7",
+                        "surface-variant": "#313539",
+                        "surface-tint": "#bdc7d9",
+                        "on-tertiary": "#2e3132",
+                        secondary: "#c6bfff",
+                        "on-primary-fixed": "#121c2a",
+                        "on-tertiary-fixed": "#191c1d",
+                        tertiary: "#c5c7c8",
+                        "primary-fixed": "#0ea5e9", // Custom Neon Blue
+                        "secondary-container": "#4029bb",
+                        "surface-container-high": "#262b2e",
+                        "on-secondary-container": "#b4abff",
+                        error: "#ffb4ab",
+                        "inverse-primary": "#555f6f",
+                        "surface-container": "#1b2023",
+                        "on-primary": "#27313f",
+                        surface: "#0f1417",
+                        outline: "#8f9196",
+                        "on-background": "#dfe3e7",
+                        "on-surface-variant": "#c5c6cc",
+                        "on-tertiary-fixed-variant": "#454748",
+                        "primary-fixed-dim": "#bdc7d9",
+                        primary: "#bdc7d9",
+                        "outline-variant": "#44474c",
+                        "surface-dim": "#0f1417",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#e4dfff",
+                        "on-primary-container": "#8690a1",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "on-secondary-fixed": "#160066",
+                        "error-container": "#93000a",
+                        "tertiary-container": "#26292a",
+                        "surface-container-low": "#171c1f",
+                        "inverse-on-surface": "#2c3134",
+                        "surface-bright": "#353a3d",
+                        background: "#0f1417",
+                        "on-tertiary-container": "#8e9091",
+                        "on-secondary": "#2900a0",
+                        "on-secondary-fixed-variant": "#4029bb",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-highest": "#313539",
+                        "surface-container-lowest": "#0a0f12",
+                        "primary-container": "#1f2937",
+                        "on-primary-fixed-variant": "#3d4756"
+                    },
+                    borderRadius: {
+                        DEFAULT: "1rem",
+                        lg: "2rem",
+                        xl: "3rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        unit: "8px",
+                        gutter: "24px",
+                        "stack-lg": "32px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "40px",
+                        "container-max": "1280px",
+                        "stack-md": "16px",
+                        "stack-sm": "8px"
+                    },
+                    fontFamily: {
+                        "stats-xl": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg-mobile": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["JetBrains Mono"],
+                        "body-lg": ["Inter"],
+                        headline: ["Inter"],
+                        display: ["Inter"],
+                        body: ["Inter"],
+                        label: ["Jetbrains Mono"]
+                    },
+                    fontSize: {
+                        "stats-xl": ["40px", {lineHeight: "40px", letterSpacing: "-0.05em", fontWeight: "900"}],
+                        "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700"}],
+                        "display-lg-mobile": ["36px", {lineHeight: "42px", letterSpacing: "-0.03em", fontWeight: "800"}],
+                        "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.04em", fontWeight: "800"}],
+                        "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}],
+                        "label-caps": ["12px", {lineHeight: "16px", letterSpacing: "0.1em", fontWeight: "600"}],
+                        "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}]
+                    }
+                }
+            }
+        };
+    </script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen flex flex-col font-body-md text-body-md antialiased bg-background text-on-background">
+    <header class="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl border-b border-outline-variant/10 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20">
+        <a href="index.html" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
+            <img alt="HealthVerse AI Logo" class="h-10 w-10 object-contain rounded-lg" src="logo.svg">
+            <span class="font-display-lg-mobile text-display-lg-mobile font-black text-primary-fixed hidden md:block">HealthVerse AI</span>
+        </a>
+        <div class="flex items-center">
+            <a class="text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Support</a>
+        </div>
+    </header>
+
+    <main class="flex-grow flex pt-20">
+        <div class="w-full flex flex-col md:flex-row min-h-full">
+            <!-- Left Side / Branding & Motivation -->
+            <div class="relative hidden md:flex flex-col justify-end p-12 lg:p-16 w-1/2 min-h-[600px]">
+                <div class="absolute inset-0 bg-[url('https://lh3.googleusercontent.com/aida/AP1WRLv0FNOGqXKXiwfdmuJBfQZ9B0PwD8yeTdu0DABpVb6ZdsGcHwdVL5lfvsSW0jJxBVD9MqhlSsh6WX1yv_gbwtOfDQXBc9Pl2yafctvQuCR_L6wHWboAJUz7Rp2UHIp2Goq2dqijoV87CIrJntO95-lMrF0kJwIolzilxMJxpiYjDs_fxzYeoX4hcnrd0GO5Vf0R7QZ_3QShRHQagIuE7CNnw-IS5hLRJgULlnBm7lCoeYwhAPU0YJ47zFw')] bg-cover bg-center"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-background/20"></div>
+                <div class="relative z-10 max-w-lg">
+                    <h1 class="font-display-lg text-display-lg text-primary mb-6">Access Your <br><span class="text-primary-fixed">Elite Performance.</span></h1>
+                    <p class="font-body-lg text-body-lg text-on-surface-variant mb-8">Log in to synchronize your biometrics and continue your personalized AI training journey.</p>
+                    <div class="glass-panel p-6 rounded-xl border-l-2 border-primary-fixed relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-gradient-to-br from-primary-fixed/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="flex items-start gap-4">
+                            <span class="material-symbols-outlined text-secondary-fixed text-[32px]">analytics</span>
+                            <div>
+                                <h3 class="font-headline-md text-headline-md text-primary mb-2">Neural Performance Analytics</h3>
+                                <p class="text-on-surface-variant">Real-time AI Coaching.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side / Login Form -->
+            <div class="w-full md:w-1/2 flex items-center justify-center p-8 md:p-12 lg:p-16 bg-surface">
+                <div class="w-full max-w-[480px]">
+                    <div class="text-center mb-10 flex flex-col items-center">
+                        <img alt="HealthVerse AI Logo" class="h-16 w-16 object-contain rounded-lg mb-4" src="logo.svg">
+                        <h2 class="font-headline-md text-headline-md text-primary mb-2">Welcome Back</h2>
+                        <p class="text-on-surface-variant font-label-caps text-label-caps tracking-widest uppercase">Secure Access</p>
+                    </div>
+                    <form class="space-y-8" id="login-form">
+                        <!-- Standard Fields -->
+                        <div class="space-y-6">
+                            <div>
+                                <label class="sr-only" for="email">Email Address</label>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-0 top-3 text-on-surface-variant">mail</span>
+                                    <input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 pl-10 pr-4 text-primary placeholder:text-on-surface-variant focus:ring-0 input-glow transition-colors" id="email" placeholder="athlete@example.com" required="" type="email">
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <label class="sr-only" for="password">Password</label>
+                                </div>
+                                <div class="relative">
+                                    <span class="material-symbols-outlined absolute left-0 top-3 text-on-surface-variant">lock</span>
+                                    <input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 pl-10 pr-4 text-primary placeholder:text-on-surface-variant focus:ring-0 input-glow transition-colors" id="password" placeholder="••••••••" required="" type="password">
+                                    <a class="absolute right-0 top-3 font-label-caps text-label-caps text-secondary-fixed-dim hover:text-secondary-fixed transition-colors" href="#">Forgot?</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="pt-2 space-y-4">
+                            <button class="w-full bg-primary-fixed text-on-primary-fixed font-bold py-4 rounded-lg glow-effect hover:scale-[0.98] transition-transform flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.5)]" type="submit">
+                                <span class="">Sign In</span>
+                            </button>
+                            <div class="flex items-center my-stack-md">
+                                <div class="flex-grow h-px bg-outline-variant/30"></div>
+                                <span class="px-unit font-label-caps text-label-caps text-on-surface-variant uppercase">Or</span>
+                                <div class="flex-grow h-px bg-outline-variant/30"></div>
+                            </div>
+                            <button class="w-full bg-transparent border border-outline-variant text-primary py-4 rounded-lg hover:bg-surface-container-highest transition-colors flex justify-center items-center gap-3" type="button" id="google-btn">
+                                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="currentColor"></path>
+                                </svg> Continue with Google
+                            </button>
+                        </div>
+                    </form>
+                    <p class="text-center font-body-md text-body-md text-on-surface-variant mt-stack-lg pt-4">
+                        Don't have an account? <a class="text-primary-fixed hover:text-primary-fixed-dim transition-colors font-bold" href="signup.html">Sign up</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
