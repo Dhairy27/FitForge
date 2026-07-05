@@ -1,207 +1,265 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en" class="dark">
 <head>
-    <meta charset="utf-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Sign Up - HealthVerse AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitMind AI | Join the Elite Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;family=Jetbrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
     <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "on-secondary": "#2900a0",
-                        surface: "#0f1417",
-                        tertiary: "#c5c7c8",
-                        "tertiary-fixed-dim": "#c5c7c8",
-                        "outline-variant": "#44474c",
-                        "surface-container-high": "#262b2e",
-                        "primary-fixed": "#0ea5e9", // Custom Neon Blue
-                        "on-background": "#dfe3e7",
-                        primary: "#bdc7d9",
-                        "on-error": "#690005",
-                        "tertiary-container": "#26292a",
-                        "surface-tint": "#bdc7d9",
-                        "surface-container-highest": "#313539",
-                        "primary-fixed-dim": "#bdc7d9",
-                        "on-tertiary": "#2e3132",
-                        "tertiary-fixed": "#e1e3e4",
-                        "on-secondary-container": "#b4abff",
-                        "surface-variant": "#313539",
-                        "on-primary-fixed": "#121c2a",
-                        "surface-bright": "#353a3d",
-                        "on-primary": "#27313f",
-                        "error-container": "#93000a",
-                        "primary-container": "#1f2937",
-                        "secondary-container": "#4029bb",
-                        "secondary-fixed": "#e4dfff",
-                        "on-primary-container": "#8690a1",
-                        "on-secondary-fixed-variant": "#4029bb",
-                        "on-error-container": "#ffdad6",
-                        "surface-container-low": "#171c1f",
-                        "surface-dim": "#0f1417",
-                        "surface-container-lowest": "#0a0f12",
-                        "on-primary-fixed-variant": "#3d4756",
-                        "on-tertiary-fixed": "#191c1d",
-                        "on-surface-variant": "#c5c6cc",
-                        "on-surface": "#dfe3e7",
-                        outline: "#8f9196",
-                        "on-secondary-fixed": "#160066",
-                        "surface-container": "#1b2023",
-                        "on-tertiary-fixed-variant": "#454748",
-                        "secondary-fixed-dim": "#c6bfff",
-                        error: "#ffb4ab",
-                        "on-tertiary-container": "#8e9091",
-                        background: "#0f1417",
-                        secondary: "#c6bfff",
-                        "inverse-surface": "#dfe3e7",
-                        "inverse-primary": "#555f6f",
-                        "inverse-on-surface": "#2c3134"
-                    },
-                    borderRadius: {
-                        DEFAULT: "1rem",
-                        lg: "2rem",
-                        xl: "3rem",
-                        full: "9999px"
-                    },
-                    spacing: {
-                        "stack-lg": "32px",
-                        "margin-mobile": "20px",
-                        "margin-desktop": "40px",
-                        "container-max": "1280px",
-                        "stack-md": "16px",
-                        gutter: "24px",
-                        "stack-sm": "8px",
-                        unit: "8px",
-                        "unit-stack-lg": "32px",
-                        "unit-stack-md": "16px"
-                    },
-                    fontFamily: {
-                        "display-lg": ["Inter"],
-                        "body-md": ["Inter"],
-                        "display-lg-mobile": ["Inter"],
-                        "headline-md": ["Inter"],
-                        "stats-xl": ["Inter"],
-                        "body-lg": ["Inter"],
-                        "label-caps": ["JetBrains Mono"],
-                        headline: ["Inter"],
-                        display: ["Inter"],
-                        body: ["Inter"],
-                        label: ["Jetbrains Mono"]
-                    },
-                    fontSize: {
-                        "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.04em", fontWeight: "800"}],
-                        "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}],
-                        "display-lg-mobile": ["36px", {lineHeight: "42px", letterSpacing: "-0.03em", fontWeight: "800"}],
-                        "headline-md": ["24px", {lineHeight: "32px", letterSpacing: "-0.02em", fontWeight: "700"}],
-                        "stats-xl": ["40px", {lineHeight: "40px", letterSpacing: "-0.05em", fontWeight: "900"}],
-                        "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}],
-                        "label-caps": ["12px", {lineHeight: "16px", letterSpacing: "0.1em", fontWeight: "600"}]
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "surface-tint": "#c6c6c6",
+                            "primary-fixed": "#e2e2e2",
+                            "secondary-container": "#464747",
+                            "on-surface": "#e5e2e1",
+                            "surface-dim": "#131313",
+                            "surface-container-lowest": "#0e0e0e",
+                            "on-primary": "#2f3131",
+                            "secondary-fixed": "#e3e2e2",
+                            "on-tertiary-container": "#5d5f5f",
+                            "primary-fixed-dim": "#c6c6c6",
+                            "on-error": "#690005",
+                            "surface-container-low": "#1c1b1b",
+                            "surface": "#131313",
+                            "surface-container-highest": "#353534",
+                            "on-surface-variant": "#c4c7c7",
+                            "primary-container": "#d9d9d9",
+                            "on-primary-container": "#5d5f5f",
+                            "surface-container": "#201f1f",
+                            "tertiary-fixed-dim": "#c6c6c7",
+                            "surface-container-high": "#2a2a2a",
+                            "on-secondary": "#303031",
+                            "on-primary-fixed": "#1a1c1c",
+                            "inverse-primary": "#5d5e5f",
+                            "on-tertiary-fixed-variant": "#454747",
+                            "on-secondary-container": "#b5b5b5",
+                            "inverse-on-surface": "#313030",
+                            "secondary-fixed-dim": "#c7c6c6",
+                            "secondary": "#c7c6c6",
+                            "surface-variant": "#353534",
+                            "on-tertiary-fixed": "#1a1c1c",
+                            "on-background": "#e5e2e1",
+                            "on-secondary-fixed-variant": "#464747",
+                            "tertiary-fixed": "#e2e2e2",
+                            "on-error-container": "#ffdad6",
+                            "primary": "#f6f5f5",
+                            "outline-variant": "#444748",
+                            "on-secondary-fixed": "#1b1c1c",
+                            "tertiary-container": "#d9d9d9",
+                            "background": "#131313",
+                            "tertiary": "#f5f5f5",
+                            "error-container": "#93000a",
+                            "outline": "#8e9192",
+                            "inverse-surface": "#e5e2e1",
+                            "surface-bright": "#3a3939",
+                            "on-tertiary": "#2f3131",
+                            "on-primary-fixed-variant": "#454747",
+                            "error": "#ffb4ab"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.85rem",
+                            "lg": "1.7rem",
+                            "xl": "2.55rem",
+                            "full": "9999px"
+                        },
+                        "spacing": {
+                            "margin-tablet": "34px",
+                            "margin-desktop": "68px",
+                            "stack-sm": "14px",
+                            "stack-lg": "54px",
+                            "gutter": "27px",
+                            "stack-md": "27px",
+                            "margin-mobile": "20px",
+                            "container-max": "1224px",
+                            "stack-xl": "102px"
+                        },
+                        "fontFamily": {
+                            "headline-lg-mobile": ["Space Grotesk"],
+                            "label-sm": ["Inter"],
+                            "body-lg": ["Inter"],
+                            "label-md": ["Inter"],
+                            "body-md": ["Inter"],
+                            "headline-lg": ["Space Grotesk"],
+                            "display-lg": ["Space Grotesk"],
+                            "headline-md": ["Space Grotesk"]
+                        },
+                        "fontSize": {
+                            "headline-lg-mobile": ["27px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                            "label-sm": ["10px", { "lineHeight": "1.2", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                            "body-lg": ["15px", { "lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400" }],
+                            "label-md": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                            "body-md": ["14px", { "lineHeight": "1.6", "letterSpacing": "0em", "fontWeight": "400" }],
+                            "headline-lg": ["41px", { "lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                            "display-lg": ["61px", { "lineHeight": "1.1", "letterSpacing": "-0.04em", "fontWeight": "700" }],
+                            "headline-md": ["27px", { "lineHeight": "1.3", "letterSpacing": "-0.01em", "fontWeight": "500" }]
+                        }
                     }
                 }
-            }
-        };
+            };
+        } catch (_e) {}
     </script>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.02) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        .bg-grid {
+            background-size: 24px 24px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #2B2B2B;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            position: relative;
+        }
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0) 100%);
+            z-index: 10;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f6f5f5 0%, #d9d9d9 100%);
+            color: #131313;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+            transform: scale(1.02);
+        }
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #2B2B2B;
+            color: #f6f5f5;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: #f6f5f5;
+        }
+    </style>
 </head>
-<body class="min-h-screen flex flex-col font-body-md text-body-md bg-background text-on-background antialiased">
-    <header class="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl border-b border-outline-variant/10 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20">
-        <a href="index.html" class="flex items-center gap-4 hover:opacity-90 transition-opacity">
-            <img alt="HealthVerse AI Logo" class="h-10 w-10 object-contain rounded-lg" src="logo.svg">
-            <span class="font-display-lg-mobile text-display-lg-mobile font-black text-primary-fixed hidden md:block">HealthVerse AI</span>
-        </a>
-        <div class="flex items-center">
-            <a class="text-on-surface-variant hover:text-primary-fixed transition-colors" href="#">Support</a>
-        </div>
-    </header>
+<body class="min-h-screen font-body-md bg-grid flex items-center justify-center p-margin-mobile md:p-margin-desktop overflow-x-hidden relative">
+    <!-- Atmospheric Glow -->
+    <div class="fixed top-0 left-1/2 -translate-x-1/2 w-[680px] h-[680px] bg-primary/5 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
-    <main class="flex-grow flex items-center justify-center pt-24 pb-12 px-margin-mobile">
-        <div class="w-full max-w-[1000px] grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <!-- Left Side / Branding & Motivation -->
-            <div class="hidden md:flex flex-col justify-center pr-12">
-                <h1 class="font-display-lg text-display-lg text-primary mb-6">Initialize Your <br><span class="text-primary-fixed">Elite Potential.</span></h1>
-                <p class="font-body-lg text-body-lg text-on-surface-variant mb-8">Join HealthVerse AI. Precision coaching engineered by medical algorithms and fueled by your ambition. Let's calibrate your baseline.</p>
-                <div class="glass-panel p-6 rounded-xl border-t border-l border-primary-fixed/20 relative overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-br from-primary-fixed/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="flex items-start gap-4">
-                        <span class="material-symbols-outlined text-secondary-fixed text-[32px]">biotech</span>
-                        <div>
-                            <h3 class="font-headline-md text-headline-md text-primary mb-2">AI-Driven Biometrics</h3>
-                            <p class="text-on-surface-variant">Real-time analysis of your performance metrics to dynamically adjust your training vectors.</p>
-                        </div>
+    <main class="w-full max-w-container-max mx-auto grid grid-cols-1 lg:grid-cols-2 gap-gutter items-center z-10 relative">
+        <!-- Left: Value Proposition (Hidden on mobile) -->
+        <div class="hidden lg:flex flex-col justify-center h-full pr-margin-desktop">
+            <h1 class="font-display-lg text-display-lg text-primary mb-stack-md leading-tight">
+                Engineering <br>
+                <span class="text-surface-variant">Elite Performance.</span>
+            </h1>
+            <p class="font-body-lg text-body-lg text-on-surface-variant mb-stack-lg max-w-sm">
+                Join FitMind AI. Experience the synthesis of precision algorithms and uncompromising fitness science. Your kinetic evolution begins here.
+            </p>
+            <div class="space-y-stack-md">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary" style="font-size: 20px; font-variation-settings: 'FILL' 0;">psychology</span>
+                    <div>
+                        <h3 class="font-label-md text-label-md text-primary mb-1">Adaptive Intelligence</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant">Workouts that evolve in real-time with your biometric feedback.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary" style="font-size: 20px; font-variation-settings: 'FILL' 0;">query_stats</span>
+                    <div>
+                        <h3 class="font-label-md text-label-md text-primary mb-1">Precision Analytics</h3>
+                        <p class="font-body-md text-body-md text-on-surface-variant">Surgical-grade metrics to monitor and maximize every session.</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Side / Signup Form -->
-            <div class="glass-panel p-8 md:p-10 rounded-2xl w-full max-w-[480px] mx-auto shadow-2xl relative">
-                <!-- Subtle glow behind form -->
-                <div class="absolute -inset-1 bg-primary-fixed/20 rounded-2xl blur-xl opacity-20 -z-10"></div>
-                <div class="text-center mb-8">
-                    <h2 class="font-headline-md text-headline-md text-primary mb-2 md:hidden">Create Account</h2>
-                    <p class="text-on-surface-variant font-label-caps text-label-caps tracking-widest uppercase">System Initialization</p>
+        <!-- Right: Sign Up Form -->
+        <div class="w-full max-w-[408px] mx-auto lg:mx-0 lg:ml-auto">
+            <div class="glass-card rounded-[1.7rem] p-6 md:p-10">
+                <!-- Logo -->
+                <a href="index.html" class="flex justify-center mb-stack-md">
+                    <img src="assets/logo.svg" alt="FitMind AI Logo" class="w-16 h-16 rounded-full border border-outline-variant/30 shadow-2xl">
+                </a>
+
+                <div class="text-center mb-stack-md">
+                    <h2 class="font-headline-md text-headline-md text-primary mb-1.5">Create Account</h2>
+                    <p class="font-body-md text-body-md text-on-surface-variant">Initialize your profile.</p>
                 </div>
-                <form class="space-y-6" id="signup-form">
-                    <!-- Standard Fields -->
-                    <div class="space-y-4">
-                        <div>
-                            <label class="sr-only" for="fullName">Full Name</label>
-                            <div class="relative">
-                                <span class="material-symbols-outlined absolute left-0 top-3 text-on-surface-variant">person</span>
-                                <input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 pl-10 pr-4 text-primary placeholder:text-on-surface-variant focus:ring-0 input-glow transition-colors" id="fullName" placeholder="Full Name" type="text" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="sr-only" for="email">Email Address</label>
-                            <div class="relative">
-                                <span class="material-symbols-outlined absolute left-0 top-3 text-on-surface-variant">mail</span>
-                                <input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 pl-10 pr-4 text-primary placeholder:text-on-surface-variant focus:ring-0 input-glow transition-colors" id="email" placeholder="Email Address" type="email" required>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="sr-only" for="password">Password</label>
-                            <div class="relative">
-                                <span class="material-symbols-outlined absolute left-0 top-3 text-on-surface-variant">lock</span>
-                                <input class="w-full bg-transparent border-0 border-b border-outline-variant py-3 pl-10 pr-4 text-primary placeholder:text-on-surface-variant focus:ring-0 input-glow transition-colors" id="password" placeholder="Password" type="password" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-full h-px bg-outline-variant/30 my-6"></div>
 
-                    <!-- Actions -->
-                    <div class="pt-4 space-y-4">
-                        <button class="w-full bg-primary-fixed text-on-primary-fixed font-bold py-4 rounded-lg glow-effect hover:scale-[0.98] transition-transform flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(14,165,233,0.3)] hover:shadow-[0_0_25px_rgba(14,165,233,0.5)]" type="submit">
-                            <span class="">Create Account</span>
-                            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
-                        </button>
-                        <button class="w-full bg-transparent border border-outline-variant text-primary py-3 rounded-lg hover:bg-surface-container-highest transition-colors flex justify-center items-center gap-3" type="button" id="google-btn">
-                            <svg class="w-5 h-5" viewBox="0 0 24 24">
-                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="currentColor"></path>
-                            </svg>
-                            <span class="">Sign up with Google</span>
-                        </button>
+                <form class="space-y-stack-sm" onsubmit="event.preventDefault(); window.location.href='index.html';">
+                    <!-- Name Field -->
+                    <div>
+                        <label for="name" class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 uppercase tracking-widest">Full Name</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 17px;">person</span>
+                            </div>
+                            <input type="text" id="name" name="name" class="w-full rounded-full py-2.5 pl-9 pr-3 bg-surface-container-lowest border-white/10 text-on-surface placeholder:text-on-surface-variant/30 focus:border-white/30 focus:ring-0 font-body-md text-body-md" placeholder="John Doe" required="">
+                        </div>
                     </div>
-                    <p class="text-center text-on-surface-variant mt-6 text-sm">
-                        System initialized already? <a class="text-secondary-fixed hover:text-secondary-fixed-dim transition-colors ml-1 font-bold" href="login.html">Log in here</a>
-                    </p>
+
+                    <!-- Email Field -->
+                    <div>
+                        <label for="email" class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 uppercase tracking-widest">Email Address</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 17px;">mail</span>
+                            </div>
+                            <input type="email" id="email" name="email" class="w-full rounded-full py-2.5 pl-9 pr-3 bg-surface-container-lowest border-white/10 text-on-surface placeholder:text-on-surface-variant/30 focus:border-white/30 focus:ring-0 font-body-md text-body-md" placeholder="john@example.com" required="">
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block font-label-sm text-label-sm text-on-surface-variant mb-1.5 uppercase tracking-widest">Password</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 17px;">lock</span>
+                            </div>
+                            <input type="password" id="password" name="password" class="w-full rounded-full py-2.5 pl-9 pr-3 bg-surface-container-lowest border-white/10 text-on-surface placeholder:text-on-surface-variant/30 focus:border-white/30 focus:ring-0 font-body-md text-body-md" placeholder="••••••••" required="">
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="flex items-start gap-2.5 pt-1.5">
+                        <div class="flex items-center h-5">
+                            <input id="terms" name="terms" type="checkbox" class="h-4 w-4 rounded border-white/10 bg-surface-container-lowest text-primary focus:ring-primary focus:ring-offset-background" required="">
+                        </div>
+                        <div class="text-sm">
+                            <label for="terms" class="font-body-md text-body-md text-on-surface-variant text-sm">
+                                I agree to the <a href="#" class="text-primary hover:underline transition-all">Terms of Service</a> and <a href="#" class="text-primary hover:underline transition-all">Privacy Policy</a>.
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn-primary w-full rounded-full py-3.5 mt-stack-sm font-label-md text-label-md font-bold flex justify-center items-center gap-1.5">
+                        INITIALIZE ACCOUNT 
+                        <span class="material-symbols-outlined" style="font-size: 15px;">arrow_forward</span>
+                    </button>
                 </form>
+
+                <!-- Log In Link -->
+                <div class="mt-stack-sm text-center">
+                    <p class="font-body-md text-body-md text-on-surface-variant">
+                        Already have an account? <a class="text-primary font-bold hover:text-white transition-colors border-b border-primary/30 hover:border-primary pb-0.5 ml-1" href="login.html">Login</a>
+                    </p>
+                </div>
             </div>
         </div>
     </main>
-
-    <footer class="w-full py-unit-stack-lg bg-surface-container-lowest border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-margin-desktop gap-unit-stack-md mt-auto">
-        <div class="font-headline-md text-headline-md text-primary-fixed">HealthVerse AI</div>
-        <div class="text-primary-fixed-dim font-label-caps text-label-caps text-center">© 2024 HealthVerse AI. Elite Performance Analytics.</div>
-        <div class="flex gap-4">
-            <a class="font-label-caps text-label-caps text-on-tertiary-fixed-variant hover:text-secondary-fixed-dim transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</a>
-            <a class="font-label-caps text-label-caps text-on-tertiary-fixed-variant hover:text-secondary-fixed-dim transition-colors opacity-80 hover:opacity-100" href="#">Terms of Service</a>
-            <a class="font-label-caps text-label-caps text-on-tertiary-fixed-variant hover:text-secondary-fixed-dim transition-colors opacity-80 hover:opacity-100" href="#">Security</a>
-        </div>
-    </footer>
-
-    <script src="app.js"></script>
 </body>
 </html>
