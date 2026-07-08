@@ -193,7 +193,7 @@
                         <div class="space-y-2">
                             <label class="block font-label-md text-label-md text-on-surface uppercase">Biological Sex</label>
                             <div class="relative">
-                                <select id="gender" class="w-full bg-surface-container-low border border-glass-border rounded-full py-3 px-4 text-primary focus:outline-none focus:border-outline focus:ring-1 focus:ring-outline transition-colors appearance-none">
+                                <select id="gender" class="w-full bg-surface-container-low border border-glass-border rounded-full py-3 px-4 text-primary focus:outline-none focus:border-outline focus:ring-1 focus:ring-outline transition-colors appearance-none" style="background-image: none;">
                                     <option disabled="" selected="" value="">Select</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
@@ -211,10 +211,10 @@
                                 <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant">
                                     <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">height</span>
                                 </span>
-                                <input id="height" class="w-full bg-surface-container-low border border-glass-border rounded-l-full py-3 pl-12 pr-4 text-primary focus:outline-none focus:border-outline focus:ring-1 focus:ring-outline transition-colors border-r-0" placeholder="cm" type="number"/>
-                                <div class="bg-surface-container border border-glass-border border-l-0 rounded-r-full py-3 px-4 text-on-surface-variant font-label-md text-label-md">
+                                <input id="height" class="w-full bg-surface-container-low border border-glass-border rounded-full py-3 pl-12 pr-12 text-primary focus:outline-none focus:border-outline focus:ring-1 focus:ring-outline transition-colors" placeholder="cm" type="number"/>
+                                <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-on-surface-variant font-label-md text-label-md">
                                     cm
-                                </div>
+                                </span>
                             </div>
                         </div>
                         <!-- Weight -->
@@ -224,10 +224,10 @@
                                 <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant">
                                     <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 0;">weight</span>
                                 </span>
-                                <input id="weight" class="w-full bg-surface-container-low border border-glass-border rounded-l-full py-3 pl-12 pr-4 text-primary focus:outline-none focus:border-outline focus:ring-1 focus:ring-outline transition-colors border-r-0" placeholder="kg" type="number"/>
-                                <div class="bg-surface-container border border-glass-border border-l-0 rounded-r-full py-3 px-4 text-on-surface-variant font-label-md text-label-md">
+                                <input id="weight" class="w-full bg-surface-container-low border border-glass-border rounded-full py-3 pl-12 pr-12 text-primary focus:outline-none focus:border-outline focus:ring-1 focus:ring-outline transition-colors" placeholder="kg" type="number"/>
+                                <span class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-on-surface-variant font-label-md text-label-md">
                                     kg
-                                </div>
+                                </span>
                             </div>
                         </div>
                     </div>
