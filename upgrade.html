@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>FitForge | Upgrade to Pro</title>
+    <meta name="description" content="Unlock the elite performance coaching suite with FitForge Pro. 15-day free trial, flexible subscription options in INR.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-obsidian": "#050505",
+                        "surface": "#131313",
+                        "surface-container": "#201f1f",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container-highest": "#353534",
+                        "surface-variant": "#353534",
+                        "surface-bright": "#3a3939",
+                        "surface-dim": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary": "#ffffff",
+                        "on-primary": "#2f3131",
+                        "secondary": "#c4c7c8",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-background": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "outline-variant": "#444748",
+                        "glass-border": "#2B2B2B",
+                        "accent-silver": "#c6c6c6",
+                        "error": "#ffb4ab",
+                        "status-error": "#ffb4ab"
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    spacing: { "gutter": "32px", "stack-sm": "16px", "stack-md": "32px", "stack-lg": "64px", "stack-xl": "120px", "margin-desktop": "80px", "margin-mobile": "24px", "container-max": "1440px" },
+                    fontFamily: { "body-md": ["Inter"], "headline-lg": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Inter"], "headline-md": ["Space Grotesk"], "label-sm": ["Inter"], "display-lg": ["Space Grotesk"] },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-md": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "500" }],
+                        "label-md": ["14px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "display-lg": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body { background-color: #050505; color: #e5e2e1; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid #2B2B2B;
+            position: relative;
+            overflow: hidden;
+        }
+        .glass-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+        }
+        .radial-glow { background: radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #2B2B2B; border-radius: 3px; }
+        .gradient-text {
+            background: linear-gradient(180deg, #FFFFFF 0%, #8e9192 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .plan-card-glow {
+            box-shadow: 0 0 40px -10px rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .plan-card-glow:hover {
+            box-shadow: 0 0 40px -5px rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.25);
+        }
+        .silver-glow {
+            box-shadow: 0 0 50px -10px rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        .silver-glow:hover {
+            box-shadow: 0 0 50px -5px rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
+
+<!-- Sidebar Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50">
+    <div class="p-8">
+        <a href="index.html" class="flex items-center gap-2 mb-2">
+            <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
+        </a>
+        <h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">FitForge</h1>
+        <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine</p>
+    </div>
+    <nav class="flex-1 px-4 space-y-2 mt-4">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="dashboard.html">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="workout.html">
+                <span class="material-symbols-outlined">fitness_center</span>
+                <span class="font-body-md text-body-md tracking-tight">Workout</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="nutrition.html">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span class="font-body-md text-body-md tracking-tight">Nutrition</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="scanner.html">
+                <span class="material-symbols-outlined">qr_code_scanner</span>
+                <span class="font-body-md text-body-md tracking-tight">Scanner</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="progress.html">
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="profile.html">
+                <span class="material-symbols-outlined">person</span>
+                <span class="font-body-md text-body-md tracking-tight">Profile</span>
+            </a>
+        </nav>
+    <div class="p-4 border-t border-glass-border mb-4">
+        <button id="sidebar-upgrade-btn" class="w-full py-3 bg-primary text-on-primary font-label-md text-label-md rounded-full font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            Upgrade to Pro
+        </button>
+    </div>
+</aside>
+
+<!-- Main Content Shell -->
+<main class="ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface">
+    <!-- Top Navbar -->
+    <header class="h-20 flex justify-between items-center px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
+        <div>
+            <h2 class="font-headline-md text-headline-md text-primary font-bold">Elite Performance Suite</h2>
+        </div>
+        <div class="flex items-center gap-stack-md">
+            <div class="flex items-center gap-4">
+                <button class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                    <span class="material-symbols-outlined">notifications</span>
+                </button>
+                <a href="profile.html" class="flex items-center justify-center h-9 w-9 rounded-full border border-primary/20 bg-white/5 text-primary text-sm font-bold active:scale-95 transition-transform" id="avatar-initials-btn">
+                    <span id="avatar-initials">U</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex-1 px-12 py-8 max-w-[1200px] w-full mx-auto">
+        
+        <!-- Subscription Status Header Card -->
+        <div id="subscription-status-card" class="glass-card rounded-[2rem] p-8 mb-10 hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                    <div class="flex items-center gap-2.5 mb-2">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <h3 class="font-headline-md text-xl font-bold text-primary tracking-tight">Active Plan: <span id="current-plan-name" class="text-white font-extrabold uppercase">Trial</span></h3>
+                    </div>
+                    <p class="text-sm text-secondary opacity-80" id="plan-details-text">Your 15-day free trial will end on July 29, 2026. You will be billed ₹2,499 per month thereafter.</p>
+                </div>
+                <div class="flex items-center gap-4 w-full md:w-auto">
+                    <button id="cancel-subscription-btn" class="w-full md:w-auto px-6 py-3 border border-red-500/30 hover:border-red-500 text-red-400 hover:text-red-300 font-bold rounded-full text-sm transition-all duration-300 active:scale-95 bg-red-500/5">
+                        Cancel Subscription
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upgrade Options Panel (Pricing) -->
+        <div id="pricing-panel">
+            <div class="text-center mb-12">
+                <span class="text-xs uppercase tracking-[0.25em] text-surface-tint font-bold bg-white/5 px-4 py-1.5 rounded-full border border-white/10">Elevate to Elite Status</span>
+                <h1 class="font-display-lg text-4xl md:text-5xl font-extrabold mt-6 mb-4 tracking-tighter">Choose Your Velocity</h1>
+                <p class="font-body-lg text-secondary opacity-70 max-w-xl mx-auto text-base">
+                    All plans begin with an unrestricted 15-day free trial. Transcend your biological boundaries with advanced AI performance models.
+                </p>
+            </div>
+
+            <!-- Pricing Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                
+                <!-- Monthly Plan -->
+                <div class="glass-card plan-card-glow rounded-[2rem] p-8 flex flex-col justify-between h-[450px]">
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-secondary opacity-40 font-bold mb-1">Monthly Matrix</p>
+                        <h3 class="text-2xl font-bold text-primary mb-4 font-headline-md">1 Month Pro</h3>
+                        <div class="flex items-baseline gap-1.5 mb-6">
+                            <span class="text-4xl font-extrabold text-primary tracking-tight">₹2,499</span>
+                            <span class="text-xs text-secondary opacity-40 uppercase font-semibold">/ Month</span>
+                        </div>
+                        <ul class="space-y-3.5 text-sm text-secondary opacity-80 mb-6">
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Infinite Generative Workouts</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>AI Food Vision & Nutrition Analysis</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Biometric Telemetry Integrations</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="openCheckout('monthly', 2499)" class="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-primary font-bold rounded-full text-sm transition-all duration-300 active:scale-95">
+                        Start 15-Day Trial
+                    </button>
+                </div>
+
+                <!-- 12 Months Plan (Best Value - Highlighted) -->
+                <div class="glass-card plan-card-glow silver-glow rounded-[2rem] p-8 flex flex-col justify-between h-[480px] -translate-y-4 border-white/30 relative">
+                    <div class="absolute top-4 right-4 bg-white text-black text-[9px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider shadow-lg">
+                        Best Value (Save 40%)
+                    </div>
+                    <div>
+                        <p class="text-xs uppercase tracking-widest text-surface-tint font-bold mb-1">Annual Protocol</p>
+                        <h3 class="text-2xl font-bold text-primary mb-4 font-headline-md">12 Months Pro</h3>
+                        <div class="flex flex-col gap-0.5 mb-6">
+                            <div class="flex items-baseline gap-1.5">
+                                <span class="text-5xl font-extrabold text-primary tracking-tight">₹17,999</span>
+                                <span class="text-xs text-secondary opacity-40 uppercase font-semibold">/ Year</span>
+                            </div>
+                            <span class="text-xs text-surface-tint font-medium">Equivalent to only ₹1,499 / month</span>
+                        </div>
+                        <ul class="space-y-3.5 text-sm text-secondary opacity-90 mb-6">
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>All Elite Platform Features Included</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Advanced Predictive Body Comp models</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Priority GPU processing queues</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Exclusive VIP biohacking protocols</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="openCheckout('12month', 17999)" class="w-full py-4 bg-white hover:bg-white/95 text-black font-extrabold rounded-full text-sm transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                        Start 15-Day Trial
+                    </button>
+                </div>
+
+                <!-- 6 Months Plan -->
+                <div class="glass-card plan-card-glow rounded-[2rem] p-8 flex flex-col justify-between h-[450px]">
+                    <div class="relative">
+                        <div class="absolute top-0 right-0 bg-white/5 border border-white/10 text-primary text-[9px] font-bold uppercase px-3 py-1 rounded-full tracking-wider">
+                            Save 20%
+                        </div>
+                        <p class="text-xs uppercase tracking-widest text-secondary opacity-40 font-bold mb-1">Semi-Annual Protocol</p>
+                        <h3 class="text-2xl font-bold text-primary mb-4 font-headline-md">6 Months Pro</h3>
+                        <div class="flex flex-col gap-0.5 mb-6">
+                            <div class="flex items-baseline gap-1.5">
+                                <span class="text-4xl font-extrabold text-primary tracking-tight">₹11,999</span>
+                                <span class="text-xs text-secondary opacity-40 uppercase font-semibold">/ 6 Months</span>
+                            </div>
+                            <span class="text-xs text-secondary opacity-60">Equivalent to ₹1,999 / month</span>
+                        </div>
+                        <ul class="space-y-3.5 text-sm text-secondary opacity-80 mb-6">
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Infinite Generative Workouts</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>AI Food Vision & Nutrition Analysis</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs text-primary bg-white/10 p-0.5 rounded-full">check</span>
+                                <span>Biometric Telemetry Integrations</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <button onclick="openCheckout('6month', 11999)" class="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-primary font-bold rounded-full text-sm transition-all duration-300 active:scale-95">
+                        Start 15-Day Trial
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- FAQ/Security info -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 pt-12 border-t border-glass-border">
+                <div class="flex gap-4">
+                    <span class="material-symbols-outlined text-surface-tint text-3xl">lock_open</span>
+                    <div>
+                        <h4 class="font-bold text-primary mb-1 text-sm">Cancel Anytime</h4>
+                        <p class="text-xs text-secondary opacity-60">No long-term commitments. Cancel inside your trial or active periods with one-click on this page.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <span class="material-symbols-outlined text-surface-tint text-3xl">verified_user</span>
+                    <div>
+                        <h4 class="font-bold text-primary mb-1 text-sm">Secured Payments</h4>
+                        <p class="text-xs text-secondary opacity-60">Full PCI-DSS compliance. Fully encrypted transactions processed securely via our banking partner.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <span class="material-symbols-outlined text-surface-tint text-3xl">currency_rupee</span>
+                    <div>
+                        <h4 class="font-bold text-primary mb-1 text-sm">INR Local Pricing</h4>
+                        <p class="text-xs text-secondary opacity-60">Localized payment options supporting domestic credit/debit cards, UPI, and local wallets.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Mock Checkout Modal Overlay -->
+<div id="checkout-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md hidden p-4">
+    <div class="glass-card rounded-[2rem] w-full max-w-lg p-8 md:p-10 relative overflow-hidden">
+        <!-- Close Button -->
+        <button onclick="closeCheckout()" class="absolute top-6 right-6 text-secondary opacity-60 hover:opacity-100 transition-opacity">
+            <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+
+        <div id="checkout-form-view">
+            <!-- Moda            <div class="mb-8">
+                <span class="text-[10px] uppercase tracking-[0.2em] text-surface-tint font-bold bg-white/5 px-3 py-1 rounded-full border border-white/10">FitForge Secure Checkout</span>
+                <h3 class="font-headline-md text-2xl font-bold text-primary mt-4">Initiate Pro Protocol</h3>
+                <p class="text-xs text-secondary opacity-60 mt-1">Start your 15-day trial today. You will not be billed until the trial ends.</p>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="p-4 bg-white/5 rounded-2xl border border-glass-border flex justify-between items-center mb-6">
+                <div>
+                    <p class="text-xs text-secondary opacity-60">Selected Protocol</p>
+                    <p id="checkout-plan-label" class="text-sm font-bold text-primary mt-0.5">12 Months Pro Plan</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-secondary opacity-60">First 15 Days</p>
+                    <p class="text-sm font-bold text-primary mt-0.5">₹0.00 <span class="text-[10px] text-secondary/60 line-through ml-1" id="checkout-standard-price">₹17,999</span></p>
+                </div>
+            </div>
+
+            <!-- Mock Card Form -->
+            <form id="payment-form" onsubmit="processPayment(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-secondary opacity-60 font-semibold mb-1.5">Cardholder Name</label>
+                    <input type="text" required id="card-name" placeholder="John Doe" class="w-full bg-white/5 border border-glass-border focus:border-white/60 rounded-xl px-4 py-3 text-sm text-primary placeholder-secondary/30 focus:ring-0 focus:outline-none transition-colors">
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase tracking-wider text-secondary opacity-60 font-semibold mb-1.5">Card Number</label>
+                    <div class="relative">
+                        <input type="text" required id="card-number" maxlength="19" placeholder="4111 2222 3333 4444" class="w-full bg-white/5 border border-glass-border focus:border-white/60 rounded-xl px-4 py-3 text-sm text-primary placeholder-secondary/30 focus:ring-0 focus:outline-none transition-colors pr-10">
+                        <span id="card-brand-icon" class="material-symbols-outlined absolute right-3.5 top-3.5 text-secondary opacity-40 text-lg">credit_card</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-secondary opacity-60 font-semibold mb-1.5">Expiration Date</label>
+                        <input type="text" required id="card-expiry" maxlength="5" placeholder="MM/YY" class="w-full bg-white/5 border border-glass-border focus:border-white/60 rounded-xl px-4 py-3 text-sm text-primary placeholder-secondary/30 focus:ring-0 focus:outline-none transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase tracking-wider text-secondary opacity-60 font-semibold mb-1.5">CVV</label>
+                        <input type="password" required id="card-cvv" maxlength="3" placeholder="•••" class="w-full bg-white/5 border border-glass-border focus:border-white/60 rounded-xl px-4 py-3 text-sm text-primary placeholder-secondary/30 focus:ring-0 focus:outline-none transition-colors">
+                    </div>
+                </div>
+
+                <div id="payment-error" class="text-red-400 text-xs mt-2 hidden flex items-center gap-1">
+                    <span class="material-symbols-outlined text-base">error</span>
+                    <span id="payment-error-text">Failed to validate transaction.</span>
+                </div>
+
+                <button type="submit" class="w-full py-4 bg-white text-black font-extrabold rounded-full text-sm mt-6 transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                    Authorize 15-Day Trial
+                </button>             </button>
+            </form>
+        </div>
+
+        <!-- Processing / Loading State -->
+        <div id="checkout-loading-view" class="hidden flex-col items-center justify-center py-16 text-center">
+            <div class="h-12 w-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-6"></div>
+            <h4 class="font-headline-md text-lg font-bold text-primary">Verifying Biometric Vault</h4>
+            <p class="text-xs text-secondary opacity-60 mt-1 max-w-[240px]">Syncing with global payments network and provisioning server cores...</p>
+        </div>
+
+        <!-- Success View -->
+        <div id="checkout-success-view" class="hidden flex-col items-center justify-center py-10 text-center">
+            <div class="h-16 w-16 bg-white/5 border border-white/20 text-primary rounded-full flex items-center justify-center mb-6 shadow-[0_0_25px_rgba(255,255,255,0.1)] animate-bounce">
+                <span class="material-symbols-outlined text-4xl">workspace_premium</span>
+            </div>
+            <h4 class="font-headline-md text-2xl font-bold text-primary">Kinetic Evolution Initiated</h4>
+            <p class="text-sm text-secondary opacity-70 mt-3 max-w-[320px]">
+                Your FitForge Pro protocol is now active. Complete access to generative neural training systems is authorized.
+            </p>
+            <button onclick="reloadSubscriptionState()" class="px-8 py-3 bg-primary text-on-primary font-bold rounded-full text-sm mt-8 transition-all duration-300 active:scale-95">
+                Enter Dashboard
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Helper script integration -->
+<script src="subscription-check.js"></script>
+
+<script>
+    const userEmail = localStorage.getItem('userEmail');
+    const userName = localStorage.getItem('userName');
+
+    // Force authentication check
+    if (!userEmail) {
+        window.location.href = 'login.html';
+    }
+
+    // Set Initials on header
+    if (userName) {
+        const parts = userName.split(' ');
+        const initials = parts.map(p => p[0]).join('').substring(0, 2).toUpperCase();
+        document.getElementById('avatar-initials').textContent = initials;
+    }
+
+    // State Variables
+    let selectedPlan = '';
+    let selectedPlanPrice = 0;
+
+    // Card Input Formats
+    const cardNumberInput = document.getElementById('card-number');
+    cardNumberInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formatted = '';
+        for (let i = 0; i < value.length; i++) {
+            if (i > 0 && i % 4 === 0) formatted += ' ';
+            formatted += value[i];
+        }
+        e.target.value = formatted;
+
+        // Auto logo detection
+        const brandIcon = document.getElementById('card-brand-icon');
+        if (value.startsWith('4')) {
+            brandIcon.innerText = 'credit_card';
+            brandIcon.classList.add('text-primary');
+        } else if (value.startsWith('5')) {
+            brandIcon.innerText = 'credit_card';
+            brandIcon.classList.add('text-primary');
+        } else {
+            brandIcon.innerText = 'credit_card';
+            brandIcon.classList.remove('text-primary');
+        }
+    });
+
+    const cardExpiryInput = document.getElementById('card-expiry');
+    cardExpiryInput.addEventListener('input', (e) => {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        if (value.length > 2) {
+            e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        } else {
+            e.target.value = value;
+        }
+    });
+
+    const cardCvvInput = document.getElementById('card-cvv');
+    cardCvvInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+
+    // Checkout Handling
+    function openCheckout(plan, price) {
+        selectedPlan = plan;
+        selectedPlanPrice = price;
+
+        const labels = {
+            'monthly': 'Monthly Protocol',
+            '6month': '6 Months Semi-Annual Plan',
+            '12month': '12 Months Annual Plan'
+        };
+
+        document.getElementById('checkout-plan-label').innerText = labels[plan];
+        document.getElementById('checkout-standard-price').innerText = '₹' + price.toLocaleString();
+        
+        // Reset state & show modal
+        document.getElementById('checkout-form-view').classList.remove('hidden');
+        document.getElementById('checkout-loading-view').classList.add('hidden');
+        document.getElementById('checkout-success-view').classList.add('hidden');
+        document.getElementById('payment-error').classList.add('hidden');
+        document.getElementById('checkout-modal').classList.remove('hidden');
+    }
+
+    function closeCheckout() {
+        document.getElementById('checkout-modal').classList.add('hidden');
+    }
+
+    // Process Payment
+    async function processPayment(e) {
+        e.preventDefault();
+        
+        // Hide form, show loader
+        document.getElementById('checkout-form-view').classList.add('hidden');
+        document.getElementById('checkout-loading-view').classList.remove('hidden');
+
+        try {
+            const response = await fetch('/api/user/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: userEmail,
+                    plan: selectedPlan
+                })
+            });
+
+            const data = await response.json();
+
+            // Simulate server lag for premium effect
+            setTimeout(() => {
+                if (response.ok) {
+                    // Show success
+                    document.getElementById('checkout-loading-view').classList.add('hidden');
+                    document.getElementById('checkout-success-view').classList.remove('hidden');
+                } else {
+                    // Show error back on form
+                    document.getElementById('checkout-loading-view').classList.add('hidden');
+                    document.getElementById('checkout-form-view').classList.remove('hidden');
+                    const errorDiv = document.getElementById('payment-error');
+                    document.getElementById('payment-error-text').innerText = data.error || 'Verification failed.';
+                    errorDiv.classList.remove('hidden');
+                }
+            }, 1800);
+
+        } catch (err) {
+            console.error('Subscription purchase error:', err);
+            document.getElementById('checkout-loading-view').classList.add('hidden');
+            document.getElementById('checkout-form-view').classList.remove('hidden');
+            const errorDiv = document.getElementById('payment-error');
+            document.getElementById('payment-error-text').innerText = 'Connection error. Please try again.';
+            errorDiv.classList.remove('hidden');
+        }
+    }
+
+    // Load current plan details
+    async function loadSubscriptionState() {
+        try {
+            const response = await fetch(`/api/user/subscription?email=${encodeURIComponent(userEmail)}`);
+            if (response.ok) {
+                const data = await response.json();
+                const sub = data.subscription;
+                renderSubscriptionDashboard(sub);
+            }
+        } catch (e) {
+            console.error("Failed to load subscription dashboard details:", e);
+        }
+    }
+
+    function renderSubscriptionDashboard(sub) {
+        const statusCard = document.getElementById('subscription-status-card');
+        const pricingPanel = document.getElementById('pricing-panel');
+        const planNameSpan = document.getElementById('current-plan-name');
+        const planDetailsText = document.getElementById('plan-details-text');
+        
+        if (sub && (sub.status === 'active' || sub.status === 'canceled')) {
+            // User is subscribed
+            statusCard.classList.remove('hidden');
+            
+            const labels = {
+                'trial': '15-Day Free Trial',
+                'monthly': 'Monthly Premium Plan',
+                '6month': '6-Month Semi-Annual Premium',
+                '12month': '12-Month Annual Premium'
+            };
+            
+            planNameSpan.innerText = labels[sub.plan] || sub.plan;
+            
+            // Format end/renewal dates
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            
+            if (sub.plan === 'trial') {
+                const endDate = new Date(sub.trialEnd).toLocaleDateString([], dateOptions);
+                planDetailsText.innerText = `Your 15-day free trial will end on ${endDate}. You will be billed for your selected subscription thereafter.`;
+            } else {
+                const endDate = new Date(sub.endDate).toLocaleDateString([], dateOptions);
+                if (sub.status === 'canceled') {
+                    planDetailsText.innerText = `Your subscription has been canceled. Access will remain active until it expires on ${endDate}.`;
+                    document.getElementById('cancel-subscription-btn').classList.add('hidden'); // already canceled
+                } else {
+                    planDetailsText.innerText = `Your subscription is active. It will auto-renew and you will be billed on ${endDate}.`;
+                    document.getElementById('cancel-subscription-btn').classList.remove('hidden');
+                }
+            }
+            
+            // If they are on a trial, they can upgrade or choose a paid tier if they wish, or we can hide the pricing panel.
+            // Let's hide the pricing panel if they have a fully paid subscription, but show it if they want to upgrade.
+            if (sub.plan === 'trial') {
+                pricingPanel.classList.remove('hidden'); // allow them to choose a paid plan to commit to
+            } else {
+                pricingPanel.classList.add('hidden'); // fully subscribed, hide pricing
+            }
+        } else {
+            // Basic member
+            statusCard.classList.add('hidden');
+            pricingPanel.classList.remove('hidden');
+        }
+    }
+
+    function reloadSubscriptionState() {
+        closeCheckout();
+        loadSubscriptionState();
+        // Trigger sidebar script check
+        if (window.checkSubscription) {
+            window.checkSubscription();
+        } else {
+            location.reload();
+        }
+    }
+
+    // Cancel Subscription Action
+    document.getElementById('cancel-subscription-btn').addEventListener('click', async () => {
+        if (!confirm('Are you sure you want to cancel your FitForge Pro subscription? You will lose access to premium AI models.')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/user/cancel-subscription', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: userEmail })
+            });
+
+            if (response.ok) {
+                alert('Your subscription has been canceled successfully.');
+                loadSubscriptionState();
+                if (window.location.reload) {
+                    window.location.reload();
+                }
+            } else {
+                const data = await response.json();
+                alert(data.error || 'Failed to cancel subscription.');
+            }
+        } catch (e) {
+            console.error('Cancel subscription request error:', e);
+            alert('Failed to connect to the server.');
+        }
+    });
+
+    // Run on load
+    loadSubscriptionState();
+</script>
+</body>
+</html>

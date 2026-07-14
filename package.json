@@ -1,7 +1,7 @@
 {
   "name": "healthverse-ai",
   "version": "1.0.0",
-  "description": "FitMind AI Luxury Suite with Backend Integration",
+  "description": "FitForge Luxury Suite with Backend Integration",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

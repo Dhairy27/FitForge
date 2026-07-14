@@ -31,7 +31,15 @@ const userSchema = new mongoose.Schema({
     activityLevel: { type: String },
     goals: [{ type: String }]
   },
-  workoutPlan: { type: Object, default: null }
+  workoutPlan: { type: Object, default: null },
+  subscription: {
+    plan: { type: String, enum: ['none', 'trial', 'monthly', '6month', '12month'], default: 'none' },
+    status: { type: String, enum: ['none', 'active', 'canceled', 'expired'], default: 'none' },
+    trialStart: { type: Date, default: null },
+    trialEnd: { type: Date, default: null },
+    startDate: { type: Date, default: null },
+    endDate: { type: Date, default: null }
+  }
 }, { timestamps: true });
 
 const User = mongoose.model('User', userSchema);
@@ -227,6 +235,155 @@ app.get('/api/user/profile', async (req, res) => {
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ error: 'Failed to retrieve user profile.' });
+  }
+});
+
+// 4b2. Subscription Routes
+
+// A. Get subscription status
+app.get('/api/user/subscription', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    let sub = user.subscription || { plan: 'none', status: 'none' };
+    let hasChanged = false;
+
+    // Check if subscription has expired
+    if (sub.status === 'active' || sub.status === 'canceled') {
+      const now = new Date();
+      if (sub.plan === 'trial') {
+        if (sub.trialEnd && now > new Date(sub.trialEnd)) {
+          sub.status = 'expired';
+          sub.plan = 'none';
+          hasChanged = true;
+        }
+      } else {
+        if (sub.endDate && now > new Date(sub.endDate)) {
+          if (sub.status === 'active') {
+            // Mock auto-renewal for paid subscriptions
+            const durationMs = new Date(sub.endDate) - new Date(sub.startDate);
+            sub.startDate = new Date();
+            sub.endDate = new Date(Date.now() + durationMs);
+            hasChanged = true;
+          } else {
+            // Cancelled subscription finished its term -> expired
+            sub.status = 'expired';
+            sub.plan = 'none';
+            hasChanged = true;
+          }
+        }
+      }
+    }
+
+    if (hasChanged) {
+      user.subscription = sub;
+      await user.save();
+    }
+
+    res.status(200).json({ subscription: sub });
+  } catch (error) {
+    console.error('Get subscription error:', error);
+    res.status(500).json({ error: 'Failed to retrieve subscription status.' });
+  }
+});
+
+// B. Subscribe/Start Trial
+app.post('/api/user/subscribe', async (req, res) => {
+  try {
+    const { email, plan } = req.body;
+    if (!email || !plan) {
+      return res.status(400).json({ error: 'Email and plan are required.' });
+    }
+
+    const validPlans = ['trial', 'monthly', '6month', '12month'];
+    if (!validPlans.includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan selection.' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    // Initialize subscription object if not present
+    if (!user.subscription) {
+      user.subscription = { plan: 'none', status: 'none', trialStart: null, trialEnd: null, startDate: null, endDate: null };
+    }
+
+    const now = new Date();
+
+    if (plan === 'trial') {
+      // Check if they already had a trial
+      if (user.subscription.trialStart) {
+        return res.status(400).json({ error: 'You have already exhausted your 15-day free trial.' });
+      }
+
+      user.subscription.plan = 'trial';
+      user.subscription.status = 'active';
+      user.subscription.trialStart = now;
+      user.subscription.trialEnd = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000); // 15 days
+    } else {
+      // Paid plan subscription (monthly, 6month, 12month)
+      let durationMs = 30 * 24 * 60 * 60 * 1000; // default 30 days
+      if (plan === '6month') {
+        durationMs = 6 * 30 * 24 * 60 * 60 * 1000;
+      } else if (plan === '12month') {
+        durationMs = 365 * 24 * 60 * 60 * 1000;
+      }
+
+      user.subscription.plan = plan;
+      user.subscription.status = 'active';
+      user.subscription.startDate = now;
+      user.subscription.endDate = new Date(now.getTime() + durationMs);
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Subscription successfully activated.', subscription: user.subscription });
+  } catch (error) {
+    console.error('Subscribe error:', error);
+    res.status(500).json({ error: 'Failed to update subscription.' });
+  }
+});
+
+// C. Cancel subscription
+app.post('/api/user/cancel-subscription', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (!user.subscription || user.subscription.status === 'none' || user.subscription.status === 'expired') {
+      return res.status(400).json({ error: 'No active subscription or trial found to cancel.' });
+    }
+
+    if (user.subscription.plan === 'trial') {
+      // Cancelling trial terminates it immediately
+      user.subscription.plan = 'none';
+      user.subscription.status = 'none';
+      user.subscription.trialEnd = new Date(); // end it now
+    } else {
+      // Paid subscription is set to canceled, but remains active until end date
+      user.subscription.status = 'canceled';
+    }
+
+    await user.save();
+    res.status(200).json({ message: 'Subscription canceled successfully.', subscription: user.subscription });
+  } catch (error) {
+    console.error('Cancel subscription error:', error);
+    res.status(500).json({ error: 'Failed to cancel subscription.' });
   }
 });
 
