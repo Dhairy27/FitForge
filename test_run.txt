@@ -1,0 +1,76 @@
+=== Staging FitForge Equipment Adaptations Verification ===
+
+=== Running Test: Location=home, Level=intermediate, Equipment=["bodyweight","dumbbells"] ===
+Plan Type: Hypertrophy & Neuromuscular Power Program
+Verifying Rest: 60s (Expected: 60s)
+  Day 1: Day 1: Upper Body Push Force - 3 exercises
+    1. Dumbbell Flat Bench Press (Sets: 4)
+    2. Standing Overhead Press (Sets: 4)
+    3. Dumbbell Lateral Raises (Sets: 4)
+  Day 2: Day 2: Posterior Chain Pull Density - 3 exercises
+    1. Dumbbell Romanian Deadlift (Sets: 4)
+    2. Dumbbell Bent-Over Row (Sets: 4)
+    3. Dumbbell Pullovers (Sets: 4)
+  Day 3: Day 3: Lower Body Squat Volume - 3 exercises
+    1. Dumbbell Back Squats (Sets: 4)
+    2. Bulgarian Split Squats (Sets: 4)
+    3. Dumbbell Romanian Deadlift (Sets: 4)
+  Day 4: Day 4: Core & Active Regeneration - 3 exercises
+    1. Plank Hold (Sets: 4)
+    2. Bird-Dog Extensions (Sets: 4)
+    3. Russian Twists (Sets: 4)
+  Day 5: Day 5: Upper Body Hypertrophy Split - 3 exercises
+    1. Incline Dumbbell Press (Sets: 4)
+    2. Dumbbell Pullovers (Sets: 4)
+    3. Dumbbell Flat Bench Press (Sets: 4)
+  Day 6: Day 6: Metabolic Engine Synthesis - 3 exercises
+    1. Dumbbell Thrusters (Sets: 4)
+    2. Russian Dumbbell Swings (Sets: 4)
+    3. Hanging Knee Raises (Sets: 4)
+  Day 7: Day 7: Neuromuscular Recovery & Mobility - 3 exercises
+    1. Child's Pose Stretch (Sets: 4)
+    2. Shoulder Pass-Throughs (Sets: 4)
+    3. Dynamic Hip Opener Flow (Sets: 4)
+🟢 Custom profile checks passed successfully!
+
+=== Running Test: Location=gym, Level=beginner, Equipment=["bodyweight"] ===
+Plan Type: High-Intensity Metabolic Synthesis Program
+Verifying Rest: 90s (Expected: 90s)
+  Day 1: Day 1: High Intensity Metabolic Blast - 4 exercises
+    1. Bodyweight Squats (Sets: 3)
+    2. Bodyweight Jump Squats (Sets: 3)
+    3. Mountain Climbers (Sets: 3)
+    4. Bodyweight Pushups (Sets: 3)
+  Day 2: Day 2: Posterior Chain & Core Strength - 4 exercises
+    1. Bodyweight Squats (Sets: 3)
+    2. Plank Shoulder Taps (Sets: 3)
+    3. Bicycle Crunches (Sets: 3)
+    4. Bodyweight Squats (Sets: 3)
+  Day 3: Day 3: Upper Body Conditioning - 4 exercises
+    1. Bodyweight Pushups (Sets: 3)
+    2. Bodyweight Towel Rows (Sets: 3)
+    3. Incline Pushups (Sets: 3)
+    4. Mountain Climbers (Sets: 3)
+  Day 4: Day 4: Active Recovery & Flow - 4 exercises
+    1. Cat-Cow Stretch (Sets: 3)
+    2. Child's Pose (Sets: 3)
+    3. Bird-Dog Extensions (Sets: 3)
+    4. Cobra Pose (Sets: 3)
+  Day 5: Day 5: Lower Body Metabolic Burn - 4 exercises
+    1. Bodyweight Squats (Sets: 3)
+    2. Alternating Lunge Jumps (Sets: 3)
+    3. Glute Bridge Squeezes (Sets: 3)
+    4. Bodyweight Squats (Sets: 3)
+  Day 6: Day 6: Cardio Engine Sprint - 4 exercises
+    1. Full Burpees (Sets: 3)
+    2. Mountain Climbers (Sets: 3)
+    3. High Knees Sprint (Sets: 3)
+    4. Bodyweight Jump Squats (Sets: 3)
+  Day 7: Day 7: Active Recovery & Mobility - 4 exercises
+    1. Cobra Pose (Sets: 3)
+    2. Dynamic Hip Openers (Sets: 3)
+    3. Hamstring Static Stretch (Sets: 3)
+    4. Child's Pose (Sets: 3)
+🟢 Custom profile checks passed successfully!
+
+🎉 ALL STRICT EQUIPMENT ADAPTATION TESTS PASSED!
