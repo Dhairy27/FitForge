@@ -27,8 +27,7 @@ Follow these steps to pull the latest changes, make edits, push to the `setup` b
    git pull origin setup
    ```
 
-2. **Create or Switch to the Setup Branch**:
-   - **After Edit in code**
+2. **After Update in Code (For push code to GitHub)**:
    ```bash
    git checkout -b setup
    ```
