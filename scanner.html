@@ -98,7 +98,7 @@
 <body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
 
 <!-- Sidebar Navigation -->
-<aside class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50">
+<aside id="sidebar-nav" class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
     <div class="p-8">
         <a href="index.html" class="flex items-center gap-2 mb-2">
             <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
@@ -139,11 +139,18 @@
     </div>
 </aside>
 
+<!-- Sidebar Mobile Backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
 <!-- Main Content Shell -->
-<main class="ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface">
+<main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
     <!-- Top Navbar -->
-    <header class="h-20 flex justify-between items-center px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
-        <div>
+    <header class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
+        <div class="flex items-center gap-4">
+            <!-- Hamburger Toggle Menu Button -->
+            <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
             <h2 class="font-headline-md text-headline-md text-primary font-bold">Food Scanner</h2>
         </div>
         <div class="flex items-center gap-stack-md">
@@ -159,69 +166,88 @@
     </header>
 
     <!-- Content Canvas -->
-    <div class="px-12 py-stack-lg flex-1">
+    <div class="px-4 md:px-12 py-stack-lg flex-1">
         <div class="grid grid-cols-12 gap-6">
 <!-- LEFT: CAMERA VIEWPORT -->
-<div class="col-span-8 relative rounded-[2rem] overflow-hidden border border-white/10 group bg-black shadow-inner min-h-[500px] lg:h-[650px]">
-<!-- Real-time Feed Simulation -->
-<div class="absolute inset-0 z-0">
-<div class="w-full h-full bg-cover bg-center transition-transform duration-[10s] scale-110 group-hover:scale-100" data-alt="A healthy meal featuring grilled chicken, quinoa, and broccoli" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAWAozfCye5fZs-YvWdMQXf8s9UIl51Xw-SzWPSkikkKZY4lkC2ahOHE2OuTe8SliSY9PZwRNRQDP3rKBXd938CgEgqhj7aOWaIJ0Rn_9DV01DGwpDI2GWt8qb8cwNyNzEFGlZxhIh4orP4OuNcVtjvOoMvlLELK7OPWlmfQ3iA151bY90PKnxtLjeNV41rRTWUyZGC9Khu3jCZGYeqIECADdki8tzzFMaDAxrKmp9Hl1KxrbLCxu6H')"></div>
+<div id="camera-viewport" class="col-span-12 lg:col-span-8 relative rounded-[2rem] overflow-hidden border border-white/10 group bg-black shadow-inner min-h-[500px] lg:h-[650px] flex items-center justify-center">
+<!-- Real-time Feed Video Stream -->
+<video id="camera-video" class="absolute inset-0 w-full h-full object-cover hidden z-0" autoplay playsinline></video>
+
+<!-- Image Preview (captured or uploaded) -->
+<img id="preview-image" class="absolute inset-0 w-full h-full object-cover hidden z-0" alt="Captured food preview" />
+
+<!-- Real-time Feed Simulation (Static Mock Background) -->
+<div id="simulated-bg" class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center transition-transform duration-[10s] scale-110 group-hover:scale-100" style="background-image: url('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=1000&auto=format&fit=crop&q=80')"></div>
 <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
 </div>
+
 <!-- Scanning Line -->
-<div class="scanning-line absolute w-full left-0 z-10"></div>
-<!-- AR Overlays -->
-<!-- Ingredient 1: Chicken -->
-<div class="absolute top-[25%] left-[35%] z-20 ar-overlay-float" style="animation-delay: 0.2s">
-<div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 backdrop-blur-md">
-<div class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]"></div>
-<span class="font-headline text-sm font-bold tracking-tight text-white">Grilled Chicken (150g)</span>
-</div>
-<div class="w-px h-12 bg-white/40 ml-4"></div>
-</div>
-<!-- Ingredient 2: Quinoa -->
-<div class="absolute bottom-[30%] right-[30%] z-20 ar-overlay-float" style="animation-delay: 0.8s">
-<div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 backdrop-blur-md">
-<div class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]"></div>
-<span class="font-headline text-sm font-bold tracking-tight text-white">Quinoa (0.5 cup)</span>
-</div>
-</div>
+<div id="scanning-line" class="scanning-line absolute w-full left-0 z-10 hidden"></div>
+
+<!-- AR Overlays Dynamic Container -->
+<div id="ar-overlays-container" class="absolute inset-0 z-20 pointer-events-none"></div>
+
 <!-- HUD Elements -->
 <div class="absolute top-8 left-8 z-20 flex flex-col gap-4">
 <div class="glass-panel p-4 rounded-2xl flex flex-col items-center gap-2 border-white/5">
 <span class="text-[10px] uppercase tracking-widest text-secondary">Matrix Status</span>
 <span class="text-xs font-headline text-primary flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            ACTIVE_SYNC
-                        </span>
+<span id="matrix-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span id="matrix-status-text">ACTIVE_SYNC</span>
+</span>
 </div>
 </div>
+
 <!-- BOTTOM CONTROLS -->
-<div class="absolute bottom-8 left-0 right-0 z-30 flex justify-center items-center px-12 gap-8">
+<div class="absolute bottom-8 left-0 right-0 z-30 flex justify-between items-center px-12 gap-4 w-full">
 <!-- Zoom Controls -->
-<div class="flex items-center glass-panel px-6 py-3 rounded-full gap-6">
+<div class="flex items-center glass-panel px-6 py-3 rounded-full gap-6 select-none opacity-40 hover:opacity-100 transition-opacity">
 <button class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95">remove</button>
-<span class="text-xs font-headline font-bold text-primary">1.5X</span>
+<span class="text-xs font-headline font-bold text-primary">1.0X</span>
 <button class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95">add</button>
 </div>
-<!-- Main Action -->
-<button class="px-10 py-5 bg-primary text-black font-headline font-bold rounded-full hover:scale-105 active:scale-95 transition-transform cursor-pointer flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.3)] active:shadow-[0_0_40px_rgba(255,255,255,0.5)]">
-    <span class="material-symbols-outlined">photo_camera</span>
-    UPLOAD PHOTO
+
+<!-- Main Actions Container -->
+<div class="flex items-center gap-4">
+<!-- Reset/Retake Button -->
+<button id="btn-reset" class="hidden px-6 py-3.5 glass-panel text-white font-headline text-xs font-bold rounded-full hover:bg-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined text-sm">refresh</span>
+RETAKE
 </button>
+
+<!-- Main Action Button -->
+<button id="btn-primary-action" class="px-10 py-5 bg-primary text-black font-headline font-bold rounded-full hover:scale-105 active:scale-95 transition-transform cursor-pointer flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.3)] active:shadow-[0_0_40px_rgba(255,255,255,0.5)]">
+<span class="material-symbols-outlined" id="primary-action-icon">photo_camera</span>
+<span id="primary-action-text">CAPTURE PHOTO</span>
+</button>
+
+<!-- Gallery Button -->
+<button id="btn-gallery" class="px-6 py-3.5 glass-panel text-white font-headline text-xs font-bold rounded-full hover:bg-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined text-sm">photo_library</span>
+GALLERY
+</button>
+</div>
+
 <!-- Flash & Options -->
-<div class="flex items-center glass-panel px-6 py-3 rounded-full gap-6">
-<button class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95">flash_on</button>
+<div class="flex items-center glass-panel px-6 py-3 rounded-full gap-6 select-none opacity-40 hover:opacity-100 transition-opacity">
+<button id="btn-toggle-camera" class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95">flip_camera_ios</button>
 <div class="w-px h-4 bg-white/10"></div>
 <button class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95">filter_center_focus</button>
 </div>
 </div>
+
+<!-- Hidden Elements for Camera & File Picker -->
+<input type="file" id="file-input" accept="image/*" class="hidden" />
+<canvas id="capture-canvas" class="hidden"></canvas>
+
 <!-- Corner Frame Accents -->
-<div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-white/20"></div>
-<div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-white/20"></div>
+<div class="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-white/20 pointer-events-none"></div>
+<div class="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-white/20 pointer-events-none"></div>
 </div>
+
 <!-- RIGHT: DATA PANEL -->
-<div class="col-span-4 pl-8 flex flex-col h-full gap-6">
+<div class="col-span-12 lg:col-span-4 lg:pl-8 flex flex-col h-full gap-6">
 <!-- Header Card -->
 <div class="glass-panel p-6 rounded-[2rem] border-white/10">
 <div class="flex justify-between items-start mb-6">
@@ -235,10 +261,10 @@
 <!-- Confidence Score -->
 <div class="flex justify-between items-end">
 <span class="text-xs text-secondary uppercase tracking-widest">Confidence</span>
-<span class="text-lg font-headline font-bold text-primary">98.4%</span>
+<span class="text-lg font-headline font-bold text-primary" id="confidence-val">--%</span>
 </div>
 <div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-<div class="h-full bg-white w-[98%] shadow-[0_0_10px_white]"></div>
+<div class="h-full bg-white w-0 shadow-[0_0_10px_white] transition-all duration-1000" id="confidence-bar"></div>
 </div>
 </div>
 </div>
@@ -248,10 +274,10 @@
 <div class="glass-panel p-6 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
 <div class="flex justify-between items-center">
 <span class="material-symbols-outlined text-secondary text-sm">bolt</span>
-<span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Target</span>
+<span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
 </div>
 <div class="mt-4">
-<p class="text-3xl font-headline font-bold">42g</p>
+<p class="text-3xl font-headline font-bold" id="protein-val">0g</p>
 <p class="text-xs text-secondary mt-1">Protein</p>
 </div>
 </div>
@@ -259,10 +285,10 @@
 <div class="glass-panel p-6 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
 <div class="flex justify-between items-center">
 <span class="material-symbols-outlined text-secondary text-sm">grain</span>
-<span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Target</span>
+<span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
 </div>
 <div class="mt-4">
-<p class="text-3xl font-headline font-bold">28g</p>
+<p class="text-3xl font-headline font-bold" id="carbs-val">0g</p>
 <p class="text-xs text-secondary mt-1">Net Carbs</p>
 </div>
 </div>
@@ -270,10 +296,10 @@
 <div class="glass-panel p-6 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
 <div class="flex justify-between items-center">
 <span class="material-symbols-outlined text-secondary text-sm">water_drop</span>
-<span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Target</span>
+<span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
 </div>
 <div class="mt-4">
-<p class="text-3xl font-headline font-bold">12g</p>
+<p class="text-3xl font-headline font-bold" id="fats-val">0g</p>
 <p class="text-xs text-secondary mt-1">Healthy Fats</p>
 </div>
 </div>
@@ -284,7 +310,7 @@
 <span class="text-[10px] text-white/40 font-headline uppercase tracking-widest">Total</span>
 </div>
 <div class="mt-4">
-<p class="text-3xl font-headline font-bold">385</p>
+<p class="text-3xl font-headline font-bold" id="calories-val">0</p>
 <p class="text-xs text-secondary mt-1">Kcal Est.</p>
 </div>
 </div>
@@ -292,101 +318,557 @@
 <!-- Footer Log Card -->
 <div class="glass-panel p-6 rounded-[2rem] mt-auto">
 <p class="text-xs text-secondary mb-4 uppercase tracking-[0.2em]">Matrix Findings</p>
-<ul class="space-y-4">
-<li class="flex items-center justify-between group cursor-pointer">
-<div class="flex items-center gap-3">
-<span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-<span class="text-sm font-body text-primary">Chicken Breast</span>
-</div>
-<span class="text-xs font-headline text-secondary group-hover:text-primary">165 kcal</span>
-</li>
-<li class="flex items-center justify-between group cursor-pointer">
-<div class="flex items-center gap-3">
-<span class="w-1.5 h-1.5 rounded-full bg-white/40"></span>
-<span class="text-sm font-body text-primary">Cooked Quinoa</span>
-</div>
-<span class="text-xs font-headline text-secondary group-hover:text-primary">111 kcal</span>
-</li>
+<ul class="space-y-4 max-h-[160px] overflow-y-auto pr-2" id="findings-list">
+<li class="text-xs text-secondary/40 text-center py-4">Scan a food photo to extract nutrients</li>
 </ul>
-<button class="w-full mt-6 py-3 border border-white/10 rounded-xl font-headline text-xs hover:bg-white/5 transition-all active:scale-95 cursor-pointer text-white">
-                        LOG TO JOURNAL
-                    </button>
+<button id="btn-log-journal" class="w-full mt-6 py-3 border border-white/10 rounded-xl font-headline text-xs hover:bg-white/5 transition-all active:scale-95 cursor-pointer text-white opacity-40" disabled>
+LOG TO JOURNAL
+</button>
 </div>
 </div>
 </div>
 </div>
-    <!-- Footer -->
-    <footer class="px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
-        <div class="flex items-center gap-3">
-            <div class="h-6 w-6">
-                <img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
-            </div>
-            <span class="font-headline text-sm font-bold text-primary">FitForge</span>
-        </div>
-        <div class="flex flex-wrap justify-center gap-8 text-secondary opacity-60">
-            <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-            <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-            <a class="hover:text-primary transition-colors flex items-center gap-2" href="#">
-                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                System Status: Online
-            </a>
-        </div>
-        <div class="text-secondary opacity-40 text-[10px]">
-            &copy; 2024 FitForge. Engineered for Excellence.
-        </div>
-    </footer>
+<!-- Footer -->
+<footer class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
+<div class="flex items-center gap-3">
+<div class="h-6 w-6">
+<img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
+</div>
+<span class="font-headline text-sm font-bold text-primary">FitForge</span>
+</div>
+<div class="flex flex-wrap justify-center gap-8 text-secondary opacity-60">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="hover:text-primary transition-colors flex items-center gap-2" href="#">
+<span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+System Status: Online
+</a>
+</div>
+<div class="text-secondary opacity-40 text-[10px]">
+&copy; 2024 FitForge. Engineered for Excellence.
+</div>
+</footer>
 </main>
 <!-- Micro-interaction Scripts -->
 <script>
-        // Auth check
-        const userEmail = localStorage.getItem('userEmail');
-        if (!userEmail) { 
-            window.location.href = 'login.html'; 
-        } else {
-            // Enforce completed protocol details
-            fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
-                .then(res => res.json())
-                .then(data => {
-                    const proto = data.protocol || {};
-                    if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
-                        window.location.href = 'protocol.html';
-                    }
-                })
-                .catch(err => console.error("Error validating protocol completion:", err));
-        }
-        function logout() { localStorage.removeItem('userEmail'); localStorage.removeItem('userName'); window.location.href = 'login.html'; }
+// Auth check
+const userEmail = localStorage.getItem('userEmail');
+if (!userEmail) { 
+window.location.href = 'login.html'; 
+} else {
+// Enforce completed protocol details
+fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
+.then(res => res.json())
+.then(data => {
+const proto = data.protocol || {};
+if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
+window.location.href = 'protocol.html';
+}
+})
+.catch(err => console.error("Error validating protocol completion:", err));
+}
+function logout() { localStorage.removeItem('userEmail'); localStorage.removeItem('userName'); window.location.href = 'login.html'; }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const values = document.querySelectorAll('.font-headline.text-3xl');
-            values.forEach(val => {
-                const target = parseInt(val.innerText);
-                let current = 0;
-                const update = () => {
-                    if (current < target) {
-                        current += Math.ceil(target / 20);
-                        if (current > target) current = target;
-                        val.innerText = current + (val.innerText.includes('g') ? 'g' : '');
-                        requestAnimationFrame(update);
-                    }
-                };
-                update();
-            });
+document.addEventListener('DOMContentLoaded', () => {
+const video = document.getElementById('camera-video');
+const previewImg = document.getElementById('preview-image');
+const simulatedBg = document.getElementById('simulated-bg');
+const arContainer = document.getElementById('ar-overlays-container');
+const scanningLine = document.getElementById('scanning-line');
 
-            const mainBtn = document.querySelector('button.bg-primary');
-            mainBtn.addEventListener('click', function() {
-                this.classList.add('scale-95');
-                setTimeout(() => this.classList.remove('scale-95'), 150);
-                
-                const viewport = document.querySelector('.col-span-8');
-                const flash = document.createElement('div');
-                flash.className = 'absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-100';
-                viewport.appendChild(flash);
-                
-                setTimeout(() => flash.style.opacity = '0.4', 50);
-                setTimeout(() => flash.style.opacity = '0', 150);
-                setTimeout(() => flash.remove(), 500);
-            });
-        });
-    </script>
+const btnPrimary = document.getElementById('btn-primary-action');
+const btnReset = document.getElementById('btn-reset');
+const btnGallery = document.getElementById('btn-gallery');
+const btnToggleCamera = document.getElementById('btn-toggle-camera');
+const fileInput = document.getElementById('file-input');
+const captureCanvas = document.getElementById('capture-canvas');
+
+const primaryIcon = document.getElementById('primary-action-icon');
+const primaryText = document.getElementById('primary-action-text');
+
+// Right Panel Elements
+const valConfidence = document.getElementById('confidence-val');
+const barConfidence = document.getElementById('confidence-bar');
+const valProtein = document.getElementById('protein-val');
+const valCarbs = document.getElementById('carbs-val');
+const valFats = document.getElementById('fats-val');
+const valCalories = document.getElementById('calories-val');
+const listFindings = document.getElementById('findings-list');
+const btnLogJournal = document.getElementById('btn-log-journal');
+const matrixStatusText = document.getElementById('matrix-status-text');
+const matrixStatusDot = document.getElementById('matrix-status-dot');
+
+let mediaStream = null;
+let currentFacingMode = 'environment';
+let currentImageBase64 = null;
+let currentFileName = 'captured_meal.jpg';
+let scannedFoodData = null;
+let scanState = 'ready'; // ready, preview, scanning, scanned, logged
+
+// Initialize Camera
+function startCamera() {
+if (mediaStream) {
+mediaStream.getTracks().forEach(track => track.stop());
+}
+
+const constraints = {
+video: {
+facingMode: currentFacingMode,
+width: { ideal: 1280 },
+height: { ideal: 720 }
+}
+};
+
+navigator.mediaDevices.getUserMedia(constraints)
+.then(stream => {
+mediaStream = stream;
+video.srcObject = stream;
+video.classList.remove('hidden');
+simulatedBg.classList.add('hidden');
+btnToggleCamera.classList.remove('hidden');
+matrixStatusText.innerText = "CAMERA_STREAMING";
+matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+})
+.catch(err => {
+console.warn("Webcam access failed/unavailable, falling back to gallery uploads:", err);
+video.classList.add('hidden');
+simulatedBg.classList.remove('hidden');
+btnToggleCamera.classList.add('hidden');
+matrixStatusText.innerText = "GALLERY_MODE";
+matrixStatusDot.className = "w-2 h-2 rounded-full bg-amber-400";
+});
+}
+
+// Try starting camera on load
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+startCamera();
+} else {
+matrixStatusText.innerText = "OFFLINE_GALLERY";
+matrixStatusDot.className = "w-2 h-2 rounded-full bg-amber-400";
+}
+
+// Toggle Camera (Front vs Back)
+btnToggleCamera.addEventListener('click', () => {
+currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+startCamera();
+});
+
+// Trigger Gallery Picker
+btnGallery.addEventListener('click', () => {
+fileInput.click();
+});
+
+fileInput.addEventListener('change', (e) => {
+const file = e.target.files[0];
+if (!file) return;
+
+currentFileName = file.name;
+const reader = new FileReader();
+reader.onload = (event) => {
+const img = new Image();
+img.onload = () => {
+compressImage(img, (compressedBase64) => {
+currentImageBase64 = compressedBase64;
+previewImg.src = compressedBase64;
+previewImg.classList.remove('hidden');
+video.classList.add('hidden');
+simulatedBg.classList.add('hidden');
+
+setUIState('preview');
+});
+};
+img.src = event.target.result;
+};
+reader.readAsDataURL(file);
+});
+
+// Capture from video stream
+function capturePhoto() {
+if (!mediaStream) return;
+
+const width = video.videoWidth;
+const height = video.videoHeight;
+captureCanvas.width = width;
+captureCanvas.height = height;
+
+const ctx = captureCanvas.getContext('2d');
+if (currentFacingMode === 'user') {
+ctx.translate(width, 0);
+ctx.scale(-1, 1);
+}
+ctx.drawImage(video, 0, 0, width, height);
+
+const rawBase64 = captureCanvas.toDataURL('image/jpeg', 0.9);
+
+// Compress before using
+const img = new Image();
+img.onload = () => {
+compressImage(img, (compressedBase64) => {
+currentImageBase64 = compressedBase64;
+currentFileName = 'captured_photo.jpg';
+previewImg.src = compressedBase64;
+previewImg.classList.remove('hidden');
+video.classList.add('hidden');
+simulatedBg.classList.add('hidden');
+
+setUIState('preview');
+});
+};
+img.src = rawBase64;
+}
+
+// Image Compression
+function compressImage(imgElement, callback, maxDim = 800) {
+let width = imgElement.naturalWidth || imgElement.width;
+let height = imgElement.naturalHeight || imgElement.height;
+
+if (width > maxDim || height > maxDim) {
+if (width > height) {
+height = Math.round((height * maxDim) / width);
+width = maxDim;
+} else {
+width = Math.round((width * maxDim) / height);
+height = maxDim;
+}
+}
+
+captureCanvas.width = width;
+captureCanvas.height = height;
+const ctx = captureCanvas.getContext('2d');
+ctx.drawImage(imgElement, 0, 0, width, height);
+
+const compressed = captureCanvas.toDataURL('image/jpeg', 0.85);
+callback(compressed);
+}
+
+// State Manager
+function setUIState(state) {
+scanState = state;
+if (state === 'ready') {
+previewImg.classList.add('hidden');
+if (mediaStream) {
+video.classList.remove('hidden');
+simulatedBg.classList.add('hidden');
+} else {
+video.classList.add('hidden');
+simulatedBg.classList.remove('hidden');
+}
+
+btnReset.classList.add('hidden');
+btnGallery.classList.remove('hidden');
+
+primaryIcon.innerText = "photo_camera";
+primaryText.innerText = mediaStream ? "CAPTURE PHOTO" : "UPLOAD PHOTO";
+btnPrimary.classList.remove('opacity-50');
+btnPrimary.disabled = false;
+
+scanningLine.classList.add('hidden');
+arContainer.innerHTML = '';
+
+valConfidence.innerText = "--%";
+barConfidence.style.width = "0%";
+valProtein.innerText = "0g";
+valCarbs.innerText = "0g";
+valFats.innerText = "0g";
+valCalories.innerText = "0";
+listFindings.innerHTML = '<li class="text-xs text-secondary/40 text-center py-4">Scan a food photo to extract nutrients</li>';
+btnLogJournal.classList.add('opacity-40');
+btnLogJournal.disabled = true;
+btnLogJournal.innerText = "LOG TO JOURNAL";
+
+matrixStatusText.innerText = mediaStream ? "CAMERA_STREAMING" : "GALLERY_MODE";
+matrixStatusDot.className = mediaStream ? "w-2 h-2 rounded-full bg-emerald-400 animate-pulse" : "w-2 h-2 rounded-full bg-amber-400";
+} 
+else if (state === 'preview') {
+btnReset.classList.remove('hidden');
+btnReset.innerText = "RETAKE";
+btnGallery.classList.add('hidden');
+
+primaryIcon.innerText = "monitoring";
+primaryText.innerText = "ANALYZE FOOD";
+btnPrimary.disabled = false;
+btnPrimary.classList.remove('opacity-50');
+
+scanningLine.classList.add('hidden');
+arContainer.innerHTML = '';
+} 
+else if (state === 'scanning') {
+btnReset.classList.add('hidden');
+btnGallery.classList.add('hidden');
+
+primaryIcon.innerText = "hourglass_empty";
+primaryText.innerText = "ANALYZING...";
+btnPrimary.disabled = true;
+btnPrimary.classList.add('opacity-50');
+
+scanningLine.classList.remove('hidden');
+
+matrixStatusText.innerText = "EXTRACTING_AI_MATRICES";
+matrixStatusDot.className = "w-2 h-2 rounded-full bg-blue-400 animate-pulse";
+} 
+else if (state === 'scanned') {
+btnReset.classList.remove('hidden');
+btnReset.innerText = "NEW SCAN";
+btnGallery.classList.add('hidden');
+
+primaryIcon.innerText = "check_circle";
+primaryText.innerText = "LOG TO JOURNAL";
+btnPrimary.disabled = false;
+btnPrimary.classList.remove('opacity-50');
+
+scanningLine.classList.add('hidden');
+
+btnLogJournal.classList.remove('opacity-40');
+btnLogJournal.disabled = false;
+btnLogJournal.innerText = "LOG TO JOURNAL";
+
+matrixStatusText.innerText = "EXTRACTION_COMPLETE";
+matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+}
+else if (state === 'logged') {
+btnReset.classList.remove('hidden');
+btnReset.innerText = "SCAN AGAIN";
+btnGallery.classList.add('hidden');
+
+primaryIcon.innerText = "done_all";
+primaryText.innerText = "MEAL LOGGED!";
+btnPrimary.disabled = true;
+btnPrimary.classList.add('opacity-50');
+
+btnLogJournal.classList.add('opacity-40');
+btnLogJournal.disabled = true;
+btnLogJournal.innerText = "LOGGED SUCCESSFULLY";
+
+matrixStatusText.innerText = "JOURNAL_UPDATED";
+matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+}
+}
+
+// Perform AI Scan
+async function analyzeFood() {
+if (!currentImageBase64) return;
+
+setUIState('scanning');
+
+try {
+const response = await fetch('/api/scan-food', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+image: currentImageBase64,
+name: currentFileName,
+email: userEmail
+})
+});
+
+if (!response.ok) {
+throw new Error("Scanning failed.");
+}
+
+const data = await response.json();
+scannedFoodData = data;
+
+renderNutritionalResults(data);
+setUIState('scanned');
+
+triggerCameraFlash();
+} catch (error) {
+console.error("AI scanning error:", error);
+alert("Failed to analyze food. " + error.message);
+setUIState('preview');
+}
+}
+
+// Render Results in Data Panel
+function renderNutritionalResults(data) {
+const confidence = data.confidence || 90;
+valConfidence.innerText = `${confidence}%`;
+barConfidence.style.width = `${confidence}%`;
+
+if (data.simulated) {
+console.info("Notice: Displaying simulated vision metrics. Configure process.env.GEMINI_API_KEY for true AI vision.");
+}
+
+animateValue(valCalories, 0, data.totalCalories, "");
+animateValue(valProtein, 0, data.protein, "g");
+animateValue(valCarbs, 0, data.carbs, "g");
+animateValue(valFats, 0, data.fat, "g");
+
+listFindings.innerHTML = '';
+if (data.items && data.items.length > 0) {
+data.items.forEach(item => {
+const li = document.createElement('li');
+li.className = "flex items-center justify-between group cursor-pointer border-b border-white/5 pb-2 last:border-b-0";
+li.innerHTML = `
+    <div class="flex items-center gap-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-white/70"></span>
+        <div class="flex flex-col">
+            <span class="text-sm font-body text-primary">${item.name}</span>
+            <span class="text-[10px] text-secondary/40">${item.portion || '1 serving'}</span>
+        </div>
+    </div>
+    <div class="flex flex-col items-end">
+        <span class="text-xs font-headline text-primary font-bold">${item.calories} kcal</span>
+        <span class="text-[9px] text-secondary/40 font-semibold">P:${item.protein}g C:${item.carbs}g F:${item.fat}g</span>
+    </div>
+`;
+listFindings.appendChild(li);
+});
+} else {
+listFindings.innerHTML = `<li class="flex items-center justify-between group cursor-pointer">
+<div class="flex items-center gap-3">
+    <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+    <span class="text-sm font-body text-primary">${data.foodName}</span>
+</div>
+<span class="text-xs font-headline text-secondary">${data.totalCalories} kcal</span>
+</li>`;
+}
+
+arContainer.innerHTML = '';
+const overlayPositions = [
+{ top: 25, left: 35, delay: 0.2 },
+{ top: 58, left: 45, delay: 0.5 },
+{ top: 40, left: 65, delay: 0.8 },
+{ top: 68, left: 20, delay: 1.1 }
+];
+
+if (data.items && data.items.length > 0) {
+data.items.slice(0, 4).forEach((item, idx) => {
+const pos = overlayPositions[idx] || overlayPositions[0];
+const overlayDiv = document.createElement('div');
+overlayDiv.className = "absolute z-20 ar-overlay-float flex flex-col items-start";
+overlayDiv.style.top = `${pos.top}%`;
+overlayDiv.style.left = `${pos.left}%`;
+overlayDiv.style.animationDelay = `${pos.delay}s`;
+
+overlayDiv.innerHTML = `
+    <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 backdrop-blur-md border border-white/20 shadow-lg">
+        <div class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]"></div>
+        <span class="font-headline text-xs font-bold tracking-tight text-white">${item.name} (${item.portion || '1 serving'})</span>
+    </div>
+    <div class="w-px h-8 bg-white/40 ml-4"></div>
+`;
+arContainer.appendChild(overlayDiv);
+});
+}
+}
+
+// Animate Number utility
+function animateValue(obj, start, end, suffix) {
+let startTimestamp = null;
+const duration = 800;
+const step = (timestamp) => {
+if (!startTimestamp) startTimestamp = timestamp;
+const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+const current = Math.floor(progress * (end - start) + start);
+obj.innerText = current + suffix;
+if (progress < 1) {
+window.requestAnimationFrame(step);
+} else {
+obj.innerText = end + suffix;
+}
+};
+window.requestAnimationFrame(step);
+}
+
+// Log entry to Daily Database Journal
+async function saveLogToJournal() {
+if (!scannedFoodData) return;
+
+try {
+const response = await fetch('/api/nutrition/log', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+    email: userEmail,
+    foodName: scannedFoodData.foodName,
+    calories: scannedFoodData.totalCalories,
+    protein: scannedFoodData.protein,
+    carbs: scannedFoodData.carbs,
+    fat: scannedFoodData.fat,
+    items: scannedFoodData.items,
+    imageUrl: currentImageBase64,
+    date: new Date().toISOString()
+})
+});
+
+if (!response.ok) throw new Error("Database logging failed.");
+
+setUIState('logged');
+showToast("Log successfully saved to journal!");
+
+setTimeout(() => {
+window.location.href = "nutrition.html?tab=journal";
+}, 1500);
+
+} catch (error) {
+console.error("Log to journal error:", error);
+alert("Failed to save log to journal: " + error.message);
+}
+}
+
+function showToast(message) {
+const toast = document.createElement('div');
+toast.className = "fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[200] bg-white text-black px-6 py-3.5 rounded-full font-headline font-bold text-xs uppercase tracking-wider shadow-2xl flex items-center gap-2 border border-white/10 transition-all duration-300 translate-y-4 opacity-0";
+toast.innerHTML = `<span class="material-symbols-outlined text-emerald-500">check_circle</span>${message}`;
+document.body.appendChild(toast);
+
+setTimeout(() => {
+toast.classList.remove('translate-y-4', 'opacity-0');
+}, 50);
+
+setTimeout(() => {
+toast.classList.add('translate-y-4', 'opacity-0');
+setTimeout(() => toast.remove(), 300);
+}, 2500);
+}
+
+function triggerCameraFlash() {
+const viewport = document.getElementById('camera-viewport');
+const flash = document.createElement('div');
+flash.className = 'absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-100';
+viewport.appendChild(flash);
+
+setTimeout(() => flash.style.opacity = '0.4', 50);
+setTimeout(() => flash.style.opacity = '0', 150);
+setTimeout(() => flash.remove(), 500);
+}
+
+btnPrimary.addEventListener('click', () => {
+if (scanState === 'ready') {
+if (mediaStream) {
+capturePhoto();
+} else {
+fileInput.click();
+}
+} else if (scanState === 'preview') {
+analyzeFood();
+} else if (scanState === 'scanned') {
+saveLogToJournal();
+}
+});
+
+btnReset.addEventListener('click', () => {
+setUIState('ready');
+});
+
+btnLogJournal.addEventListener('click', () => {
+saveLogToJournal();
+});
+
+// Sidebar Navigation Drawer Toggle logic
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar-nav');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    if (sidebar.classList.contains('-translate-x-full')) {
+        sidebar.classList.remove('-translate-x-full');
+        backdrop.classList.remove('hidden');
+    } else {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+    }
+}
+});
+</script>
 <script src="subscription-check.js"></script>
 </body></html>
