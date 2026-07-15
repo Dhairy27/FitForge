@@ -518,7 +518,7 @@
                 .then(res => res.json())
                 .then(data => {
                     const proto = data.protocol || {};
-                    if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex || !proto.fitnessLevel || !proto.location) {
+                    if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
                         window.location.href = 'protocol.html';
                     }
                 })
