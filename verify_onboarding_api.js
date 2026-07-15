@@ -1,9 +1,28 @@
+let BASE_URL = "http://localhost:3000";
+
+async function detectActivePort() {
+    const ports = [3000, 3050];
+    for (const port of ports) {
+        try {
+            const res = await fetch(`http://localhost:${port}/api/auth/google-config`);
+            if (res.ok) {
+                BASE_URL = `http://localhost:${port}`;
+                console.log(`[INFO] Detected active server running on port ${port}. Using ${BASE_URL}`);
+                return;
+            }
+        } catch (e) {
+            // port not active, try next
+        }
+    }
+    console.warn(`[WARN] Could not detect running server on port 3000 or 3050. Defaulting to ${BASE_URL}`);
+}
+
 async function verifyUserFlow(location, equipment, duration, fitnessLevel, goals, forbiddenWords) {
     const email = `verify_${Date.now()}_${location}_${fitnessLevel}@fitforge.com`;
     console.log(`\n=== Running Test: Location=${location}, Level=${fitnessLevel}, Equipment=${JSON.stringify(equipment)} ===`);
 
     // 1. Sign Up
-    const signupRes = await fetch("http://localhost:3050/api/auth/signup", {
+    const signupRes = await fetch(`${BASE_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: "Verify Robot", email, password: "Password123!" })
@@ -25,7 +44,7 @@ async function verifyUserFlow(location, equipment, duration, fitnessLevel, goals
         duration,
         fitnessLevel
     };
-    const protoSaveRes = await fetch("http://localhost:3050/api/user/protocol", {
+    const protoSaveRes = await fetch(`${BASE_URL}/api/user/protocol`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(protocolPayload)
@@ -33,7 +52,7 @@ async function verifyUserFlow(location, equipment, duration, fitnessLevel, goals
     if (!protoSaveRes.ok) throw new Error(`Protocol save failed: ${protoSaveRes.statusText}`);
 
     // 3. Synthesize Plan
-    const workoutRes = await fetch("http://localhost:3050/api/user/workout-plan", {
+    const workoutRes = await fetch(`${BASE_URL}/api/user/workout-plan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
@@ -82,6 +101,7 @@ async function verifyUserFlow(location, equipment, duration, fitnessLevel, goals
 }
 
 async function runAllTests() {
+    await detectActivePort();
     console.log("=== Staging FitForge Equipment Adaptations Verification ===");
 
     // Test 1: Home Location, Dumbbells & Bodyweight only. Checked that no heavy gym tools (Barbell, Cable, Machine) are recommended.
