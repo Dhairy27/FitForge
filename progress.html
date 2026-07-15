@@ -96,7 +96,7 @@
 <body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
 
 <!-- Sidebar Navigation -->
-<aside class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50">
+<aside id="sidebar-nav" class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
     <div class="p-8">
         <a href="index.html" class="flex items-center gap-2 mb-2">
             <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
@@ -137,11 +137,18 @@
     </div>
 </aside>
 
+<!-- Sidebar Mobile Backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
 <!-- Main Content Shell -->
-<main class="ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface">
+<main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
     <!-- Top Navbar -->
-    <header class="h-20 flex justify-between items-center px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
-        <div>
+    <header class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
+        <div class="flex items-center gap-4">
+            <!-- Hamburger Toggle Menu Button -->
+            <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
             <h2 class="font-headline-md text-headline-md text-primary font-bold">Progress Analytics</h2>
         </div>
         <div class="flex items-center gap-stack-md">
@@ -157,10 +164,10 @@
     </header>
 
     <!-- Content Canvas -->
-    <div class="px-12 py-stack-lg flex-1">
+    <div class="px-4 md:px-12 py-stack-lg flex-1">
 <!-- Hero Section -->
 <section class="grid grid-cols-12 gap-6 mb-12">
-<div class="col-span-8">
+<div class="col-span-12 lg:col-span-8">
 <h2 class="text-5xl font-headline font-bold tracking-tighter mb-4 uppercase gradient-text">Kinetic Evolution</h2>
 <p class="text-secondary opacity-60 max-w-2xl mb-8 font-body text-sm leading-relaxed">Dynamic mapping of your physiological trajectory. High-density data visualization tracking the intersection of mass, velocity, and biological vitality.</p>
 <div class="glass-card rounded-2xl p-8 h-[440px] relative overflow-hidden">
@@ -201,8 +208,8 @@
 </div>
 </div>
 <!-- Side Metrics -->
-<div class="col-span-4 space-y-6">
-<div class="bg-primary text-surface-obsidian rounded-2xl p-8 h-[calc(50%-12px)] flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<div class="bg-primary text-surface-obsidian rounded-2xl p-8 lg:h-[calc(50%-12px)] min-h-[180px] flex flex-col justify-between shadow-2xl relative overflow-hidden group">
 <div class="relative z-10">
 <p class="text-[10px] font-label font-bold uppercase tracking-[0.2em] opacity-40 mb-2">Biological Age Trending</p>
 <div class="flex items-baseline space-x-2">
@@ -215,7 +222,7 @@
 <span class="text-xs font-headline font-bold uppercase">Elite Tier</span>
 </div>
 </div>
-<div class="glass-card rounded-2xl p-8 h-[calc(50%-12px)] flex flex-col justify-between">
+<div class="glass-card rounded-2xl p-8 lg:h-[calc(50%-12px)] min-h-[180px] flex flex-col justify-between">
 <div>
 <p class="text-[10px] font-label font-bold uppercase tracking-[0.2em] text-primary opacity-40 mb-2">Strength Velocity Curve</p>
 <h4 class="text-2xl font-headline font-bold tracking-tighter text-primary">Power Output Peak</h4>
@@ -369,7 +376,7 @@
 </section>
 </div>
     <!-- Footer -->
-    <footer class="px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
+    <footer class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
         <div class="flex items-center gap-3">
             <div class="h-6 w-6">
                 <img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
@@ -420,6 +427,19 @@
             card.style.transform = 'translateY(0)';
         });
     });
+
+    // Sidebar Navigation Drawer Toggle logic
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar-nav');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+        }
+    }
 </script>
 <script src="subscription-check.js"></script>
 </body></html>

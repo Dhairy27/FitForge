@@ -66,6 +66,20 @@ const workoutSchema = new mongoose.Schema({
 
 const Workout = mongoose.model('Workout', workoutSchema);
 
+const nutritionLogSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  foodName: { type: String, required: true },
+  calories: { type: Number, required: true },
+  protein: { type: Number, default: 0 },
+  carbs: { type: Number, default: 0 },
+  fat: { type: Number, default: 0 },
+  items: { type: Array, default: [] },
+  imageUrl: { type: String },
+  date: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const NutritionLog = mongoose.model('NutritionLog', nutritionLogSchema);
+
 
 // API Routes
 
@@ -1521,6 +1535,278 @@ app.get('/api/user/diet-plan', async (req, res) => {
   } catch (error) {
     console.error("Get diet plan error:", error);
     res.status(500).json({ error: "Failed to fetch diet plan." });
+  }
+});
+
+// Mock Vision Analysis helper function
+function getMockVisionAnalysis(fileName) {
+  const name = (fileName || '').toLowerCase();
+  
+  if (name.includes('chicken') || name.includes('breast') || name.includes('poultry') || name.includes('quinoa')) {
+    return {
+      foodName: "Grilled Chicken & Quinoa with Broccoli",
+      confidence: 96,
+      totalCalories: 385,
+      protein: 42,
+      carbs: 28,
+      fat: 12,
+      items: [
+        { name: "Grilled Chicken Breast", calories: 220, protein: 35, carbs: 0, fat: 5, portion: "150g" },
+        { name: "Cooked Quinoa", calories: 120, protein: 4, carbs: 22, fat: 2, portion: "100g" },
+        { name: "Steamed Broccoli", calories: 45, protein: 3, carbs: 6, fat: 5, portion: "1 cup" }
+      ]
+    };
+  }
+  
+  if (name.includes('pizza') || name.includes('pepperoni') || name.includes('cheese')) {
+    return {
+      foodName: "Pepperoni Pizza Slices",
+      confidence: 94,
+      totalCalories: 680,
+      protein: 26,
+      carbs: 78,
+      fat: 28,
+      items: [
+        { name: "Pepperoni Pizza Slice (x2)", calories: 580, protein: 22, carbs: 70, fat: 24, portion: "2 slices" },
+        { name: "Garlic Dipping Sauce", calories: 100, protein: 4, carbs: 8, fat: 4, portion: "1 serving" }
+      ]
+    };
+  }
+
+  if (name.includes('salad') || name.includes('lettuce') || name.includes('green') || name.includes('bowl')) {
+    return {
+      foodName: "Mixed Green Salad with Feta",
+      confidence: 97,
+      totalCalories: 245,
+      protein: 8,
+      carbs: 16,
+      fat: 18,
+      items: [
+        { name: "Mixed Green Salad", calories: 60, protein: 2, carbs: 8, fat: 1, portion: "2 cups" },
+        { name: "Olive Oil & Vinaigrette", calories: 120, protein: 0, carbs: 2, fat: 13, portion: "1.5 tbsp" },
+        { name: "Feta Cheese Crumbs", calories: 65, protein: 6, carbs: 6, fat: 4, portion: "25g" }
+      ]
+    };
+  }
+
+  if (name.includes('burger') || name.includes('patty') || name.includes('beef') || name.includes('fry') || name.includes('fries')) {
+    return {
+      foodName: "Beef Cheeseburger & French Fries",
+      confidence: 95,
+      totalCalories: 720,
+      protein: 34,
+      carbs: 64,
+      fat: 36,
+      items: [
+        { name: "Beef Cheeseburger", calories: 480, protein: 28, carbs: 38, fat: 24, portion: "1 burger" },
+        { name: "French Fries", calories: 240, protein: 6, carbs: 26, fat: 12, portion: "1 small serving" }
+      ]
+    };
+  }
+
+  if (name.includes('apple') || name.includes('banana') || name.includes('fruit') || name.includes('berry') || name.includes('orange')) {
+    return {
+      foodName: "Fresh Fruit Bowl",
+      confidence: 99,
+      totalCalories: 155,
+      protein: 2,
+      carbs: 38,
+      fat: 0.5,
+      items: [
+        { name: "Fresh Apple Slices", calories: 95, protein: 1, carbs: 25, fat: 0.3, portion: "1 medium apple" },
+        { name: "Mixed Berries", calories: 60, protein: 1, carbs: 13, fat: 0.2, portion: "100g" }
+      ]
+    };
+  }
+
+  if (name.includes('sushi') || name.includes('salmon') || name.includes('fish') || name.includes('tuna')) {
+    return {
+      foodName: "Salmon & Tuna Sushi Combo",
+      confidence: 95,
+      totalCalories: 450,
+      protein: 28,
+      carbs: 58,
+      fat: 10,
+      items: [
+        { name: "Salmon Nigiri (x4)", calories: 240, protein: 16, carbs: 32, fat: 4, portion: "4 pieces" },
+        { name: "Spicy Tuna Roll (x6)", calories: 210, protein: 12, carbs: 26, fat: 6, portion: "6 pieces" }
+      ]
+    };
+  }
+
+  if (name.includes('egg') || name.includes('scramble') || name.includes('omelet') || name.includes('breakfast') || name.includes('toast')) {
+    return {
+      foodName: "Scrambled Eggs & Sourdough Toast",
+      confidence: 98,
+      totalCalories: 360,
+      protein: 20,
+      carbs: 24,
+      fat: 18,
+      items: [
+        { name: "Scrambled Eggs (x2)", calories: 140, protein: 12, carbs: 1, fat: 10, portion: "2 eggs" },
+        { name: "Sourdough Toast (x2)", calories: 160, protein: 6, carbs: 22, fat: 1, portion: "2 slices" },
+        { name: "Salted Butter Spread", calories: 60, protein: 2, carbs: 1, fat: 7, portion: "1 pat" }
+      ]
+    };
+  }
+
+  // Default fallback if no keywords match
+  return {
+    foodName: "Mediterranean Salmon Bowl & Greek Yogurt",
+    confidence: 90,
+    totalCalories: 485,
+    protein: 30,
+    carbs: 45,
+    fat: 18,
+    items: [
+      { name: "Mediterranean Salmon Bowl", calories: 350, protein: 24, carbs: 25, fat: 14, portion: "1 bowl" },
+      { name: "Greek Yogurt Side", calories: 135, protein: 6, carbs: 20, fat: 4, portion: "150g" }
+    ]
+  };
+}
+
+// 4i. AI Food Scanning REST API Endpoint
+app.post('/api/scan-food', async (req, res) => {
+  try {
+    const { image, name, email } = req.body;
+    if (!image) {
+      return res.status(400).json({ error: 'Image data is required.' });
+    }
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        let mimeType = 'image/jpeg';
+        let base64Data = image;
+        if (image.startsWith('data:')) {
+          const parts = image.split(';base64,');
+          mimeType = parts[0].split(':')[1];
+          base64Data = parts[1];
+        }
+
+        const prompt = "Identify all the food items present in this image. For each item, estimate its portion/weight, and its approximate calories, protein (g), carbs (g), and fat (g). Also, calculate the overall total calories and total macros for the entire meal. You must respond ONLY with a JSON object in this exact format (no markdown formatting, no code blocks, no backticks, no comments): \n{\n  \"foodName\": \"name of the overall meal/dominant items\",\n  \"confidence\": 95,\n  \"totalCalories\": 385,\n  \"protein\": 42,\n  \"carbs\": 28,\n  \"fat\": 12,\n  \"items\": [\n    { \"name\": \"Grilled Chicken Breast\", \"calories\": 220, \"protein\": 35, \"carbs\": 0, \"fat\": 5, \"portion\": \"150g\" },\n    { \"name\": \"Cooked Quinoa\", \"calories\": 120, \"protein\": 4, \"carbs\": 22, \"fat\": 2, \"portion\": \"100g\" },\n    { \"name\": \"Steamed Broccoli\", \"calories\": 45, \"protein\": 3, \"carbs\": 6, \"fat\": 5, \"portion\": \"1 cup\" }\n  ]\n}";
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { text: prompt },
+                  { inlineData: { mimeType, data: base64Data } }
+                ]
+              }
+            ],
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Gemini API error: ${response.status} ${errText}`);
+        }
+
+        const resultJson = await response.json();
+        const responseText = resultJson.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!responseText) {
+          throw new Error("No response text from Gemini API.");
+        }
+
+        const data = JSON.parse(responseText);
+        return res.status(200).json(data);
+      } catch (geminiError) {
+        console.error("Gemini AI failed, using fallback mock analyzer:", geminiError);
+        const mockData = getMockVisionAnalysis(name);
+        mockData.simulated = true;
+        mockData.warning = "Gemini API key call failed. Showing simulated analysis.";
+        return res.status(200).json(mockData);
+      }
+    } else {
+      const mockData = getMockVisionAnalysis(name);
+      mockData.simulated = true;
+      return res.status(200).json(mockData);
+    }
+  } catch (error) {
+    console.error("Scan food error:", error);
+    res.status(500).json({ error: "Failed to scan food image." });
+  }
+});
+
+// 4j. Log Nutrition Intake
+app.post('/api/nutrition/log', async (req, res) => {
+  try {
+    const { email, foodName, calories, protein, carbs, fat, items, imageUrl, date } = req.body;
+    if (!email || !foodName || !calories) {
+      return res.status(400).json({ error: 'Email, food name, and calories are required.' });
+    }
+
+    const logDate = date ? new Date(date) : new Date();
+
+    const logEntry = new NutritionLog({
+      email: email.toLowerCase(),
+      foodName,
+      calories: Math.round(Number(calories)),
+      protein: Math.round(Number(protein || 0)),
+      carbs: Math.round(Number(carbs || 0)),
+      fat: Math.round(Number(fat || 0)),
+      items: items || [],
+      imageUrl,
+      date: logDate
+    });
+
+    await logEntry.save();
+    res.status(201).json({ message: 'Nutrition intake logged successfully.', log: logEntry });
+  } catch (error) {
+    console.error("Log nutrition error:", error);
+    res.status(500).json({ error: "Failed to log nutrition intake." });
+  }
+});
+
+// 4k. Get Nutrition Logs
+app.get('/api/nutrition/logs', async (req, res) => {
+  try {
+    const { email, date } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+
+    let query = { email: email.toLowerCase() };
+
+    if (date) {
+      const targetDate = new Date(date);
+      const startOfDay = new Date(targetDate.setUTCHours(0, 0, 0, 0));
+      const endOfDay = new Date(targetDate.setUTCHours(23, 59, 59, 999));
+      query.date = { $gte: startOfDay, $lte: endOfDay };
+    }
+
+    const logs = await NutritionLog.find(query).sort({ date: -1 });
+    res.status(200).json({ logs });
+  } catch (error) {
+    console.error("Get nutrition logs error:", error);
+    res.status(500).json({ error: "Failed to retrieve nutrition logs." });
+  }
+});
+
+// 4l. Delete Nutrition Log
+app.delete('/api/nutrition/log/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required to delete log.' });
+    }
+
+    const log = await NutritionLog.findOneAndDelete({ _id: id, email: email.toLowerCase() });
+    if (!log) {
+      return res.status(404).json({ error: 'Nutrition log entry not found or unauthorized.' });
+    }
+
+    res.status(200).json({ message: 'Log entry deleted successfully.' });
+  } catch (error) {
+    console.error("Delete nutrition log error:", error);
+    res.status(500).json({ error: "Failed to delete log entry." });
   }
 });
 

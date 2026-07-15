@@ -90,7 +90,7 @@
 <body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
 
 <!-- Sidebar Navigation -->
-<aside class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50">
+<aside id="sidebar-nav" class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
     <div class="p-8">
         <a href="index.html" class="flex items-center gap-2 mb-2">
             <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
@@ -131,11 +131,18 @@
     </div>
 </aside>
 
+<!-- Sidebar Mobile Backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
 <!-- Main Content Shell -->
-<main class="ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface">
+<main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
     <!-- Top Navbar -->
-    <header class="h-20 flex justify-between items-center px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
-        <div>
+    <header class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
+        <div class="flex items-center gap-4">
+            <!-- Hamburger Toggle Menu Button -->
+            <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">menu</span>
+            </button>
             <h2 class="font-headline-md text-headline-md text-primary font-bold">Workout Protocol</h2>
         </div>
         <div class="flex items-center gap-stack-md">
@@ -151,7 +158,7 @@
     </header>
 
     <!-- Content Canvas -->
-    <div class="px-12 py-stack-lg flex-1" id="workout-canvas">
+    <div class="px-4 md:px-12 py-stack-lg flex-1" id="workout-canvas">
         
         <!-- Loading Overlay (hidden by default) -->
         <div id="loading-overlay" class="hidden fixed inset-0 z-50 bg-[#050505]/80 backdrop-blur-md flex flex-col items-center justify-center">
@@ -821,6 +828,19 @@
             } else {
                 alert("Compilation error: Stale server data structure. Please restart the backend server in your terminal (Ctrl+C, then npm start).");
             }
+        }
+    }
+
+    // Sidebar Navigation Drawer Toggle logic
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar-nav');
+        const backdrop = document.getElementById('sidebar-backdrop');
+        if (sidebar.classList.contains('-translate-x-full')) {
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
         }
     }
 
