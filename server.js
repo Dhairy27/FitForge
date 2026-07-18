@@ -1736,6 +1736,62 @@ function getCalorieDetails(name, weightGrams) {
 function getMockVisionAnalysis(fileName) {
   const name = (fileName || '').toLowerCase().trim();
 
+  // Check for non-food keywords first to prevent returning food data for people, faces, objects, etc.
+  const nonFoodKeywords = [
+    'sunglass', 'spectacles', 'glasses', 'goggles', 'hair slide', 'hairpin',
+    'person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl',
+    'screen', 'monitor', 'keyboard', 'computer', 'mouse', 'television', 'laptop',
+    'ceiling', 'light', 'lamp', 'window', 'door', 'wall', 'floor', 'desk', 'chair', 'table',
+    'telephone', 'phone', 'cellular', 'camera', 'microphone', 'watch', 'clock',
+    'backpack', 'bag', 'handbag', 'wallet', 'purse', 'shoe', 'shirt', 'pants', 'jacket',
+    'book', 'notebook', 'paper', 'pen', 'pencil', 'marker', 'ruler',
+    'car', 'bicycle', 'motorcycle', 'truck', 'bus', 'train', 'airplane',
+    'dog', 'cat', 'bird', 'horse', 'cow', 'sheep', 'pig', 'monkey',
+    'plant', 'tree', 'flower', 'pot', 'soil', 'grass', 'non_food'
+  ];
+
+  const hasNonFoodKeyword = nonFoodKeywords.some(kw => name.includes(kw));
+
+  if (hasNonFoodKeyword || name.startsWith('non_food')) {
+    return {
+      foodName: "No Food Detected",
+      confidence: 10,
+      totalCalories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      sugar: 0,
+      sodium: 0,
+      cholesterol: 0,
+      potassium: 0,
+      items: [],
+      healthAnalysis: {
+        isHealthy: false,
+        suitableWeightLoss: false,
+        suitableMuscleGain: false,
+        suitableDiabetic: false,
+        suitableHeartHealth: false,
+        highProtein: false,
+        highFat: false,
+        highSugar: false,
+        highSodium: false,
+        isBalanced: false,
+        healthScore: 0,
+        explanation: "No food was detected in this image. The scanner identified a non-food element or object instead."
+      },
+      recommendations: {
+        bestTimeToEat: "N/A",
+        alternatives: [],
+        portionAdvice: "N/A",
+        waterRecommendation: "N/A",
+        workoutRecommendation: "N/A",
+        foodsToPairWith: []
+      },
+      warning: "No food detected in this image. Please upload a clear photo of food."
+    };
+  }
+
   // 1. Default fallback keyword checks (for default filename fallbacks or specific inputs)
   if (name.includes('chicken') || name.includes('breast') || name.includes('poultry') || name.includes('quinoa')) {
     return {
@@ -2210,7 +2266,7 @@ app.post('/api/scan-food', async (req, res) => {
         }
 
         const prompt = `Identify all the food items present in this image. For each item, estimate its portion/weight, and its approximate calories, protein (g), carbs (g), fat (g), fiber (g), sugar (g), sodium (mg), cholesterol (mg), and potassium (mg). Calculate the overall total calories and total macros/micronutrients for the entire meal (including fiber, sugar, sodium, cholesterol, potassium). Perform a health analysis on the meal (suitabilities, flags, balance, health score 0-100, explanation), and generate personalized recommendations (best time to eat, portion advice, water amount, healthier alternatives, suggested workout to burn it, and foods to pair with this meal).
-        If the image is blurry, low quality, contains non-food items, or has no detectable food, set the "confidence" field below 70%.
+        CRITICAL: If the image contains no food items, is a selfie/person/face, or has no detectable food, you MUST set the "confidence" field to 0, "totalCalories" to 0, "items" to an empty array [], and set the "warning" field to "No food detected in this image. Please upload a clear photo of food."
         
         You must respond ONLY with a JSON object in this exact format (do not include markdown formatting, code blocks, backticks, or comments):
         {
@@ -2249,10 +2305,11 @@ app.post('/api/scan-food', async (req, res) => {
             "waterRecommendation": "Drink 300ml of water 15 minutes after eating",
             "workoutRecommendation": "40 minutes of moderate cycling or 30 minutes HIIT run to burn 450 kcal",
             "foodsToPairWith": ["Mixed green salad", "Greek yogurt spread"]
-          }
+          },
+          "warning": ""
         }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${geminiKey}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -2359,7 +2416,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
           }
         }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
