@@ -1106,7 +1106,7 @@
                             }
                         }
                         // Default to top prediction if none of them matched food
-                        return predictions[0].className;
+                        return "non_food:" + predictions[0].className;
                     }
                 } catch (err) {
                     console.error("Local classification prediction failed:", err);
@@ -1751,7 +1751,7 @@
                     { top: 68, left: 20, delay: 1.1 }
                 ];
 
-                if (data.items && data.items.length > 0) {
+                if (data.items && data.items.length > 0 && data.confidence >= 70 && data.totalCalories > 0) {
                     data.items.slice(0, 4).forEach((item, idx) => {
                         const pos = overlayPositions[idx] || overlayPositions[0];
                         const overlayDiv = document.createElement('div');
