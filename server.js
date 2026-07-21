@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema({
   dietProfile: {
     dietaryType: { type: String, default: 'non-vegetarian' },
     allergies: [{ type: String }],
+    healthConditions: [{ type: String }],
     budget: { type: String, default: 'mid' },
     dailyCalories: { type: Number, default: 2000 }
   },
@@ -205,7 +206,7 @@ app.post('/api/auth/google', async (req, res) => {
 const getEmailTransporter = () => {
   const emailUser = process.env.EMAIL_USER;
   const emailPass = process.env.EMAIL_PASS;
-  
+
   if (!emailUser || !emailPass) {
     return null;
   }
@@ -244,9 +245,9 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     if (!transporter) {
       console.warn('Gmail credentials not set in .env. Logging OTP code:');
       console.log(`[FORGOT PASSWORD OTP FOR ${user.email}]: ${otp}`);
-      return res.status(200).json({ 
-        message: 'Verification code generated.', 
-        note: 'Email system offline. Verification code printed in server console logs.' 
+      return res.status(200).json({
+        message: 'Verification code generated.',
+        note: 'Email system offline. Verification code printed in server console logs.'
       });
     }
 
@@ -1448,14 +1449,36 @@ const RECIPES_DATABASE = [
   }
 ];
 
-// Helper to filter and adapt a recipe based on dietary preferences, budget, and allergies
-function findAndFilterRecipe(mealType, dietaryType, budget, allergies) {
+// Helper to filter and adapt a recipe based on dietary preferences, budget, allergies, and health conditions
+function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthConditions) {
   let candidates = RECIPES_DATABASE.filter(r => r.mealType === mealType);
+
+  if (healthConditions && healthConditions.length > 0) {
+    const hcLower = healthConditions.map(h => h.toLowerCase().trim());
+    if (hcLower.includes('diabetes')) {
+      const lowCarb = candidates.filter(r => r.carbs <= 60);
+      if (lowCarb.length > 0) candidates = lowCarb;
+    }
+    if (hcLower.includes('high cholesterol')) {
+      const lowFat = candidates.filter(r => r.fat <= 22);
+      if (lowFat.length > 0) candidates = lowFat;
+    }
+    if (hcLower.includes('hypertension') || hcLower.includes('high blood pressure')) {
+      const lowSodium = candidates.filter(r => !r.ingredients.join(' ').toLowerCase().includes('sauce') && !r.ingredients.join(' ').toLowerCase().includes('canned'));
+      if (lowSodium.length > 0) candidates = lowSodium;
+    }
+  }
 
   if (dietaryType === 'vegan') {
     candidates = candidates.filter(r => r.type === 'vegan');
   } else if (dietaryType === 'vegetarian') {
     candidates = candidates.filter(r => r.type === 'vegan' || r.type === 'vegetarian');
+  } else if (dietaryType === 'eggetarian') {
+    candidates = candidates.filter(r =>
+      r.type === 'vegan' ||
+      r.type === 'vegetarian' ||
+      (r.type === 'non-vegetarian' && r.allergens.includes('eggs') && !/chicken|turkey|salmon|tuna|steak|beef|pork|bacon|prosciutto|ham|fish|seafood/i.test(r.name))
+    );
   }
 
   if (allergies && allergies.length > 0) {
@@ -1515,7 +1538,7 @@ function findAndFilterRecipe(mealType, dietaryType, budget, allergies) {
 // 4e. Save Diet Profile Telemetry
 app.post('/api/user/diet-profile', async (req, res) => {
   try {
-    const { email, dietaryType, allergies, budget, dailyCalories } = req.body;
+    const { email, dietaryType, allergies, healthConditions, budget, dailyCalories } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -1527,6 +1550,7 @@ app.post('/api/user/diet-profile', async (req, res) => {
     user.dietProfile = {
       dietaryType: dietaryType || 'non-vegetarian',
       allergies: Array.isArray(allergies) ? allergies : [],
+      healthConditions: Array.isArray(healthConditions) ? healthConditions : [],
       budget: budget || 'mid',
       dailyCalories: Number(dailyCalories) || 2000
     };
@@ -1575,6 +1599,7 @@ app.post('/api/user/diet-plan', async (req, res) => {
     const dietaryType = dProfile.dietaryType || 'non-vegetarian';
     const budget = dProfile.budget || 'mid';
     const allergies = dProfile.allergies || [];
+    const healthConditions = dProfile.healthConditions || [];
 
     const calculatedWater = (weight * 35) / 1000;
     const waterGoal = Math.min(5.0, Math.max(2.0, Number(calculatedWater.toFixed(1))));
@@ -1592,10 +1617,10 @@ app.post('/api/user/diet-plan', async (req, res) => {
     };
 
     const compileDaysPlan = () => {
-      const bMealRaw = findAndFilterRecipe("breakfast", dietaryType, budget, allergies);
-      const lMealRaw = findAndFilterRecipe("lunch", dietaryType, budget, allergies);
-      const dMealRaw = findAndFilterRecipe("dinner", dietaryType, budget, allergies);
-      const sMealRaw = findAndFilterRecipe("snack", dietaryType, budget, allergies);
+      const bMealRaw = findAndFilterRecipe("breakfast", dietaryType, budget, allergies, healthConditions);
+      const lMealRaw = findAndFilterRecipe("lunch", dietaryType, budget, allergies, healthConditions);
+      const dMealRaw = findAndFilterRecipe("dinner", dietaryType, budget, allergies, healthConditions);
+      const sMealRaw = findAndFilterRecipe("snack", dietaryType, budget, allergies, healthConditions);
 
       const breakfast = scaleMeal(bMealRaw, targetKcal * 0.25);
       const lunch = scaleMeal(lMealRaw, targetKcal * 0.35);
@@ -2607,6 +2632,13 @@ app.delete('/api/nutrition/log/:id', async (req, res) => {
 });
 
 // Serve Static Frontend files from root
+// Disable caching for HTML files so updates are immediately visible
+app.use((req, res, next) => {
+  if (req.method === 'GET' && (req.url.endsWith('.html') || req.url === '/' || req.url.split('?')[0].endsWith('.html'))) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  }
+  next();
+});
 app.use(express.static(path.join(__dirname)));
 
 // Fallback to signup page if non-matching HTML
