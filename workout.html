@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>FitForge | Workout Suite</title>
-    <meta name="description" content="FitForge Elite Workout Suite - Premium fitness plans, real-time exercise coaching, and streak tracking.">
+    <meta name="description"
+        content="FitForge Elite Workout Suite - Premium fitness plans, real-time exercise coaching, and streak tracking.">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -41,48 +46,74 @@
             -webkit-font-smoothing: antialiased;
             font-family: 'Inter', sans-serif;
         }
+
         .glass-panel {
             background: rgba(18, 18, 21, 0.6);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
+
         .glass-button {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.08);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .glass-button:hover {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.2);
         }
+
         .gradient-text {
             background: linear-gradient(135deg, #ffffff 30%, #a1a1aa 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
+
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #050505; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
-        
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 99px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
         /* Shimmer loading */
         .shimmer {
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 75%);
             background-size: 200% 100%;
             animation: loading-shimmer 1.6s infinite;
         }
+
         @keyframes loading-shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
         }
     </style>
 </head>
+
 <body class="overflow-x-hidden bg-surface-obsidian text-on-surface">
 
     <!-- Sidebar Navigation -->
-    <aside id="sidebar-nav" class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+    <aside id="sidebar-nav"
+        class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
         <div class="p-8">
             <a href="index.html" class="flex items-center gap-2 mb-2">
                 <img alt="FitForge Logo" class="h-8 w-auto object-contain" src="assets/logo.svg">
@@ -91,58 +122,72 @@
             <p class="text-[9px] uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine</p>
         </div>
         <nav class="flex-1 px-4 space-y-2 mt-4">
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="dashboard.html">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="dashboard.html">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="text-sm font-semibold tracking-tight">Dashboard</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95" href="workout.html">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
+                href="workout.html">
                 <span class="material-symbols-outlined">fitness_center</span>
                 <span class="text-sm font-semibold tracking-tight">Workouts</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="nutrition.html">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="nutrition.html">
                 <span class="material-symbols-outlined">restaurant</span>
                 <span class="text-sm font-semibold tracking-tight">Nutrition</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="scanner.html">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="scanner.html">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <span class="text-sm font-semibold tracking-tight">Scanner</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="progress.html">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="progress.html">
                 <span class="material-symbols-outlined">query_stats</span>
                 <span class="text-sm font-semibold tracking-tight">Progress</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95" href="profile.html">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="profile.html">
                 <span class="material-symbols-outlined">person</span>
                 <span class="text-sm font-semibold tracking-tight">Profile</span>
             </a>
         </nav>
         <div class="p-4 border-t border-glass-border mb-4">
-            <button id="sidebar-upgrade-btn" class="w-full py-3 bg-primary text-on-primary rounded-full font-headline text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            <button id="sidebar-upgrade-btn"
+                class="w-full py-3 bg-primary text-on-primary rounded-full font-headline text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
                 Upgrade to Pro
             </button>
         </div>
     </aside>
 
     <!-- Sidebar Mobile Backdrop -->
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"
+        onclick="toggleSidebar()"></div>
 
     <!-- Main Content Shell -->
     <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-[#050505] text-white transition-all duration-300 pb-16">
         <!-- Top Navbar -->
-        <header class="h-20 flex justify-between items-center px-6 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-md border-b border-white/5">
+        <header
+            class="h-20 flex justify-between items-center px-6 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-md border-b border-white/5">
             <div class="flex items-center gap-4">
-                <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                <button onclick="toggleSidebar()"
+                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h2 class="font-headline text-xl text-white font-bold uppercase tracking-tight">Workout Protocol Suite</h2>
+                <h2 class="font-headline text-xl text-white font-bold uppercase tracking-tight">Workout Protocol Suite
+                </h2>
             </div>
             <div class="flex items-center gap-4">
                 <!-- Favorites Quick Access Button -->
-                <button id="btn-view-favorites" class="glass-button p-2.5 rounded-full flex items-center justify-center text-secondary hover:text-white relative">
+                <button id="btn-view-favorites"
+                    class="glass-button p-2.5 rounded-full flex items-center justify-center text-secondary hover:text-white relative">
                     <span class="material-symbols-outlined text-xl">star</span>
-                    <span id="fav-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center hidden">0</span>
+                    <span id="fav-badge"
+                        class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center hidden">0</span>
                 </button>
-                <a href="profile.html" class="glass-button p-2.5 rounded-full flex items-center justify-center text-secondary hover:text-white">
+                <a href="profile.html"
+                    class="glass-button p-2.5 rounded-full flex items-center justify-center text-secondary hover:text-white">
                     <span class="material-symbols-outlined text-xl">account_circle</span>
                 </a>
             </div>
@@ -150,34 +195,50 @@
 
         <!-- Content Canvas -->
         <div class="px-6 md:px-12 py-8 flex-1 space-y-10 max-w-7xl w-full mx-auto">
-            
+
             <!-- Hero Dashboard Banner -->
-            <section class="glass-panel p-8 rounded-[2rem] border-white/10 relative overflow-hidden flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
+            <section
+                class="glass-panel p-8 rounded-[2rem] border-white/10 relative overflow-hidden flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
                 <!-- Ambient glow inside hero -->
-                <div class="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                <div class="absolute -left-10 -bottom-10 w-48 h-48 bg-sky-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                <div
+                    class="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none">
+                </div>
+                <div
+                    class="absolute -left-10 -bottom-10 w-48 h-48 bg-sky-500/10 blur-[80px] rounded-full pointer-events-none">
+                </div>
 
                 <div class="space-y-3 z-10">
-                    <span class="px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-headline text-[10px] font-bold uppercase tracking-wider rounded-full">Telemetry Active</span>
-                    <h1 id="hero-motivational-title" class="font-headline text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight">PUSH YOUR LIMITS TODAY</h1>
-                    <p class="text-xs text-secondary max-w-md font-sans">Track streaks, browse categories, and play custom audio-paced routines calibrated for muscle loading.</p>
+                    <span
+                        class="px-3.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-headline text-[10px] font-bold uppercase tracking-wider rounded-full">Telemetry
+                        Active</span>
+                    <h1 id="hero-motivational-title"
+                        class="font-headline text-3xl md:text-4xl font-bold tracking-tight text-white leading-tight">
+                        PUSH YOUR LIMITS TODAY</h1>
+                    <p class="text-xs text-secondary max-w-md font-sans">Track streaks, browse categories, and play
+                        custom audio-paced routines calibrated for muscle loading.</p>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full md:w-auto z-10">
                     <div class="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
-                        <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Calories Burned</span>
+                        <span
+                            class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Calories
+                            Burned</span>
                         <span id="stat-total-calories" class="text-xl font-bold text-white font-headline">0 kcal</span>
                     </div>
                     <div class="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
-                        <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Total Duration</span>
+                        <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Total
+                            Duration</span>
                         <span id="stat-total-duration" class="text-xl font-bold text-white font-headline">0 mins</span>
                     </div>
                     <div class="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
-                        <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Total Workouts</span>
+                        <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Total
+                            Workouts</span>
                         <span id="stat-total-count" class="text-xl font-bold text-white font-headline">0</span>
                     </div>
                     <div class="bg-white/5 border border-white/5 p-4 rounded-2xl text-center">
-                        <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Active Streak</span>
+                        <span
+                            class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-1">Active
+                            Streak</span>
                         <span id="stat-streak" class="text-xl font-bold text-emerald-400 font-headline">0 Days🔥</span>
                     </div>
                 </div>
@@ -186,16 +247,21 @@
             <!-- Workout Plans Carousel -->
             <section class="space-y-4">
                 <div>
-                    <h3 class="font-headline text-lg font-bold text-white uppercase tracking-tight">Structured Workout Plans</h3>
+                    <h3 class="font-headline text-lg font-bold text-white uppercase tracking-tight">Structured Workout
+                        Plans</h3>
                     <p class="text-[10px] text-secondary tracking-widest uppercase">Multi-Day Routine Presets</p>
                 </div>
                 <div class="flex gap-4 overflow-x-auto pb-4 pt-1 w-full snap-x snap-mandatory scroll-smooth">
                     <!-- Preset Plans -->
-                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group" onclick="selectPlan('Fat Loss')">
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        onclick="selectPlan('Fat Loss')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-rose-400 text-3xl">local_fire_department</span>
-                            <h4 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">FAT LOSS</h4>
-                            <p class="text-xs text-secondary leading-relaxed">3-Day high calorie burning split targeting fast metabolic rates.</p>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                FAT LOSS</h4>
+                            <p class="text-xs text-secondary leading-relaxed">3-Day high calorie burning split targeting
+                                fast metabolic rates.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-rose-400">High Intensity</span>
@@ -203,11 +269,15 @@
                         </div>
                     </div>
 
-                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group" onclick="selectPlan('Muscle Gain')">
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        onclick="selectPlan('Muscle Gain')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-emerald-400 text-3xl">fitness_center</span>
-                            <h4 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">MUSCLE GAIN</h4>
-                            <p class="text-xs text-secondary leading-relaxed">Hypertrophy-focused training split utilizing progressive loading structures.</p>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                MUSCLE GAIN</h4>
+                            <p class="text-xs text-secondary leading-relaxed">Hypertrophy-focused training split
+                                utilizing progressive loading structures.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-emerald-400">Moderate Tempo</span>
@@ -215,11 +285,15 @@
                         </div>
                     </div>
 
-                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group" onclick="selectPlan('Strength Training')">
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        onclick="selectPlan('Strength Training')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-amber-400 text-3xl">weight</span>
-                            <h4 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">STRENGTH TRAINING</h4>
-                            <p class="text-xs text-secondary leading-relaxed">Focus on compound movements to improve maximum physical force capacities.</p>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                STRENGTH TRAINING</h4>
+                            <p class="text-xs text-secondary leading-relaxed">Focus on compound movements to improve
+                                maximum physical force capacities.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-amber-400">High Rest Periods</span>
@@ -227,11 +301,15 @@
                         </div>
                     </div>
 
-                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group" onclick="selectPlan('Home Plan')">
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        onclick="selectPlan('Home Plan')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-sky-400 text-3xl">home_work</span>
-                            <h4 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">HOME WORKOUT PLAN</h4>
-                            <p class="text-xs text-secondary leading-relaxed">No equipment required. High density bodyweight loading strategies.</p>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                HOME WORKOUT PLAN</h4>
+                            <p class="text-xs text-secondary leading-relaxed">No equipment required. High density
+                                bodyweight loading strategies.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-sky-400">No Equipment</span>
@@ -239,11 +317,15 @@
                         </div>
                     </div>
 
-                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group" onclick="selectPlan('Endurance')">
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        onclick="selectPlan('Endurance')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-purple-400 text-3xl">hourglass_empty</span>
-                            <h4 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">ENDURANCE SUITE</h4>
-                            <p class="text-xs text-secondary leading-relaxed">Optimizing cardiovascular limits and muscular recovery capacities.</p>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                ENDURANCE SUITE</h4>
+                            <p class="text-xs text-secondary leading-relaxed">Optimizing cardiovascular limits and
+                                muscular recovery capacities.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-purple-400">Cardio Base</span>
@@ -258,38 +340,64 @@
                 <!-- Search & Filters Header -->
                 <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
                     <div class="flex-1 relative">
-                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 text-xl">search</span>
-                        <input id="search-input" type="text" placeholder="Search exercises (e.g. Bench Press, Squats, Plank)..." class="w-full bg-surface-card border border-glass-border rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-secondary/35 focus:outline-none focus:border-white/20 transition-colors" />
+                        <span
+                            class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 text-xl">search</span>
+                        <input id="search-input" type="text"
+                            placeholder="Search exercises (e.g. Bench Press, Squats, Plank)..."
+                            class="w-full bg-surface-card border border-glass-border rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-secondary/35 focus:outline-none focus:border-white/20 transition-colors" />
                     </div>
                     <div class="flex flex-wrap gap-3">
-                        <select id="filter-difficulty" class="bg-surface-card border border-glass-border text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-white/20">
+                        <select id="filter-difficulty"
+                            class="bg-surface-card border border-glass-border text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-white/20">
                             <option value="All">All Difficulties</option>
                             <option value="Beginner">Beginner</option>
                             <option value="Intermediate">Intermediate</option>
                             <option value="Advanced">Advanced</option>
                         </select>
-                        <select id="filter-equipment" class="bg-surface-card border border-glass-border text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-white/20">
+                        <select id="filter-equipment"
+                            class="bg-surface-card border border-glass-border text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-white/20">
                             <option value="All">All Equipment</option>
                             <option value="Bodyweight">Bodyweight Only</option>
                             <option value="Dumbbell">Dumbbells</option>
                             <option value="Gym Workout">Gym Machines / Barbell</option>
                         </select>
-                        <button id="btn-reset-filters" class="glass-button text-[10px] font-bold uppercase tracking-wider px-5 py-3 rounded-xl hover:scale-105 active:scale-95">Reset</button>
+                        <button id="btn-reset-filters"
+                            class="glass-button text-[10px] font-bold uppercase tracking-wider px-5 py-3 rounded-xl hover:scale-105 active:scale-95">Reset</button>
                     </div>
                 </div>
 
                 <!-- Categories Horizontal Scroll -->
                 <div class="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory">
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer" onclick="filterCategory('All', this)">All Exercises</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Chest', this)">Chest</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Back', this)">Back</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Shoulders', this)">Shoulders</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Arms', this)">Arms</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Legs', this)">Legs</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Core', this)">Core</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Cardio', this)">Cardio</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('HIIT', this)">HIIT</button>
-                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer" onclick="filterCategory('Yoga', this)">Yoga</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
+                        onclick="filterCategory('All', this)">All Exercises</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Chest', this)">Chest</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Back', this)">Back</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Shoulders', this)">Shoulders</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Arms', this)">Arms</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Legs', this)">Legs</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Core', this)">Core</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Cardio', this)">Cardio</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('HIIT', this)">HIIT</button>
+                    <button
+                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
+                        onclick="filterCategory('Yoga', this)">Yoga</button>
                 </div>
             </section>
 
@@ -297,12 +405,16 @@
             <section class="space-y-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 id="grid-header-title" class="font-headline text-lg font-bold text-white uppercase tracking-tight">Available Exercises</h3>
-                        <p id="grid-header-desc" class="text-[10px] text-secondary tracking-widest uppercase">Browse database</p>
+                        <h3 id="grid-header-title"
+                            class="font-headline text-lg font-bold text-white uppercase tracking-tight">Available
+                            Exercises</h3>
+                        <p id="grid-header-desc" class="text-[10px] text-secondary tracking-widest uppercase">Browse
+                            database</p>
                     </div>
-                    <span id="exercise-count-label" class="text-[10px] text-secondary font-bold uppercase tracking-wider">0 Exercises Found</span>
+                    <span id="exercise-count-label"
+                        class="text-[10px] text-secondary font-bold uppercase tracking-wider">0 Exercises Found</span>
                 </div>
-                
+
                 <div id="exercise-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Cards will be populated dynamically -->
                 </div>
@@ -313,10 +425,12 @@
                 <!-- Weekly Activity Graph -->
                 <div class="glass-panel p-6 rounded-[2rem] border-white/10 flex flex-col justify-between gap-6">
                     <div>
-                        <h4 class="font-headline text-md font-bold text-white uppercase tracking-tight">Weekly Activity Metrics</h4>
+                        <h4 class="font-headline text-md font-bold text-white uppercase tracking-tight">Weekly Activity
+                            Metrics</h4>
                         <p class="text-[9px] text-secondary tracking-widest uppercase">Calories burned per day</p>
                     </div>
-                    <div id="weekly-chart-container" class="h-44 w-full flex items-end justify-between px-4 pb-2 border-b border-white/5">
+                    <div id="weekly-chart-container"
+                        class="h-44 w-full flex items-end justify-between px-4 pb-2 border-b border-white/5">
                         <!-- Bar chart elements populated dynamically -->
                     </div>
                 </div>
@@ -324,7 +438,8 @@
                 <!-- Monthly Logged Workouts History List -->
                 <div class="glass-panel p-6 rounded-[2rem] border-white/10 flex flex-col justify-between gap-4">
                     <div>
-                        <h4 class="font-headline text-md font-bold text-white uppercase tracking-tight">Workout Session Logs</h4>
+                        <h4 class="font-headline text-md font-bold text-white uppercase tracking-tight">Workout Session
+                            Logs</h4>
                         <p class="text-[9px] text-secondary tracking-widest uppercase">Logged physical logs</p>
                     </div>
                     <div id="history-logs-list" class="max-h-44 overflow-y-auto space-y-2.5 pr-2 flex-1">
@@ -337,50 +452,72 @@
     </main>
 
     <!-- LIVE TIMER INSTRUCTION COACH PLAYER MODAL -->
-    <div id="live-player-modal" class="hidden fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-4xl glass-panel p-8 rounded-[2.5rem] border-white/10 flex flex-col lg:flex-row gap-8 relative">
+    <div id="live-player-modal"
+        class="hidden fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
+        <div
+            class="w-full max-w-4xl glass-panel p-8 rounded-[2.5rem] border-white/10 flex flex-col lg:flex-row gap-8 relative">
             <!-- Close Modal -->
-            <button onclick="closeLivePlayer()" class="absolute top-6 right-6 text-secondary hover:text-white transition-colors cursor-pointer bg-transparent border-0">
+            <button onclick="closeLivePlayer()"
+                class="absolute top-6 right-6 text-secondary hover:text-white transition-colors cursor-pointer bg-transparent border-0">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>
 
             <!-- LEFT: Visualization and breathing guide -->
-            <div class="flex-1 flex flex-col items-center justify-center text-center space-y-6 lg:border-r lg:border-white/5 lg:pr-8">
-                <span class="text-emerald-400 font-bold text-[9px] uppercase tracking-widest block font-headline">Live Coaching System</span>
-                <h3 id="player-ex-name" class="font-headline text-3xl font-bold tracking-tight text-white uppercase leading-none">Bench Press</h3>
-                <p id="player-ex-muscle" class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Chest, Shoulders</p>
-                
+            <div
+                class="flex-1 flex flex-col items-center justify-center text-center space-y-6 lg:border-r lg:border-white/5 lg:pr-8">
+                <span class="text-emerald-400 font-bold text-[9px] uppercase tracking-widest block font-headline">Live
+                    Coaching System</span>
+                <h3 id="player-ex-name"
+                    class="font-headline text-3xl font-bold tracking-tight text-white uppercase leading-none">Bench
+                    Press</h3>
+                <p id="player-ex-muscle"
+                    class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Chest, Shoulders</p>
+
                 <!-- Animation Visualizer box -->
-                <div id="player-vector-box" class="w-48 h-48 rounded-[2rem] border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden">
+                <div id="player-vector-box"
+                    class="w-48 h-48 rounded-[2rem] border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden">
                     <!-- Injected animated vector -->
                 </div>
 
                 <!-- Breathing guide banner -->
-                <div id="player-breath-card" class="flex items-center gap-3 px-5 py-2.5 border border-white/10 bg-white/5 rounded-full">
-                    <span id="player-breath-title" class="text-[9px] font-bold uppercase tracking-widest text-primary animate-pulse">BREATHE IN</span>
+                <div id="player-breath-card"
+                    class="flex items-center gap-3 px-5 py-2.5 border border-white/10 bg-white/5 rounded-full">
+                    <span id="player-breath-title"
+                        class="text-[9px] font-bold uppercase tracking-widest text-primary animate-pulse">BREATHE
+                        IN</span>
                     <span class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
-                    <span id="player-breath-instruction" class="text-[9px] font-semibold text-white/75 uppercase tracking-widest">Lower weights slowly</span>
+                    <span id="player-breath-instruction"
+                        class="text-[9px] font-semibold text-white/75 uppercase tracking-widest">Lower weights
+                        slowly</span>
                 </div>
             </div>
 
             <!-- RIGHT: Timer controls and navigation -->
             <div class="flex-1 flex flex-col justify-between gap-6">
                 <!-- Rest Timer overlay (hidden by default) -->
-                <div id="player-rest-overlay" class="hidden flex-1 flex flex-col items-center justify-center text-center space-y-4">
-                    <span class="text-emerald-400 font-bold text-[10px] uppercase tracking-widest font-headline">Resting Telemetry Recovery</span>
-                    
+                <div id="player-rest-overlay"
+                    class="hidden flex-1 flex flex-col items-center justify-center text-center space-y-4">
+                    <span class="text-emerald-400 font-bold text-[10px] uppercase tracking-widest font-headline">Resting
+                        Telemetry Recovery</span>
+
                     <div class="relative w-36 h-36 flex items-center justify-center">
                         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-                            <circle cx="60" cy="60" r="50" fill="transparent" stroke="rgba(255,255,255,0.03)" stroke-width="6"/>
-                            <circle id="rest-timer-ring" cx="60" cy="60" r="50" fill="transparent" stroke="#10b981" stroke-width="6" stroke-dasharray="314.159" stroke-dashoffset="0" stroke-linecap="round"/>
+                            <circle cx="60" cy="60" r="50" fill="transparent" stroke="rgba(255,255,255,0.03)"
+                                stroke-width="6" />
+                            <circle id="rest-timer-ring" cx="60" cy="60" r="50" fill="transparent" stroke="#10b981"
+                                stroke-width="6" stroke-dasharray="314.159" stroke-dashoffset="0"
+                                stroke-linecap="round" />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
                             <span id="rest-timer-secs" class="text-3xl font-bold font-headline text-white">30</span>
-                            <span class="text-[8px] text-secondary opacity-60 uppercase font-semibold">Seconds left</span>
+                            <span class="text-[8px] text-secondary opacity-60 uppercase font-semibold">Seconds
+                                left</span>
                         </div>
                     </div>
 
-                    <button onclick="skipRestTime()" class="px-5 py-2 border border-white/10 rounded-full font-headline text-[10px] text-white uppercase font-bold hover:bg-white/5 transition-all">Skip Rest</button>
+                    <button onclick="skipRestTime()"
+                        class="px-5 py-2 border border-white/10 rounded-full font-headline text-[10px] text-white uppercase font-bold hover:bg-white/5 transition-all">Skip
+                        Rest</button>
                 </div>
 
                 <!-- Active Step Controls (shown by default) -->
@@ -388,45 +525,66 @@
                     <!-- Session Duration Info -->
                     <div class="flex justify-between items-center border-b border-white/5 pb-4">
                         <div>
-                            <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold">Active Session Timer</span>
-                            <span id="player-session-time" class="text-2xl font-bold text-white font-headline">00:00</span>
+                            <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold">Active
+                                Session Timer</span>
+                            <span id="player-session-time"
+                                class="text-2xl font-bold text-white font-headline">00:00</span>
                         </div>
-                        <span id="player-step-index" class="px-3.5 py-1.5 border border-white/10 rounded-full text-[10px] font-bold text-white uppercase">EXERCISE 1 OF 3</span>
+                        <span id="player-step-index"
+                            class="px-3.5 py-1.5 border border-white/10 rounded-full text-[10px] font-bold text-white uppercase">EXERCISE
+                            1 OF 3</span>
                     </div>
 
                     <!-- Targets Box -->
                     <div class="grid grid-cols-3 gap-4 text-center">
                         <div class="bg-white/5 border border-white/5 py-4 rounded-xl">
-                            <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Target Sets</span>
-                            <span id="player-target-sets" class="text-lg font-bold text-white font-headline">4 Sets</span>
+                            <span
+                                class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Target
+                                Sets</span>
+                            <span id="player-target-sets" class="text-lg font-bold text-white font-headline">4
+                                Sets</span>
                         </div>
                         <div class="bg-white/5 border border-white/5 py-4 rounded-xl">
-                            <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Target Reps</span>
-                            <span id="player-target-reps" class="text-lg font-bold text-white font-headline">10 Reps</span>
+                            <span
+                                class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Target
+                                Reps</span>
+                            <span id="player-target-reps" class="text-lg font-bold text-white font-headline">10
+                                Reps</span>
                         </div>
                         <div class="bg-white/5 border border-white/5 py-4 rounded-xl">
-                            <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Completed Sets</span>
-                            <span id="player-completed-sets" class="text-lg font-bold text-emerald-400 font-headline">0</span>
+                            <span
+                                class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Completed
+                                Sets</span>
+                            <span id="player-completed-sets"
+                                class="text-lg font-bold text-emerald-400 font-headline">0</span>
                         </div>
                     </div>
 
                     <!-- Pacing Controls -->
                     <div class="flex justify-center items-center gap-6 py-2">
-                        <button onclick="navigateExercise(-1)" class="glass-button w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-90">
+                        <button onclick="navigateExercise(-1)"
+                            class="glass-button w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-90">
                             <span class="material-symbols-outlined text-xl">skip_previous</span>
                         </button>
-                        <button id="player-btn-pause" onclick="togglePausePlay()" class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-on-primary active:scale-95 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer">
-                            <span id="player-play-icon" class="material-symbols-outlined text-2xl font-bold">pause</span>
+                        <button id="player-btn-pause" onclick="togglePausePlay()"
+                            class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-on-primary active:scale-95 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer">
+                            <span id="player-play-icon"
+                                class="material-symbols-outlined text-2xl font-bold">pause</span>
                         </button>
-                        <button onclick="navigateExercise(1)" class="glass-button w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-90">
+                        <button onclick="navigateExercise(1)"
+                            class="glass-button w-12 h-12 rounded-full flex items-center justify-center text-white active:scale-90">
                             <span class="material-symbols-outlined text-xl">skip_next</span>
                         </button>
                     </div>
 
                     <!-- Step actions -->
                     <div class="flex gap-4">
-                        <button onclick="logSingleSet()" class="flex-1 py-3.5 border border-white/10 rounded-xl font-headline text-[10px] text-white uppercase font-bold hover:bg-white/5 active:scale-95 transition-all">Log Completed Set</button>
-                        <button onclick="finishLiveExercise()" class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-headline text-[10px] uppercase font-bold active:scale-95 hover:scale-102 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">Complete Exercise</button>
+                        <button onclick="logSingleSet()"
+                            class="flex-1 py-3.5 border border-white/10 rounded-xl font-headline text-[10px] text-white uppercase font-bold hover:bg-white/5 active:scale-95 transition-all">Log
+                            Completed Set</button>
+                        <button onclick="finishLiveExercise()"
+                            class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-headline text-[10px] uppercase font-bold active:scale-95 hover:scale-102 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">Complete
+                            Exercise</button>
                     </div>
                 </div>
             </div>
@@ -435,14 +593,18 @@
 
     <!-- EXERCISE DETAILED VIEW DRAWER MODAL -->
     <div id="details-drawer" class="hidden fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex justify-end">
-        <div id="details-drawer-content" class="w-full max-w-lg bg-surface h-full border-l border-white/10 p-8 flex flex-col justify-between overflow-y-auto space-y-6 translate-x-full transition-transform duration-300">
+        <div id="details-drawer-content"
+            class="w-full max-w-lg bg-surface h-full border-l border-white/10 p-8 flex flex-col justify-between overflow-y-auto space-y-6 translate-x-full transition-transform duration-300">
             <!-- Header -->
             <div class="flex justify-between items-start border-b border-white/5 pb-4">
                 <div>
                     <h3 id="detail-title" class="font-headline text-2xl font-bold text-white uppercase">Squats</h3>
-                    <p id="detail-muscle" class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Quadriceps, Glutes</p>
+                    <p id="detail-muscle"
+                        class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Quadriceps,
+                        Glutes</p>
                 </div>
-                <button onclick="closeDetailsDrawer()" class="glass-button p-2 rounded-full text-secondary hover:text-white cursor-pointer border-0">
+                <button onclick="closeDetailsDrawer()"
+                    class="glass-button p-2 rounded-full text-secondary hover:text-white cursor-pointer border-0">
                     <span class="material-symbols-outlined">close</span>
                 </button>
             </div>
@@ -450,12 +612,16 @@
             <!-- Specs panel -->
             <div class="grid grid-cols-2 gap-3 text-xs">
                 <div class="bg-white/5 border border-white/5 p-3.5 rounded-xl">
-                    <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-0.5">Difficulty</span>
-                    <span id="detail-difficulty" class="text-white font-bold font-headline uppercase">Intermediate</span>
+                    <span
+                        class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-0.5">Difficulty</span>
+                    <span id="detail-difficulty"
+                        class="text-white font-bold font-headline uppercase">Intermediate</span>
                 </div>
                 <div class="bg-white/5 border border-white/5 p-3.5 rounded-xl">
-                    <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-0.5">Equipment</span>
-                    <span id="detail-equipment" class="text-white font-bold font-headline uppercase">Barbell / Rack</span>
+                    <span
+                        class="text-[9px] uppercase tracking-widest text-secondary block font-semibold mb-0.5">Equipment</span>
+                    <span id="detail-equipment" class="text-white font-bold font-headline uppercase">Barbell /
+                        Rack</span>
                 </div>
             </div>
 
@@ -463,7 +629,8 @@
             <div class="space-y-5 flex-1 text-xs text-secondary/90 leading-relaxed pr-2">
                 <!-- Step by step -->
                 <div class="space-y-2">
-                    <h4 class="text-white font-bold font-headline uppercase tracking-wider">Step-by-Step Instructions</h4>
+                    <h4 class="text-white font-bold font-headline uppercase tracking-wider">Step-by-Step Instructions
+                    </h4>
                     <ol id="detail-instructions-list" class="list-decimal pl-4 space-y-1.5"></ol>
                 </div>
 
@@ -493,20 +660,26 @@
             </div>
 
             <!-- Action -->
-            <button id="detail-btn-start" class="w-full py-4 bg-primary text-on-primary rounded-full font-headline text-xs font-bold uppercase tracking-widest hover:scale-102 active:scale-98 transition-all">Start Step</button>
+            <button id="detail-btn-start"
+                class="w-full py-4 bg-primary text-on-primary rounded-full font-headline text-xs font-bold uppercase tracking-widest hover:scale-102 active:scale-98 transition-all">Start
+                Step</button>
         </div>
     </div>
 
     <!-- FAVORITES LIST MODAL DRAWER -->
-    <div id="favorites-drawer" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end" onclick="closeFavoritesDrawer(event)">
-        <div id="favorites-drawer-content" class="w-full max-w-md bg-surface h-full border-l border-white/10 p-8 flex flex-col justify-between overflow-y-auto translate-x-full transition-transform duration-300" onclick="event.stopPropagation()">
+    <div id="favorites-drawer" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end"
+        onclick="closeFavoritesDrawer(event)">
+        <div id="favorites-drawer-content"
+            class="w-full max-w-md bg-surface h-full border-l border-white/10 p-8 flex flex-col justify-between overflow-y-auto translate-x-full transition-transform duration-300"
+            onclick="event.stopPropagation()">
             <div class="space-y-6 flex-1 flex flex-col">
                 <div class="flex justify-between items-center border-b border-white/5 pb-4">
                     <div>
                         <h3 class="font-headline text-xl font-bold text-white uppercase">Your Starred Exercises</h3>
                         <p class="text-[9px] text-secondary tracking-widest uppercase">Quick-Access List</p>
                     </div>
-                    <button onclick="closeFavorites()" class="glass-button p-2 rounded-full text-secondary hover:text-white cursor-pointer border-0">
+                    <button onclick="closeFavorites()"
+                        class="glass-button p-2 rounded-full text-secondary hover:text-white cursor-pointer border-0">
                         <span class="material-symbols-outlined">close</span>
                     </button>
                 </div>
@@ -530,202 +703,68 @@
     <script>
         // Real database of exercises with all properties requested
         const EXERCISES_DATABASE = [
-            {
-                id: "ex-benchpress",
-                name: "Barbell Bench Press",
-                category: "Chest",
-                muscle: "Pectorals, Anterior Deltoids, Triceps",
-                difficulty: "Intermediate",
-                equipment: "Gym Workout",
-                calories: 85,
-                duration: "8 mins",
-                sets: 4,
-                reps: 10,
-                rest: 60,
-                imageType: "benchpress",
-                instructions: [
-                    "Lie flat on the bench, pinching your shoulder blades together.",
-                    "Grip the bar slightly wider than shoulder width.",
-                    "Slowly lower the bar to your mid-chest level.",
-                    "Press the bar upward explosively until arms are extended."
-                ],
-                breathing: "Inhale as you lower the weight, exhale powerfully as you push up.",
-                mistakes: "Bouncing the barbell off your ribcage; flaring elbows out at 90 degrees; lifting buttocks off the bench.",
-                tips: "Drive your heels flat into the ground to build full-body tension.",
-                safety: "Ensure structural safeties are set or use a spotter when training near muscular failure.",
-                alternatives: "Dumbbell Press, Chest Dips, Push-ups"
-            },
-            {
-                id: "ex-deadlift",
-                name: "Conventional Barbell Deadlift",
-                category: "Back",
-                muscle: "Erectors, Gluteus, Hamstrings, Traps",
-                difficulty: "Advanced",
-                equipment: "Gym Workout",
-                calories: 140,
-                duration: "10 mins",
-                sets: 4,
-                reps: 5,
-                rest: 90,
-                imageType: "deadlift",
-                instructions: [
-                    "Position feet mid-stance directly under the bar.",
-                    "Hinge at the hips and grip the barbell outside your knees.",
-                    "Flatten your spine, engage your lats, and pull the slack out of the bar.",
-                    "Stand up by pushing through the floor, driving your hips forward at the top."
-                ],
-                breathing: "Perform brace inhale at the bottom, hold during lift, exhale at lockout.",
-                mistakes: "Rounding the lower spine; pulling the bar away from your shins; hyperextending back at lockout.",
-                tips: "Think of deadlifting as pushing the earth away rather than pulling the bar up.",
-                safety: "Discontinue set immediately if your spinal posture begins to round.",
-                alternatives: "Romanian Deadlift, Trap Bar Deadlift, Kettlebell Swings"
-            },
-            {
-                id: "ex-squat",
-                name: "Barbell Back Squat",
-                category: "Legs",
-                muscle: "Quadriceps, Glutes, Adductors, Core",
-                difficulty: "Intermediate",
-                equipment: "Gym Workout",
-                calories: 120,
-                duration: "9 mins",
-                sets: 4,
-                reps: 8,
-                rest: 90,
-                imageType: "squat",
-                instructions: [
-                    "Rest the barbell on your upper traps and stand shoulder width apart.",
-                    "Send hips back and descend keeping your torso upright.",
-                    "Lower until thighs are parallel with floor (or deeper).",
-                    "Push through mid-foot to stand back up to starting position."
-                ],
-                breathing: "Inhale at the top and brace core, exhale on the ascent past sticking point.",
-                mistakes: "Knees caving inwards; heels lifting off the ground; rounding lower back (butt wink).",
-                tips: "Actively screw your feet into the floor to activate hip external rotators.",
-                safety: "Always perform inside a safety power cage with spotter arms set at correct depth.",
-                alternatives: "Leg Press, Goblet Squat, Bulgarian Split Squats"
-            },
-            {
-                id: "ex-plank",
-                name: "Forearm Core Plank",
-                category: "Core",
-                muscle: "Rectus Abdominis, Obliques, Transverse Abdominis",
-                difficulty: "Beginner",
-                equipment: "Bodyweight",
-                calories: 45,
-                duration: "5 mins",
-                sets: 3,
-                reps: "60s Hold",
-                rest: 30,
-                imageType: "plank",
-                instructions: [
-                    "Support bodyweight on forearms and toes in a straight line.",
-                    "Squeeze glutes, engage abdominals, and push through shoulders.",
-                    "Hold posture rigid without allowing hips to sag."
-                ],
-                breathing: "Maintain shallow, rhythmic diaphragmatic breaths while maintaining full abdominal brace.",
-                mistakes: "Sagging lower back; arching hips upward; looking straight ahead straining neck.",
-                tips: "Actively pull your elbows toward your toes to maximize core contraction.",
-                safety: "Ensure shoulder joints are stacked directly over elbows.",
-                alternatives: "Hanging Knee Raises, Ab Wheel Rollouts, Deadbugs"
-            },
-            {
-                id: "ex-kb-swing",
-                name: "Kettlebell Hinge Swing",
-                category: "HIIT",
-                muscle: "Hamstrings, Glutes, Core, Shoulders",
-                difficulty: "Intermediate",
-                equipment: "Dumbbell",
-                calories: 105,
-                duration: "7 mins",
-                sets: 4,
-                reps: 15,
-                rest: 45,
-                imageType: "swing",
-                instructions: [
-                    "Stand feet shoulder-width, kettlebell placed 1 foot in front of you.",
-                    "Hinge back, grip the handle, and hike weight back between thighs.",
-                    "Snap hips forward powerfully to swing kettlebell to shoulder height.",
-                    "Let weight fall back down naturally, hinging at the bottom to repeat."
-                ],
-                breathing: "Exhale sharply at lockout; inhale as you hinge back down.",
-                mistakes: "Squatting instead of hinging; lifting the kettlebell with your shoulder muscles.",
-                tips: "Keep your spine neutral and focus on explosive glute activation.",
-                safety: "Do not let the weight pull your lower back into arching at bottom phase.",
-                alternatives: "Dumbbell Snatch, Barbell Clean, Cable Pull-throughs"
-            },
-            {
-                id: "ex-dumb-press",
-                name: "Seated Dumbbell Shoulder Press",
-                category: "Shoulders",
-                muscle: "Deltoids, Triceps, Trapezius",
-                difficulty: "Intermediate",
-                equipment: "Dumbbell",
-                calories: 70,
-                duration: "6 mins",
-                sets: 3,
-                reps: 12,
-                rest: 60,
-                imageType: "benchpress",
-                instructions: [
-                    "Sit on upright bench holding dumbbells at shoulder level.",
-                    "Press dumbbells directly upward until arms lock out.",
-                    "Lower dumbbells back down under control to chin level."
-                ],
-                breathing: "Exhale on upward press, inhale on control lower descent.",
-                mistakes: "Excessive arching of lower back; clashing dumbbells at the top.",
-                tips: "Tuck elbows slightly forward to protect your rotator cuff.",
-                safety: "Avoid using excessively heavy dumbbells that force you to hyperextend lower spine.",
-                alternatives: "Overhead Barbell Press, Arnold Press, Lateral Raises"
-            },
-            {
-                id: "ex-db-row",
-                name: "Single-Arm Dumbbell Row",
-                category: "Back",
-                muscle: "Latissimus Dorsi, Rhomboids, Rear Delts, Biceps",
-                difficulty: "Beginner",
-                equipment: "Dumbbell",
-                calories: 65,
-                duration: "6 mins",
-                sets: 3,
-                reps: 12,
-                rest: 45,
-                imageType: "deadlift",
-                instructions: [
-                    "Support knee and hand on flat bench, spine parallel to floor.",
-                    "Pull dumbbell toward your hip, keeping elbow tucked.",
-                    "Extend arm fully down to feel deep stretch in lat muscle."
-                ],
-                breathing: "Exhale as you row up, inhale as you control the dumbbell down.",
-                mistakes: "Twisting torso at top of movement; pulling dumbbell to chest instead of hip.",
-                tips: "Initiate the movement by driving your elbow back, not pulling with Bicep.",
-                safety: "Keep spine neutral throughout; do not let shoulders collapse or round.",
-                alternatives: "Lat Pulldown, Chest Supported Rows, Pull-ups"
-            },
-            {
-                id: "ex-stretch-cobra",
-                name: "Cobra Yoga Stretch",
-                category: "Yoga",
-                muscle: "Abdominals, Lower Back, Shoulder flexors",
-                difficulty: "Beginner",
-                equipment: "Bodyweight",
-                calories: 25,
-                duration: "4 mins",
-                sets: 3,
-                reps: "30s Hold",
-                rest: 15,
-                imageType: "plank",
-                instructions: [
-                    "Lie prone on floor, hands placed under shoulders.",
-                    "Press chest upward, extending arms and arching back gently.",
-                    "Draw shoulders away from ears and look slightly upward."
-                ],
-                breathing: "Inhale deeply to expand abdomen; exhale to sink deeper into the back bend.",
-                mistakes: "Shrugging shoulders near ears; locking elbows out completely with joint strain.",
-                tips: "Keep your glutes relaxed to ensure the lower back is stretching without tension.",
-                safety: "Avoid if experiencing sharp pain in lower lumbar vertebrae.",
-                alternatives: "Upward Facing Dog, Child's Pose, Cat-Cow Flow"
-            }
+            // --- CHEST (5) ---
+            { id: "ex-benchpress", name: "Barbell Bench Press", category: "Chest", muscle: "Pectorals, Anterior Deltoids, Triceps", difficulty: "Intermediate", equipment: "Gym Workout", calories: 85, duration: "8 mins", sets: 4, reps: 10, rest: 60, imageType: "benchpress", instructions: ["Lower bar to mid-chest.", "Press bar up."], breathing: "Inhale down, exhale up.", mistakes: "Bouncing bar.", tips: "Keep feet flat.", safety: "Use a spotter.", alternatives: "Dumbbell Press, Chest Dips, Push-ups" },
+            { id: "ex-db-benchpress", name: "Dumbbell Chest Press", category: "Chest", muscle: "Pectorals, Anterior Deltoids, Triceps", difficulty: "Intermediate", equipment: "Dumbbell", calories: 75, duration: "7 mins", sets: 4, reps: 10, rest: 60, imageType: "benchpress", instructions: ["Press dumbbells straight up.", "Lower slowly to chest."], breathing: "Inhale down, exhale up.", mistakes: "Clashing weights.", tips: "Keep forearms vertical.", safety: "Lower safely.", alternatives: "Barbell Bench Press, Flat Dumbbell Flyes" },
+            { id: "ex-db-pullover", name: "Dumbbell Chest Pullover", category: "Chest", muscle: "Pectorals, Latissimus Dorsi, Serratus", difficulty: "Intermediate", equipment: "Dumbbell", calories: 70, duration: "6 mins", sets: 3, reps: 12, rest: 60, imageType: "benchpress", instructions: ["Hold dumbbell above chest.", "Lower back over head.", "Pull up back to start."], breathing: "Inhale down, exhale up.", mistakes: "Bending elbows.", tips: "Squeeze chest.", safety: "Secure grip.", alternatives: "Cable Crossovers, Dumbbell Flyes" },
+            { id: "ex-bw-pushup", name: "Standard Bodyweight Push-Up", category: "Chest", muscle: "Pectorals, Anterior Deltoids, Triceps, Core", difficulty: "Beginner", equipment: "Bodyweight", calories: 50, duration: "5 mins", sets: 3, reps: 15, rest: 45, imageType: "plank", instructions: ["Start in high plank.", "Lower chest to floor.", "Push back up."], breathing: "Inhale down, exhale up.", mistakes: "Sagging hips.", tips: "Keep core tight.", safety: "Keep wrists aligned.", alternatives: "Incline Push-ups, Dips" },
+            { id: "ex-gym-inclinepress", name: "Barbell Incline Bench Press", category: "Chest", muscle: "Upper Pectorals, Anterior Deltoids, Triceps", difficulty: "Intermediate", equipment: "Gym Workout", calories: 90, duration: "8 mins", sets: 4, reps: 8, rest: 90, imageType: "benchpress", instructions: ["Lie on incline bench.", "Lower barbell to upper chest.", "Drive bar straight up."], breathing: "Inhale down, exhale up.", mistakes: "Incline too high.", tips: "Scapula retracted.", safety: "Use safety pins.", alternatives: "Incline Dumbbell Press, Cable Flyes" },
+
+            // --- BACK (5) ---
+            { id: "ex-deadlift", name: "Conventional Barbell Deadlift", category: "Back", muscle: "Erectors, Gluteus, Hamstrings, Traps", difficulty: "Advanced", equipment: "Gym Workout", calories: 140, duration: "10 mins", sets: 4, reps: 5, rest: 90, imageType: "deadlift", instructions: ["Hinge hips, grip bar.", "Flatten spine, engage lats.", "Stand and drive hips."], breathing: "Brace at bottom, exhale up.", mistakes: "Rounding lower spine.", tips: "Keep bar close.", safety: "Stop if back rounds.", alternatives: "Romanian Deadlift, KB Swings" },
+            { id: "ex-db-row", name: "Single-Arm Dumbbell Row", category: "Back", muscle: "Latissimus Dorsi, Rhomboids, Biceps", difficulty: "Beginner", equipment: "Dumbbell", calories: 65, duration: "6 mins", sets: 3, reps: 12, rest: 45, imageType: "deadlift", instructions: ["Knee and hand on bench.", "Pull dumbbell to hip.", "Extend arm fully down."], breathing: "Exhale up, inhale down.", mistakes: "Twisting torso.", tips: "Lead with elbow.", safety: "Keep spine neutral.", alternatives: "Lat Pulldown, Cable Row" },
+            { id: "ex-bw-pullups", name: "Wide-Grip Bodyweight Pull-up", category: "Back", muscle: "Latissimus Dorsi, Rhomboids, Biceps", difficulty: "Advanced", equipment: "Bodyweight", calories: 82, duration: "8 mins", sets: 4, reps: 8, rest: 75, imageType: "deadlift", instructions: ["Hang from pull-up bar.", "Pull chest to bar.", "Lower slowly."], breathing: "Exhale up, inhale down.", mistakes: "Kicking legs.", tips: "Engage scapula.", safety: "Control descent.", alternatives: "Lat Pulldown, Inversed Row" },
+            { id: "ex-db-inclinerow", name: "Incline Bench Dumbbell Row", category: "Back", muscle: "Upper Back, Lats, Rhomboids", difficulty: "Intermediate", equipment: "Dumbbell", calories: 70, duration: "7 mins", sets: 3, reps: 10, rest: 60, imageType: "deadlift", instructions: ["Lie chest-down on incline bench.", "Row weights to hips.", "Extend arms down."], breathing: "Exhale up, inhale down.", mistakes: "Lifting chest off bench.", tips: "Keeps stress off lower back.", safety: "Feet planted.", alternatives: "Single-Arm Row, Cable Row" },
+            { id: "ex-gym-bbrow", name: "Barbell Bent-Over Row", category: "Back", muscle: "Lats, Rhomboids, Lower Back", difficulty: "Advanced", equipment: "Gym Workout", calories: 95, duration: "8 mins", sets: 4, reps: 8, rest: 90, imageType: "deadlift", instructions: ["Hold bar, hinge lean torso.", "Row bar to lower sternum.", "Extend arms under control."], breathing: "Exhale up, inhale down.", mistakes: "Standing too upright.", tips: "Keep core tight.", safety: "Flat back posture.", alternatives: "Dumbbell Row, T-Bar Row" },
+
+            // --- SHOULDERS (5) ---
+            { id: "ex-dumb-press", name: "Seated Dumbbell Shoulder Press", category: "Shoulders", muscle: "Deltoids, Triceps, Trapezius", difficulty: "Intermediate", equipment: "Dumbbell", calories: 70, duration: "6 mins", sets: 3, reps: 12, rest: 60, imageType: "benchpress", instructions: ["Hold weights at shoulders.", "Press straight up.", "Lower to chin level."], breathing: "Exhale up, inhale down.", mistakes: "Arching lower back.", tips: "Tuck elbows slightly.", safety: "Keep spine straight.", alternatives: "Overhead Barbell Press, Lateral Raises" },
+            { id: "ex-bw-pikepushup", name: "Pike Push-up", category: "Shoulders", muscle: "Anterior Deltoids, Triceps, Core", difficulty: "Intermediate", equipment: "Bodyweight", calories: 60, duration: "6 mins", sets: 3, reps: 10, rest: 45, imageType: "plank", instructions: ["Pike position, hips high in V.", "Lower head toward hands.", "Push back up."], breathing: "Inhale down, exhale up.", mistakes: "Flaring elbows.", tips: "Look at your feet.", safety: "Control downward phase.", alternatives: "Handstand Hold, DB Press" },
+            { id: "ex-db-lateralraise", name: "Dumbbell Lateral Raises", category: "Shoulders", muscle: "Lateral Deltoids", difficulty: "Beginner", equipment: "Dumbbell", calories: 45, duration: "5 mins", sets: 3, reps: 15, rest: 45, imageType: "benchpress", instructions: ["Hold weights at sides.", "Raise arms to parallel to floor.", "Lower slowly."], breathing: "Exhale up, inhale down.", mistakes: "Using momentum.", tips: "Lead with elbows.", safety: "Keep weights light.", alternatives: "Cable Lateral Raises, OHP" },
+            { id: "ex-gym-ohp", name: "Standing Barbell Overhead Press", category: "Shoulders", muscle: "Anterior Deltoids, Core, Triceps", difficulty: "Advanced", equipment: "Gym Workout", calories: 90, duration: "8 mins", sets: 4, reps: 6, rest: 90, imageType: "benchpress", instructions: ["Rack bar on upper chest.", "Squeeze glutes and press up.", "Lockout arms overhead."], breathing: "Brace chest, exhale press.", mistakes: "Arching back.", tips: "Squeeze glutes tight.", safety: "Use safety bars.", alternatives: "Dumbbell Press, Arnold Press" },
+            { id: "ex-bw-handstand", name: "Bodyweight Handstand Hold", category: "Shoulders", muscle: "Shoulder Girdle, Core, Triceps", difficulty: "Advanced", equipment: "Bodyweight", calories: 50, duration: "5 mins", sets: 3, reps: "30s Hold", rest: 60, imageType: "plank", instructions: ["Kick up against wall.", "Push floor away, lock arms.", "Hold body tight."], breathing: "Maintain shallow breathes.", mistakes: "Bending elbows.", tips: "Tuck chin slightly.", safety: "Ensure clear landing area.", alternatives: "Pike Pushups, OHP" },
+
+            // --- LEGS (5) ---
+            { id: "ex-squat", name: "Barbell Back Squat", category: "Legs", muscle: "Quadriceps, Glutes, Adductors, Core", difficulty: "Intermediate", equipment: "Gym Workout", calories: 120, duration: "9 mins", sets: 4, reps: 8, rest: 90, imageType: "squat", instructions: ["Barbell on traps, stance wide.", "Lower hips until parallel.", "Push to stand."], breathing: "Inhale down, exhale up.", mistakes: "Knees caving; heels lift.", tips: "Push knees out.", safety: "Use safety pins.", alternatives: "Leg Press, Goblet Squat" },
+            { id: "ex-bw-jumpsquat", name: "Bodyweight Jump Squats", category: "Legs", muscle: "Quads, Glutes, Calves", difficulty: "Intermediate", equipment: "Bodyweight", calories: 85, duration: "6 mins", sets: 3, reps: 15, rest: 60, imageType: "squat", instructions: ["Descend into squat.", "Explode upward off ground.", "Land softly in squat."], breathing: "Inhale down, exhale jump.", mistakes: "Landing flat-footed.", tips: "Absorb shock through knees.", safety: "Avoid if knee pain.", alternatives: "Bodyweight Squat, Lunges" },
+            { id: "ex-db-splitquat", name: "Dumbbell Bulgarian Split Squat", category: "Legs", muscle: "Quadriceps, Glute Medius", difficulty: "Intermediate", equipment: "Dumbbell", calories: 90, duration: "8 mins", sets: 3, reps: 10, rest: 60, imageType: "squat", instructions: ["Rear foot on bench behind.", "Lower hips, back knee down.", "Push through front heel."], breathing: "Inhale down, exhale up.", mistakes: "Knee cave in front.", tips: "Improves balance.", safety: "Bench must be secure.", alternatives: "Lunges, Leg Press" },
+            { id: "ex-gym-legpress", name: "Leg Press Machine", category: "Legs", muscle: "Quadriceps, Glutes, Hamstrings", difficulty: "Intermediate", equipment: "Gym Workout", calories: 100, duration: "8 mins", sets: 4, reps: 10, rest: 75, imageType: "squat", instructions: ["Sit in seat, feet on platform.", "Lower platform by bending knees.", "Extend legs to start."], breathing: "Inhale down, exhale push.", mistakes: "Locking knees.", tips: "Keep hips flat in seat.", safety: "Saves lower back.", alternatives: "Barbell Squats, Split Squats" },
+            { id: "ex-bw-lunges", name: "Bodyweight Walking Lunges", category: "Legs", muscle: "Quads, Glutes, Hamstrings", difficulty: "Beginner", equipment: "Bodyweight", calories: 60, duration: "6 mins", sets: 3, reps: 20, rest: 45, imageType: "squat", instructions: ["Step forward into lunge.", "Lower rear knee to floor.", "Push forward to next step."], breathing: "Inhale down, exhale step.", mistakes: "Torso leaning too far.", tips: "Keep chest proud.", safety: "Do not strike knee.", alternatives: "Jump Squats, Bulgarian Squat" },
+
+            // --- CORE (5) ---
+            { id: "ex-plank", name: "Forearm Core Plank", category: "Core", muscle: "Rectus Abdominis, Obliques, Transverse", difficulty: "Beginner", equipment: "Bodyweight", calories: 45, duration: "5 mins", sets: 3, reps: "60s Hold", rest: 30, imageType: "plank", instructions: ["Support body on forearms/toes.", "Squeeze core and glutes.", "Hold body line straight."], breathing: "Slow diaphragmatic breathes.", mistakes: "Sagging lower back.", tips: "Pull elbows to toes.", safety: "Stack shoulders over elbows.", alternatives: "Deadbugs, Ab Rollouts" },
+            { id: "ex-bw-bicyclecrunch", name: "Bicycle Crunches", category: "Core", muscle: "Rectus Abdominis, Obliques", difficulty: "Beginner", equipment: "Bodyweight", calories: 40, duration: "5 mins", sets: 3, reps: 20, rest: 30, imageType: "plank", instructions: ["Lie, lift shoulders and legs.", "Rotate opposite elbow to knee.", "Alternate sides."], breathing: "Exhale on twist, inhale back.", mistakes: "Yanking neck with hands.", tips: "Focus on chest twist.", safety: "Keep lower back flat.", alternatives: "Russian Twists, Plank" },
+            { id: "ex-db-russiantwist", name: "Dumbbell Russian Twists", category: "Core", muscle: "Obliques, Transverse Abdominis", difficulty: "Beginner", equipment: "Dumbbell", calories: 50, duration: "6 mins", sets: 3, reps: 20, rest: 45, imageType: "plank", instructions: ["Sit, lean back 45 degrees.", "Hold weight, twist left to right.", "Touch floor gently."], breathing: "Exhale twist, inhale center.", mistakes: "Slouching back.", tips: "Keep spine neutral.", safety: "Keep feet down if back hurts.", alternatives: "Bicycle Crunches, Plank" },
+            { id: "ex-gym-abwheel", name: "Ab Wheel Rollouts", category: "Core", muscle: "Rectus Abdominis, Lats, Arms", difficulty: "Advanced", equipment: "Gym Workout", calories: 60, duration: "6 mins", sets: 3, reps: 8, rest: 60, imageType: "plank", instructions: ["Kneel, hold wheel on floor.", "Roll forward keeping core tight.", "Roll back pulling wheel back."], breathing: "Inhale forward, exhale back.", mistakes: "Sagging lower back.", tips: "Do not roll too far.", safety: "Use knee pad.", alternatives: "Plank, Hanging Knee Raises" },
+            { id: "ex-bw-hangingknee", name: "Hanging Knee Raises", category: "Core", muscle: "Lower Abs, Obliques, Hip Flexors", difficulty: "Intermediate", equipment: "Bodyweight", calories: 50, duration: "6 mins", sets: 3, reps: 12, rest: 45, imageType: "deadlift", instructions: ["Hang from pull-up bar straight.", "Raise knees to chest level.", "Lower legs slowly."], breathing: "Exhale up, inhale down.", mistakes: "Swinging body.", tips: "Avoid using momentum.", safety: "Verify bar grip.", alternatives: "Bicycle Crunches, Plank" },
+
+            // --- HIIT (5) ---
+            { id: "ex-kb-swing", name: "Kettlebell Hinge Swing", category: "HIIT", muscle: "Hamstrings, Glutes, Core", difficulty: "Intermediate", equipment: "Dumbbell", calories: 105, duration: "7 mins", sets: 4, reps: 15, rest: 45, imageType: "swing", instructions: ["Hinge at hips, hold kettlebell.", "Snap hips, swing bell to chest.", "Guide bell back down."], breathing: "Exhale up, inhale down.", mistakes: "Squatting instead of hinging.", tips: "Drive with your glutes.", safety: "Keep back flat.", alternatives: "Clean, DB Snatch" },
+            { id: "ex-bw-burpees", name: "Standard Bodyweight Burpees", category: "HIIT", muscle: "Full Body, Cardio", difficulty: "Advanced", equipment: "Bodyweight", calories: 110, duration: "8 mins", sets: 4, reps: 10, rest: 60, imageType: "squat", instructions: ["Drop to squat, jump to plank.", "Do push-up, jump feet under.", "Jump up with hands up."], breathing: "Exhale on jump, inhale down.", mistakes: "Sagging lower back.", tips: "Keep a steady rhythm.", safety: "Land flat-footed.", alternatives: "Jump Squats, Jacks" },
+            { id: "ex-db-thruster", name: "Dumbbell Thrusters", category: "HIIT", muscle: "Quads, Deltoids, Glutes, Triceps", difficulty: "Advanced", equipment: "Dumbbell", calories: 95, duration: "8 mins", sets: 4, reps: 12, rest: 60, imageType: "squat", instructions: ["Hold weights at shoulders.", "Squat low, then stand up.", "Press weights overhead in extension."], breathing: "Inhale down, exhale press.", mistakes: "Segmenting squat and press.", tips: "Use hip drive to press.", safety: "Check overhead clearance.", alternatives: "KB Swings, Sled Push" },
+            { id: "ex-gym-sledpush", name: "Weighted Sled Push", category: "HIIT", muscle: "Quads, Glutes, Calves, Core", difficulty: "Intermediate", equipment: "Gym Workout", calories: 120, duration: "9 mins", sets: 4, reps: "30m Push", rest: 60, imageType: "deadlift", instructions: ["Lean into sled, solid grip.", "Drive legs with high knees.", "Push forward on turf."], breathing: "Rapid rhythmic breath.", mistakes: "Rounding shoulders.", tips: "Stay low to ground.", safety: "Ensure dry turf.", alternatives: "Treadmill Sprints, Burpees" },
+            { id: "ex-bw-mountainclimber", name: "Mountain Climbers", category: "HIIT", muscle: "Core, Shoulders, Cardio", difficulty: "Beginner", equipment: "Bodyweight", calories: 70, duration: "6 mins", sets: 3, reps: "45s Work", rest: 30, imageType: "plank", instructions: ["High plank position.", "Drive knees to chest rapidly.", "Keep hips level."], breathing: "Breathe continuously.", mistakes: "Hips too high in air.", tips: "Run with knees.", safety: "Keep shoulders over wrists.", alternatives: "Plank, High Knees" },
+
+            // --- CARDIO (5) ---
+            { id: "ex-bw-highknees", name: "High Knee Cardio Sprint", category: "Cardio", muscle: "Cardio, Abdominals, Hip Flexors", difficulty: "Beginner", equipment: "Bodyweight", calories: 75, duration: "6 mins", sets: 3, reps: "45s Work", rest: 30, imageType: "plank", instructions: ["Run in place lifting knees high.", "Pump arms in coordination.", "Maintain quick pace."], breathing: "Fast rhythmic breaths.", mistakes: "Leaning back.", tips: "Land on balls of feet.", safety: "Wear supportive shoes.", alternatives: "Jumping Jacks, Mountain Climbers" },
+            { id: "ex-db-shadowbox", name: "Light Dumbbell Shadow Boxing", category: "Cardio", muscle: "Deltoids, Upper Back, Cardio", difficulty: "Intermediate", equipment: "Dumbbell", calories: 60, duration: "6 mins", sets: 3, reps: "60s Work", rest: 30, imageType: "benchpress", instructions: ["Hold light weights in guard.", "Throw punches under control.", "Keep feet moving constant."], breathing: "Exhale on punches.", mistakes: "Hyperextending elbows.", tips: "Punch at eye level.", safety: "Use light weights (1-3 lbs).", alternatives: "High Knees, Burpees" },
+            { id: "ex-gym-rowmachine", name: "Rowing Machine Intervals", category: "Cardio", muscle: "Lats, Quadriceps, Core, Cardio", difficulty: "Intermediate", equipment: "Gym Workout", calories: 110, duration: "10 mins", sets: 3, reps: "500m Row", rest: 90, imageType: "deadlift", instructions: ["Push with legs first.", "Lean back, pull bar to chest.", "Slide forward under control."], breathing: "Exhale on drive, inhale slide.", mistakes: "Pulling early with arms.", tips: "Drive with legs.", safety: "Secure heels in straps.", alternatives: "Treadmill, Sled Push" },
+            { id: "ex-bw-jumpingjacks", name: "Jumping Jacks", category: "Cardio", muscle: "Cardio, Full Body", difficulty: "Beginner", equipment: "Bodyweight", calories: 45, duration: "5 mins", sets: 3, reps: "60s Work", rest: 30, imageType: "plank", instructions: ["Jump feet out, raise hands.", "Jump feet together, lower hands.", "Repeat dynamically."], breathing: "Steady breathing.", mistakes: "Stiff knees.", tips: "Soft knees on landing.", safety: "Maintain soft surfaces.", alternatives: "High Knees, Mountain Climbers" },
+            { id: "ex-db-stepups", name: "Dumbbell Weighted Step-ups", category: "Cardio", muscle: "Quads, Glutes, Cardio", difficulty: "Beginner", equipment: "Dumbbell", calories: 70, duration: "8 mins", sets: 3, reps: 10, rest: 45, imageType: "squat", instructions: ["Hold weights at sides.", "Step single foot onto box.", "Drive up, stand tall, step down."], breathing: "Exhale up, inhale down.", mistakes: "Pushing off rear foot.", tips: "Drive through front heel.", safety: "Ensure box is stable.", alternatives: "Bodyweight Lunges, High Knees" },
+
+            // --- YOGA (5) ---
+            { id: "ex-stretch-cobra", name: "Cobra Yoga Stretch", category: "Yoga", muscle: "Abdominals, Lower Back", difficulty: "Beginner", equipment: "Bodyweight", calories: 25, duration: "4 mins", sets: 3, reps: "30s Hold", rest: 15, imageType: "plank", instructions: ["Lie prone, hands under shoulders.", "Press chest up extending arms.", "Draw shoulders down."], breathing: "Inhale up, exhale sink.", mistakes: "Shrugging shoulders.", tips: "Keep glutes active but relaxed.", safety: "Avoid pinching lower back.", alternatives: "Child's Pose, Upward Dog" },
+            { id: "ex-bw-downwarddog", name: "Downward-Facing Dog Pose", category: "Yoga", muscle: "Hamstrings, Calves, Shoulders", difficulty: "Beginner", equipment: "Bodyweight", calories: 20, duration: "4 mins", sets: 3, reps: "45s Hold", rest: 15, imageType: "plank", instructions: ["Start on hands/knees.", "Lift hips up, heels back.", "Make inverted V-shape."], breathing: "Deep rhythmic breaths.", mistakes: "Rounding spine.", tips: "Bend knees if hamstrings tight.", safety: "Keep wrists pointing straight.", alternatives: "Cobra, Child's Pose" },
+            { id: "ex-bw-warrior3", name: "Warrior III Pose (Virabhadrasana III)", category: "Yoga", muscle: "Hamstrings, Gluteus, Core", difficulty: "Advanced", equipment: "Bodyweight", calories: 25, duration: "5 mins", sets: 3, reps: "30s Hold/Leg", rest: 15, imageType: "plank", instructions: ["Stand, extend arms forward.", "Hinge at hips, raise back leg.", "Keep body parallel to floor."], breathing: "Slow steady breathing.", mistakes: "Collapsing chest.", tips: "Keep hips square to floor.", safety: "Focus gaze on single point.", alternatives: "Downward Dog, Cobra Stretch" },
+            { id: "ex-bw-childspose", name: "Child's Pose (Balasana)", category: "Yoga", muscle: "Lower Back, Glutes, Shoulders", difficulty: "Beginner", equipment: "Bodyweight", calories: 15, duration: "4 mins", sets: 3, reps: "60s Hold", rest: 15, imageType: "plank", instructions: ["Kneel on floor, sit on heels.", "Fold torso forward over thighs.", "Extend arms forward, hands flat."], breathing: "Deep rhythmic breathing.", mistakes: "Forcing forehead to floor.", tips: "Rest forehead on hands if tight.", safety: "Avoid if knee pain occurs.", alternatives: "Cobra Yoga Stretch, Downward Dog" },
+            { id: "ex-bw-treepose", name: "Tree Pose Balance", category: "Yoga", muscle: "Ankle Stabilizers, Core, Adductors", difficulty: "Beginner", equipment: "Bodyweight", calories: 15, duration: "4 mins", sets: 3, reps: "45s Hold/Leg", rest: 15, imageType: "plank", instructions: ["Stand on single leg.", "Place sole of foot against inner thigh.", "Bring palms to chest."], breathing: "Slow deep breathing.", mistakes: "Placing foot on knee joint.", tips: "Squeeze standing glute.", safety: "Fingertips to wall if losing balance.", alternatives: "Warrior III, Cobra" },
+
+            // --- ARMS (5) ---
+            { id: "ex-bw-tricepdips", name: "Bodyweight Bench Dips", category: "Arms", muscle: "Triceps, Chest, Shoulders", difficulty: "Beginner", equipment: "Bodyweight", calories: 50, duration: "5 mins", sets: 3, reps: 12, rest: 45, imageType: "plank", instructions: ["Hands on bench behind, feet out.", "Lower hips by bending elbows.", "Push up to lockout."], breathing: "Inhale down, exhale up.", mistakes: "Hips too far from bench.", tips: "Keep elbows tucked.", safety: "Shoulder check.", alternatives: "Pushups, Cable Curls" },
+            { id: "ex-db-hammercurls", name: "Standing Dumbbell Hammer Curls", category: "Arms", muscle: "Biceps, Brachialis", difficulty: "Beginner", equipment: "Dumbbell", calories: 45, duration: "5 mins", sets: 3, reps: 12, rest: 45, imageType: "benchpress", instructions: ["Stand, hold dumbbells.", "Curl weights palms facing neutral.", "Lower slowly."], breathing: "Exhale up, inhale down.", mistakes: "Swinging elbows.", tips: "Glue upper arms to sides.", safety: "Keep spine neutral.", alternatives: "Cable Curls, Bench Dips" },
+            { id: "ex-gym-cablecurls", name: "Cable Bicep Curls", category: "Arms", muscle: "Biceps", difficulty: "Beginner", equipment: "Gym Workout", calories: 55, duration: "5 mins", sets: 3, reps: 12, rest: 45, imageType: "benchpress", instructions: ["Hold cable, palms facing up.", "Curl handle to chest level.", "Lower to starting position."], breathing: "Exhale up, inhale down.", mistakes: "Elbows shifting forward.", tips: "Continuous biceps tension.", safety: "Correct pulley height.", alternatives: "Hammer Curls, Bench Dips" },
+            { id: "ex-bw-diamondpushup", name: "Bodyweight Diamond Push-Up", category: "Arms", muscle: "Triceps, Chest, Shoulders", difficulty: "Advanced", equipment: "Bodyweight", calories: 60, duration: "6 mins", sets: 3, reps: 10, rest: 60, imageType: "plank", instructions: ["Hands close together, index/thumb touch.", "Lower chest to hands.", "Push back up."], breathing: "Inhale down, exhale up.", mistakes: "Flaring elbows.", tips: "Brace core tight.", safety: "Check wrist comfort.", alternatives: "Bench Dips, Tricep Pressdown" },
+            { id: "ex-db-overheadtricep", name: "Dumbbell Overhead Tricep Extension", category: "Arms", muscle: "Triceps", difficulty: "Intermediate", equipment: "Dumbbell", calories: 50, duration: "6 mins", sets: 3, reps: 12, rest: 45, imageType: "benchpress", instructions: ["Sit, hold dumbbell overhead with both hands.", "Lower weight behind head.", "Extend arms upward."], breathing: "Inhale down, exhale press.", mistakes: "Flaring elbows out.", tips: "Keep elbows close to ears.", safety: "Secure weight grip.", alternatives: "Tricep Dips, Pressdown" }
         ];
 
         // Global state managers
@@ -740,7 +779,7 @@
         let currentDayWorkouts = [];
         let currentWorkoutIndex = 0;
         let currentSetCount = 0;
-        
+
         let restInterval = null;
         let restSecsLeft = 0;
 
@@ -785,14 +824,14 @@
             try {
                 const response = await fetch(`/api/workouts?email=${encodeURIComponent(userEmail)}`);
                 if (!response.ok) return;
-                
+
                 const workouts = await response.json();
-                
+
                 // Calculate Stats
                 let totalCalories = 0;
                 let totalSeconds = 0;
                 let streak = 0;
-                
+
                 workouts.forEach(w => {
                     totalCalories += (w.calories || 0);
                     totalSeconds += (w.duration || 0);
@@ -802,17 +841,17 @@
                 if (workouts.length > 0) {
                     let streakCount = 0;
                     let lastDateStr = "";
-                    
+
                     // Sort workouts chronologically by date
                     const sorted = [...workouts].sort((a, b) => new Date(b.date) - new Date(a.date));
-                    
+
                     // Simple calendar day continuous check
                     let currentDay = new Date();
                     for (let i = 0; i < sorted.length; i++) {
                         const logDate = new Date(sorted[i].date);
                         const diffTime = Math.abs(currentDay - logDate);
                         const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                        
+
                         if (diffDays === 0 || diffDays === 1) {
                             // Check uniqueness of day
                             const logDayStr = logDate.toDateString();
@@ -843,7 +882,7 @@
                         <div class="flex items-center justify-between p-3.5 bg-white/5 border border-white/5 rounded-xl text-xs hover:border-white/10 transition-all">
                             <div class="space-y-1">
                                 <p class="text-white font-bold font-headline uppercase">${w.workoutName || 'Completed Session'}</p>
-                                <p class="text-[10px] text-secondary/50">${new Date(w.date).toLocaleDateString()} @ ${new Date(w.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                <p class="text-[10px] text-secondary/50">${new Date(w.date).toLocaleDateString()} @ ${new Date(w.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                             </div>
                             <div class="text-right">
                                 <p class="text-white font-bold">${Math.round(w.duration / 60)}m logged</p>
@@ -866,7 +905,7 @@
             const weeklyContainer = document.getElementById('weekly-chart-container');
             const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const today = new Date();
-            
+
             // Generate array of last 7 calendar days
             const weekStats = [];
             for (let i = 6; i >= 0; i--) {
@@ -914,10 +953,10 @@
             let filtered = EXERCISES_DATABASE.filter(ex => {
                 // Category Filter
                 if (currentFilterCategory !== 'All' && ex.category !== currentFilterCategory) return false;
-                
+
                 // Difficulty Filter
                 if (difficulty !== 'All' && ex.difficulty !== difficulty) return false;
-                
+
                 // Equipment Filter
                 if (equipment !== 'All') {
                     if (equipment === 'Bodyweight' && ex.equipment !== 'Bodyweight') return false;
@@ -956,7 +995,7 @@
         // Filter categories toggle button styling
         function filterCategory(cat, btn) {
             currentFilterCategory = cat;
-            
+
             // Adjust active styles
             const buttons = document.querySelectorAll('.category-btn');
             buttons.forEach(b => {
@@ -1020,7 +1059,7 @@
 
         // Category icon selectors
         function getCategoryIcon(cat) {
-            switch(cat) {
+            switch (cat) {
                 case 'Chest': return 'sports_gymnastics';
                 case 'Back': return 'fitness_center';
                 case 'Legs': return 'directions_run';
@@ -1177,10 +1216,10 @@
             currentSetCount = 0;
             sessionSeconds = 0;
             isPaused = false;
-            
+
             // UI elements reset
             document.getElementById('player-btn-pause').querySelector('span').textContent = "pause";
-            
+
             setupActiveExerciseUI();
 
             // Open Live player
@@ -1203,7 +1242,7 @@
         function updateSessionClockDisplay() {
             const mins = Math.floor(sessionSeconds / 60);
             const secs = sessionSeconds % 60;
-            document.getElementById('player-session-time').textContent = 
+            document.getElementById('player-session-time').textContent =
                 `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
@@ -1217,7 +1256,7 @@
             document.getElementById('player-target-sets').textContent = `${ex.sets} Sets`;
             document.getElementById('player-target-reps').textContent = `${ex.reps} Reps`;
             document.getElementById('player-completed-sets').textContent = currentSetCount;
-            document.getElementById('player-step-index').textContent = 
+            document.getElementById('player-step-index').textContent =
                 `EXERCISE ${currentWorkoutIndex + 1} OF ${currentDayWorkouts.length}`;
 
             // Inject animated vector placeholder matching ex name
@@ -1315,7 +1354,7 @@
         // Play/Pause toggle
         function togglePausePlay() {
             isPaused = !isPaused;
-            document.getElementById('player-btn-pause').querySelector('span').textContent = 
+            document.getElementById('player-btn-pause').querySelector('span').textContent =
                 isPaused ? "play_arrow" : "pause";
         }
 
@@ -1328,16 +1367,16 @@
             document.getElementById('player-rest-overlay').classList.remove('hidden');
 
             document.getElementById('rest-timer-secs').textContent = restSecsLeft;
-            
+
             const ring = document.getElementById('rest-timer-ring');
             const circ = 2 * Math.PI * 50; // ~314.159
-            
+
             if (restInterval) clearInterval(restInterval);
             restInterval = setInterval(() => {
                 if (!isPaused) {
                     restSecsLeft--;
                     document.getElementById('rest-timer-secs').textContent = restSecsLeft;
-                    
+
                     const offset = circ * (1 - (restSecsLeft / (ex.rest || 30)));
                     ring.style.strokeDashoffset = offset;
 
@@ -1352,7 +1391,7 @@
             if (restInterval) clearInterval(restInterval);
             document.getElementById('player-rest-overlay').classList.add('hidden');
             document.getElementById('player-active-controls').classList.remove('hidden');
-            
+
             setupActiveExerciseUI();
         }
 
@@ -1373,7 +1412,7 @@
             if (currentSetCount < ex.sets) {
                 currentSetCount++;
                 document.getElementById('player-completed-sets').textContent = currentSetCount;
-                
+
                 // Triggers recovery rest countdown!
                 if (currentSetCount < ex.sets) {
                     triggerRestPeriod();
@@ -1443,49 +1482,95 @@
     <style>
         /* Animation pacing keyframes for visual mock vectors */
         @keyframes benchpress {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(24px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(24px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
+
         .animate-benchpress {
             animation: benchpress 4s infinite ease-in-out;
         }
 
         @keyframes squat {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(20px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(20px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
+
         .animate-squat {
             animation: squat 4s infinite ease-in-out;
         }
 
         @keyframes deadlift {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-25px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-25px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
+
         .animate-deadlift {
             animation: deadlift 4s infinite ease-in-out;
         }
 
         @keyframes swing {
-            0% { transform: rotate(-35deg); }
-            50% { transform: rotate(35deg); }
-            100% { transform: rotate(-35deg); }
+            0% {
+                transform: rotate(-35deg);
+            }
+
+            50% {
+                transform: rotate(35deg);
+            }
+
+            100% {
+                transform: rotate(-35deg);
+            }
         }
+
         .animate-swing {
             animation: swing 4s infinite ease-in-out;
         }
 
         @keyframes plank {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(1.5px) rotate(0.5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+            0% {
+                transform: translateY(0px) rotate(0deg);
+            }
+
+            50% {
+                transform: translateY(1.5px) rotate(0.5deg);
+            }
+
+            100% {
+                transform: translateY(0px) rotate(0deg);
+            }
         }
+
         .animate-plank {
             animation: plank 3s infinite ease-in-out;
         }
     </style>
 </body>
+
 </html>
