@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>FitForge | AI Master Planner</title>
+    <meta name="description"
+        content="FitForge AI Master Planner - Protocol-driven 24-hour intelligent workout, nutrition, and recovery schedule.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-obsidian": "#050505",
+                        "surface": "#131313",
+                        "surface-container": "#201f1f",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container-highest": "#353534",
+                        "surface-variant": "#353534",
+                        "surface-bright": "#3a3939",
+                        "surface-dim": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary": "#ffffff",
+                        "on-primary": "#2f3131",
+                        "secondary": "#c4c7c8",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-background": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "outline-variant": "#444748",
+                        "glass-border": "#2B2B2B",
+                        "accent-silver": "#c6c6c6",
+                        "error": "#ffb4ab",
+                        "status-error": "#ffb4ab",
+                        "accent-emerald": "#10b981",
+                        "accent-amber": "#f59e0b",
+                        "accent-rose": "#f43f5e",
+                        "accent-sky": "#0ea5e9",
+                        "accent-purple": "#8b5cf6"
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    spacing: { "gutter": "32px", "stack-sm": "16px", "stack-md": "32px", "stack-lg": "64px", "stack-xl": "120px", "margin-desktop": "80px", "margin-mobile": "24px", "container-max": "1440px" },
+                    fontFamily: { "body-md": ["Inter"], "headline-lg": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Inter"], "headline-md": ["Space Grotesk"], "label-sm": ["Inter"], "display-lg": ["Space Grotesk"] },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-md": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "500" }],
+                        "label-md": ["14px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "display-lg": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #e5e2e1;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #2B2B2B;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        }
+
+        .gradient-text {
+            background: linear-gradient(180deg, #FFFFFF 0%, #8e9192 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2B2B2B;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar-nav"
+        class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-8">
+            <a href="index.html" class="flex items-center gap-2 mb-2">
+                <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
+            </a>
+            <h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">FitForge</h1>
+            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine</p>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 mt-4">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="dashboard.html">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
+                href="planner.html">
+                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
+                <span class="font-body-md text-body-md tracking-tight text-white font-bold">AI Planner</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="workout.html">
+                <span class="material-symbols-outlined">fitness_center</span>
+                <span class="font-body-md text-body-md tracking-tight">Workouts</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="nutrition.html">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span class="font-body-md text-body-md tracking-tight">Nutrition</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="scanner.html">
+                <span class="material-symbols-outlined">qr_code_scanner</span>
+                <span class="font-body-md text-body-md tracking-tight">Scanner</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="progress.html">
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="profile.html">
+                <span class="material-symbols-outlined">person</span>
+                <span class="font-body-md text-body-md tracking-tight">Profile</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-glass-border mb-4">
+            <button id="sidebar-upgrade-btn"
+                class="w-full py-3 bg-primary text-on-primary font-label-md text-label-md rounded-full font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                Upgrade to Pro
+            </button>
+        </div>
+    </aside>
+
+    <!-- Sidebar Mobile Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content Shell -->
+    <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
+        <!-- Top Navbar -->
+        <header class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">menu</span>
+                </button>
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-purple-400 text-2xl">auto_awesome</span>
+                    <h2 class="font-headline-md text-headline-md text-primary font-bold">AI Master Day Planner</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-generate-ai-plan" onclick="generateAIMasterPlan()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+                    <span class="material-symbols-outlined text-sm">sync</span>
+                    Regenerate AI Plan
+                </button>
+                <a href="profile.html" class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                    <span class="material-symbols-outlined text-2xl">account_circle</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Canvas -->
+        <div class="px-4 md:px-12 py-stack-lg flex-1 space-y-8">
+
+            <!-- Hero Banner: Protocol Telemetry & Target Summary -->
+            <section class="glass-card p-8 rounded-[2rem] border-glass-border relative overflow-hidden flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
+                <div class="absolute -right-10 -top-10 w-64 h-64 bg-purple-500/10 blur-[90px] rounded-full pointer-events-none"></div>
+                <div class="space-y-2 z-10">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span>
+                            Gemini AI Protocol Linked
+                        </span>
+                        <span id="user-protocol-tag" class="text-xs text-secondary/60 font-mono">Loading protocol...</span>
+                    </div>
+                    <h1 id="ai-plan-headline" class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-white">AI Dynamic Master Protocol</h1>
+                    <p id="ai-plan-summary" class="text-xs sm:text-sm text-secondary max-w-xl leading-relaxed">Synthesizing your biometric protocol data into an adaptive 24-hour workout, nutrition, and recovery schedule.</p>
+                </div>
+
+                <!-- Daily Target Macro Counters -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto z-10">
+                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Target Calories</span>
+                        <span id="target-cals" class="text-lg font-bold text-white font-headline">2,200 kcal</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Protein Target</span>
+                        <span id="target-protein" class="text-lg font-bold text-emerald-400 font-headline">160 g</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Carbs / Fats</span>
+                        <span id="target-carbs-fats" class="text-lg font-bold text-sky-400 font-headline">210g / 65g</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Hydration</span>
+                        <span id="target-water" class="text-lg font-bold text-amber-400 font-headline">3.5 Liters</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Adaptive Alert / Notification Box -->
+            <div id="ai-adaptation-banner" class="hidden glass-card p-4 rounded-2xl border-purple-500/30 bg-purple-500/10 flex items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-purple-400 text-2xl">published_with_changes</span>
+                    <div>
+                        <h4 id="adaptation-title" class="text-sm font-bold text-white">AI Adaptive Update Triggered</h4>
+                        <p id="adaptation-msg" class="text-xs text-secondary opacity-90">Workout & meal targets dynamically recalculated based on your latest activity.</p>
+                    </div>
+                </div>
+                <button onclick="dismissAdaptationBanner()" class="text-xs text-secondary hover:text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10">Dismiss</button>
+            </div>
+
+            <!-- Master Daily Schedule Timeline -->
+            <section class="space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="font-headline text-xl font-bold text-white tracking-tight">Today's Master Schedule</h3>
+                        <p class="text-xs text-secondary">Gemini AI synchronized 24-hour protocol workflow</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs text-secondary">Real-Time Sync Active</span>
+                    </div>
+                </div>
+
+                <!-- Timeline Items List Container -->
+                <div id="timeline-container" class="space-y-4">
+                    <!-- Dynamic Loading State -->
+                    <div class="glass-card p-12 text-center space-y-4 rounded-3xl">
+                        <span class="material-symbols-outlined animate-spin text-3xl text-purple-400">sync</span>
+                        <p class="text-sm text-secondary">Synthesizing personalized AI master protocol from user profile data...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MEAL PHOTO VERIFICATION MODAL -->
+    <div id="meal-photo-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeMealPhotoModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">AI Vision Verification</span>
+                <h3 id="modal-meal-title" class="text-xl font-bold text-white font-headline">Verify Meal Photo</h3>
+                <p id="modal-meal-suggested" class="text-xs text-secondary">Upload photo of your plate to log and verify nutrients.</p>
+            </div>
+
+            <!-- Preview / File Upload Box -->
+            <div id="upload-box" onclick="document.getElementById('meal-file-input').click()" class="w-full h-48 rounded-2xl border-2 border-dashed border-white/20 hover:border-purple-400 transition-colors flex flex-col items-center justify-center cursor-pointer relative overflow-hidden bg-white/5">
+                <img id="meal-photo-preview" class="hidden absolute inset-0 w-full h-full object-cover" />
+                <div id="upload-placeholder" class="text-center space-y-2 p-4">
+                    <span class="material-symbols-outlined text-3xl text-purple-400">add_a_photo</span>
+                    <p class="text-xs text-white font-semibold">Click to Take or Upload Photo</p>
+                    <p class="text-[10px] text-secondary">Required by AI Protocol to log meal</p>
+                </div>
+                <input type="file" id="meal-file-input" accept="image/*" class="hidden" onchange="handleMealPhotoSelected(event)" />
+            </div>
+
+            <!-- Submit Verification Button -->
+            <button id="btn-submit-meal-verify" onclick="submitMealPhotoVerification()" class="w-full py-3 bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm rounded-full uppercase tracking-wider transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer" disabled>
+                Verify & Log Meal with Gemini AI
+            </button>
+        </div>
+    </div>
+
+    <!-- SCRIPT ENGINE -->
+    <script>
+        let userEmail = localStorage.getItem('userEmail');
+        let currentMasterPlan = null;
+        let selectedMealBlockId = null;
+        let selectedMealBase64 = null;
+        let selectedMealMime = 'image/jpeg';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!userEmail) {
+                window.location.href = 'login.html';
+                return;
+            }
+            loadUserProtocolAndPlan();
+        });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-nav');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (sidebar && backdrop) {
+                sidebar.classList.toggle('-translate-x-full');
+                backdrop.classList.toggle('hidden');
+            }
+        }
+
+        async function loadUserProtocolAndPlan() {
+            let p = {};
+            try {
+                const res = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    p = data.protocol || {};
+                }
+            } catch (err) {
+                console.error("Protocol fetch error:", err);
+            }
+
+            const goalStr = (p.goals && p.goals[0]) || 'Overall Fitness';
+            document.getElementById('user-protocol-tag').textContent = `${p.biologicalSex || 'Male'}, ${p.age || 25}y | ${p.weight || 75}kg | Goal: ${goalStr}`;
+
+            const cached = localStorage.getItem('fitforge_ai_master_plan_' + userEmail);
+            if (cached) {
+                try {
+                    currentMasterPlan = JSON.parse(cached);
+                    renderMasterPlan(currentMasterPlan);
+                    return;
+                } catch (e) {}
+            }
+
+            await generateAIMasterPlan(p);
+        }
+
+        async function generateAIMasterPlan(protocolData = null) {
+            const btn = document.getElementById('btn-generate-ai-plan');
+            const originalBtn = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">sync</span> Generating AI Plan...`;
+            }
+
+            try {
+                const response = await fetch('/api/ai/generate-plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, protocol: protocolData })
+                });
+
+                if (!response.ok) throw new Error("Failed to generate AI plan");
+
+                currentMasterPlan = await response.json();
+                localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                renderMasterPlan(currentMasterPlan);
+            } catch (err) {
+                console.error("Generate AI plan error, applying instant fallback:", err);
+                currentMasterPlan = getClientFallbackPlan(protocolData);
+                localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                renderMasterPlan(currentMasterPlan);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtn;
+                }
+            }
+        }
+
+        function getClientFallbackPlan(p) {
+            const weight = (p && p.weight) ? p.weight : 75;
+            const goal = (p && p.goals && p.goals[0]) ? p.goals[0] : 'Fitness & Muscle Building';
+            return {
+                headline: "AI Dynamic Master Protocol",
+                summary: `Customized daily routine based on your ${weight}kg biometric profile and ${goal} goal.`,
+                dailyTarget: {
+                    calories: Math.round(weight * 28),
+                    protein: Math.round(weight * 2.1),
+                    carbs: Math.round(weight * 3.0),
+                    fat: Math.round(weight * 0.8),
+                    waterLiters: 3.5
+                },
+                schedule: [
+                    {
+                        id: "blk-1",
+                        time: "07:00 AM",
+                        type: "workout",
+                        title: "Morning Strength & Kinetic Drive",
+                        description: "Hypertrophy session targeting primary muscle groups",
+                        status: "scheduled",
+                        details: {
+                            durationMins: 45,
+                            targetCalories: 380,
+                            exercises: [
+                                { name: "Barbell / Dumbbell Squats", sets: 4, reps: "10-12", restSecs: 60 },
+                                { name: "Push-ups / Bench Press", sets: 4, reps: "12", restSecs: 60 },
+                                { name: "Plank Core Hold", sets: 3, reps: "60s", restSecs: 45 }
+                            ]
+                        }
+                    },
+                    {
+                        id: "blk-2",
+                        time: "08:30 AM",
+                        type: "meal",
+                        title: "Anabolic Breakfast Protocol",
+                        description: "High-protein morning refueling meal",
+                        status: "scheduled",
+                        details: {
+                            mealType: "Breakfast",
+                            suggestedMeal: "Oatmeal with Whey Protein & Almonds",
+                            targetCalories: 550,
+                            protein: 42,
+                            carbs: 65,
+                            fat: 14,
+                            photoRequired: true,
+                            ingredients: ["100g Oats", "1 Scoop Whey", "15g Almonds", "1 Banana"]
+                        }
+                    },
+                    {
+                        id: "blk-3",
+                        time: "01:00 PM",
+                        type: "meal",
+                        title: "Precision Lunch Matrix",
+                        description: "Balanced macronutrient mid-day power meal",
+                        status: "scheduled",
+                        details: {
+                            mealType: "Lunch",
+                            suggestedMeal: "Grilled Chicken Breast with Quinoa & Broccoli",
+                            targetCalories: 650,
+                            protein: 52,
+                            carbs: 60,
+                            fat: 15,
+                            photoRequired: true,
+                            ingredients: ["180g Chicken Breast", "150g Quinoa", "100g Broccoli"]
+                        }
+                    },
+                    {
+                        id: "blk-4",
+                        time: "04:30 PM",
+                        type: "workout",
+                        title: "Afternoon Agility & Metabolic Finisher",
+                        description: "High intensity metabolic rate amplifier",
+                        status: "scheduled",
+                        details: {
+                            durationMins: 30,
+                            targetCalories: 280,
+                            exercises: [
+                                { name: "Dumbbell Kettlebell Swings", sets: 4, reps: "15", restSecs: 45 },
+                                { name: "Bodyweight Burpees", sets: 3, reps: "12", restSecs: 45 },
+                                { name: "Mountain Climbers", sets: 3, reps: "45s", restSecs: 30 }
+                            ]
+                        }
+                    },
+                    {
+                        id: "blk-5",
+                        time: "07:30 PM",
+                        type: "meal",
+                        title: "Recovery Dinner Protocol",
+                        description: "Lean protein and fiber dense dinner",
+                        status: "scheduled",
+                        details: {
+                            mealType: "Dinner",
+                            suggestedMeal: "Baked Fish/Tofu with Sweet Potato & Salad",
+                            targetCalories: 600,
+                            protein: 45,
+                            carbs: 50,
+                            fat: 20,
+                            photoRequired: true,
+                            ingredients: ["180g Fish/Tofu", "150g Sweet Potato", "Mixed Greens"]
+                        }
+                    },
+                    {
+                        id: "blk-6",
+                        time: "09:30 PM",
+                        type: "recovery",
+                        title: "Nocturnal Regeneration & Mobility",
+                        description: "Deep breathing, hydration check, and tissue repair",
+                        status: "scheduled",
+                        details: {
+                            durationMins: 15,
+                            waterCheck: "Ensure 3.5L daily total reached",
+                            mobility: ["Child's Pose (60s)", "Cobra Stretch (60s)", "Hamstring Stretch (60s)"]
+                        }
+                    }
+                ]
+            };
+        }
+
+        function renderMasterPlan(plan) {
+            if (!plan) return;
+            document.getElementById('ai-plan-headline').textContent = plan.headline || "AI Dynamic Master Protocol";
+            document.getElementById('ai-plan-summary').textContent = plan.summary || "Customized 24-hour protocol workflow.";
+
+            if (plan.dailyTarget) {
+                document.getElementById('target-cals').textContent = `${plan.dailyTarget.calories || 2200} kcal`;
+                document.getElementById('target-protein').textContent = `${plan.dailyTarget.protein || 160} g`;
+                document.getElementById('target-carbs-fats').textContent = `${plan.dailyTarget.carbs || 210}g / ${plan.dailyTarget.fat || 65}g`;
+                document.getElementById('target-water').textContent = `${plan.dailyTarget.waterLiters || 3.5} Liters`;
+            }
+
+            const container = document.getElementById('timeline-container');
+            if (!plan.schedule || plan.schedule.length === 0) {
+                container.innerHTML = `<p class="text-xs text-secondary text-center py-8">No scheduled protocol blocks.</p>`;
+                return;
+            }
+
+            container.innerHTML = plan.schedule.map(block => {
+                const isWorkout = block.type === 'workout';
+                const isMeal = block.type === 'meal';
+                const isRecovery = block.type === 'recovery';
+
+                let icon = 'event';
+                let iconColor = 'text-white';
+                let typeBadgeBg = 'bg-white/10 text-white';
+
+                if (isWorkout) {
+                    icon = 'fitness_center';
+                    iconColor = 'text-emerald-400';
+                    typeBadgeBg = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+                } else if (isMeal) {
+                    icon = 'restaurant';
+                    iconColor = 'text-amber-400';
+                    typeBadgeBg = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+                } else if (isRecovery) {
+                    icon = 'spa';
+                    iconColor = 'text-sky-400';
+                    typeBadgeBg = 'bg-sky-500/10 text-sky-400 border border-sky-500/20';
+                }
+
+                let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-secondary">Scheduled</span>`;
+                if (block.status === 'completed') {
+                    statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"><span class="material-symbols-outlined text-xs">check_circle</span> Completed</span>`;
+                } else if (block.status === 'missed') {
+                    statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1"><span class="material-symbols-outlined text-xs">cancel</span> Missed / Rescheduled</span>`;
+                }
+
+                let innerContent = '';
+                if (isWorkout && block.details) {
+                    innerContent = `
+                        <div class="space-y-2">
+                            <div class="flex flex-wrap gap-2 text-xs text-secondary font-mono">
+                                <span>Duration: ${block.details.durationMins || 45} mins</span>
+                                <span>•</span>
+                                <span>Target Burn: ${block.details.targetCalories || 300} kcal</span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
+                                ${(block.details.exercises || []).map(ex => `
+                                    <div class="p-2.5 bg-white/5 rounded-xl border border-white/5 text-xs">
+                                        <p class="text-white font-bold">${ex.name}</p>
+                                        <p class="text-[10px] text-secondary opacity-70">${ex.sets} Sets × ${ex.reps} (${ex.restSecs}s Rest)</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                } else if (isMeal && block.details) {
+                    innerContent = `
+                        <div class="space-y-2">
+                            <div class="p-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl text-xs space-y-1">
+                                <p class="text-amber-400 font-bold uppercase tracking-wider text-[10px]">AI Suggested Menu</p>
+                                <p class="text-white font-bold text-sm">${block.details.suggestedMeal || 'High Protein Meal'}</p>
+                                <p class="text-secondary text-[11px]">${block.details.targetCalories || 500} kcal | ${block.details.protein || 40}g Protein | ${block.details.carbs || 50}g Carbs | ${block.details.fat || 15}g Fat</p>
+                            </div>
+                        </div>
+                    `;
+                } else if (isRecovery && block.details) {
+                    innerContent = `
+                        <div class="text-xs text-secondary space-y-1">
+                            <p class="text-sky-400 font-semibold">${block.details.waterCheck || 'Maintain Hydration'}</p>
+                            <p>Mobility Routine: ${(block.details.mobility || []).join(', ')}</p>
+                        </div>
+                    `;
+                }
+
+                let actionBtn = '';
+                if (block.status === 'scheduled') {
+                    if (isWorkout) {
+                        actionBtn = `
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="markBlockCompleted('${block.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+                                    Mark Completed
+                                </button>
+                                <button onclick="rescheduleMissedWorkout('${block.id}')" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-rose-400 border border-rose-500/20 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+                                    Missed / Reschedule AI
+                                </button>
+                            </div>
+                        `;
+                    } else if (isMeal) {
+                        actionBtn = `
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="openMealPhotoModal('${block.id}', '${block.details?.suggestedMeal || 'Meal'}', ${block.details?.targetCalories || 500})" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer">
+                                    <span class="material-symbols-outlined text-sm">photo_camera</span>
+                                    Upload Photo to Verify & Log Meal
+                                </button>
+                            </div>
+                        `;
+                    } else if (isRecovery) {
+                        actionBtn = `
+                            <div class="flex gap-2 mt-3">
+                                <button onclick="markBlockCompleted('${block.id}')" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+                                    Complete Recovery Session
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
+
+                return `
+                    <div class="glass-card p-6 rounded-3xl border-glass-border flex flex-col md:flex-row items-start gap-4 justify-between transition-all hover:border-white/20">
+                        <div class="flex items-start gap-4 flex-1">
+                            <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-2xl ${iconColor}">${icon}</span>
+                            </div>
+                            <div class="space-y-2 flex-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-xs font-mono text-purple-400 font-bold">${block.time}</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeBadgeBg}">${block.type}</span>
+                                    ${statusBadge}
+                                </div>
+                                <h4 class="text-lg font-bold text-white font-headline">${block.title}</h4>
+                                <p class="text-xs text-secondary">${block.description}</p>
+                                ${innerContent}
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function markBlockCompleted(blockId) {
+            if (!currentMasterPlan) return;
+            const block = currentMasterPlan.schedule.find(b => b.id === blockId);
+            if (block) {
+                block.status = 'completed';
+                localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                renderMasterPlan(currentMasterPlan);
+
+                if (block.type === 'workout' && userEmail) {
+                    try {
+                        await fetch('/api/workouts', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                email: userEmail,
+                                workoutName: block.title,
+                                duration: (block.details?.durationMins || 30) * 60,
+                                steps: 2500,
+                                distance: 1500,
+                                calories: block.details?.targetCalories || 300
+                            })
+                        });
+                    } catch (e) {}
+                }
+            }
+        }
+
+        async function rescheduleMissedWorkout(blockId) {
+            if (!currentMasterPlan) return;
+            try {
+                const res = await fetch('/api/ai/replan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        currentPlan: currentMasterPlan,
+                        reason: 'missed_workout',
+                        eventDetails: { missedBlockId: blockId }
+                    })
+                });
+
+                if (res.ok) {
+                    currentMasterPlan = await res.json();
+                    localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                    renderMasterPlan(currentMasterPlan);
+
+                    showAdaptationBanner("Workout Rescheduled", "Missed routine exercises have been automatically shifted to your afternoon/evening schedule.");
+                }
+            } catch (err) {
+                console.error("Reschedule error:", err);
+            }
+        }
+
+        function openMealPhotoModal(blockId, mealName, targetCalories) {
+            selectedMealBlockId = blockId;
+            selectedMealBase64 = null;
+            document.getElementById('modal-meal-title').textContent = `Verify ${mealName}`;
+            document.getElementById('modal-meal-suggested').textContent = `Suggested target: ${targetCalories} kcal. Upload meal photo to verify with Gemini AI.`;
+            document.getElementById('upload-placeholder').classList.remove('hidden');
+            document.getElementById('meal-photo-preview').classList.add('hidden');
+            document.getElementById('btn-submit-meal-verify').disabled = true;
+            document.getElementById('meal-photo-modal').classList.remove('hidden');
+        }
+
+        function closeMealPhotoModal() {
+            document.getElementById('meal-photo-modal').classList.add('hidden');
+        }
+
+        function handleMealPhotoSelected(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            selectedMealMime = file.type || 'image/jpeg';
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                selectedMealBase64 = evt.target.result;
+                const preview = document.getElementById('meal-photo-preview');
+                preview.src = selectedMealBase64;
+                preview.classList.remove('hidden');
+                document.getElementById('upload-placeholder').classList.add('hidden');
+                document.getElementById('btn-submit-meal-verify').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function submitMealPhotoVerification() {
+            if (!selectedMealBase64 || !selectedMealBlockId) return;
+            const btn = document.getElementById('btn-submit-meal-verify');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">sync</span> Verifying with Gemini Vision AI...`;
+
+            try {
+                const block = currentMasterPlan.schedule.find(b => b.id === selectedMealBlockId);
+                const res = await fetch('/api/ai/verify-meal-photo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        mealBlockId: selectedMealBlockId,
+                        imageBase64: selectedMealBase64,
+                        mimeType: selectedMealMime,
+                        targetMealName: block?.details?.suggestedMeal || "Suggested Meal",
+                        targetCalories: block?.details?.targetCalories || 500
+                    })
+                });
+
+                if (!res.ok) throw new Error("Meal photo verification failed.");
+
+                const data = await res.json();
+                closeMealPhotoModal();
+
+                if (block) {
+                    block.status = 'completed';
+                    localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                    renderMasterPlan(currentMasterPlan);
+                }
+
+                if (data.triggerReplan && data.extraCalories > 0) {
+                    showAdaptationBanner("Calorie Offset Adaptive Trigger", `Verified meal consumed +${data.extraCalories} extra calories. Gemini AI has automatically added extra workout sets to your remaining schedule!`);
+                    
+                    const replanRes = await fetch('/api/ai/replan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: userEmail,
+                            currentPlan: currentMasterPlan,
+                            reason: 'over_consumption',
+                            eventDetails: { extraCalories: data.extraCalories, extraProtein: data.extraProtein }
+                        })
+                    });
+                    if (replanRes.ok) {
+                        currentMasterPlan = await replanRes.json();
+                        localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                        renderMasterPlan(currentMasterPlan);
+                    }
+                } else {
+                    alert(data.message || "Meal photo verified successfully!");
+                }
+            } catch (err) {
+                alert("Failed to verify meal photo. Please try again.");
+                console.error(err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        function showAdaptationBanner(title, msg) {
+            document.getElementById('adaptation-title').textContent = title;
+            document.getElementById('adaptation-msg').textContent = msg;
+            document.getElementById('ai-adaptation-banner').classList.remove('hidden');
+        }
+
+        function dismissAdaptationBanner() {
+            document.getElementById('ai-adaptation-banner').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

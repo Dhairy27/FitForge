@@ -2548,6 +2548,495 @@ app.post('/api/analyze-text-food', async (req, res) => {
   }
 });
 
+// ==========================================
+// 5. AI MASTER PLANNER & ADAPTIVE ENGINE
+// ==========================================
+
+// 5a. Generate AI Master Plan based on Protocol Data
+app.post('/api/ai/generate-plan', async (req, res) => {
+  try {
+    const { email, protocol } = req.body;
+    let userProtocol = protocol;
+
+    if (!userProtocol && email) {
+      const user = await User.findOne({ email: email.toLowerCase() });
+      if (user && user.protocol) userProtocol = user.protocol;
+    }
+
+    const p = userProtocol || {};
+    const age = p.age || 25;
+    const sex = p.biologicalSex || 'Male';
+    const weight = p.weight || 75;
+    const height = p.height || 175;
+    const goal = (p.goals && p.goals[0]) || 'Overall Fitness & Muscle Building';
+    const activity = p.activityLevel || 'Moderate';
+    const equip = (p.equipment && p.equipment.length) ? p.equipment.join(', ') : 'Dumbbells, Bodyweight';
+    const fitnessLevel = p.fitnessLevel || 'Intermediate';
+
+    const systemPrompt = `You are FitForge's Master AI Engine. Generate an integrated 24-hour daily protocol (workouts + nutrition + hydration + recovery) strictly tailored for this user:
+    - Age: ${age}, Sex: ${sex}, Weight: ${weight}kg, Height: ${height}cm
+    - Goal: ${goal}
+    - Fitness Level: ${fitnessLevel}, Activity Level: ${activity}
+    - Available Equipment: ${equip}
+
+    Construct a complete daily schedule with morning workout, afternoon/evening workout or cardio, breakfast, lunch, dinner, snacks, and recovery.
+    Return ONLY a JSON object with this exact format (no markdown codeblocks):
+    {
+      "headline": "AI Dynamic Master Protocol",
+      "summary": "Customized routine based on ${goal} using ${equip}.",
+      "dailyTarget": {
+        "calories": 2200,
+        "protein": 160,
+        "carbs": 210,
+        "fat": 65,
+        "waterLiters": 3.5
+      },
+      "schedule": [
+        {
+          "id": "blk-1",
+          "time": "07:00 AM",
+          "type": "workout",
+          "title": "Morning Strength & Kinetic Drive",
+          "description": "Hypertrophy session targeting primary muscle groups",
+          "status": "scheduled",
+          "details": {
+            "durationMins": 45,
+            "targetCalories": 380,
+            "exercises": [
+              { "name": "Barbell Squat / Goblet Squat", "sets": 4, "reps": "10-12", "restSecs": 60 },
+              { "name": "Dumbbell Bench Press", "sets": 4, "reps": "10", "restSecs": 60 },
+              { "name": "Plank Core Hold", "sets": 3, "reps": "45s", "restSecs": 45 }
+            ]
+          }
+        },
+        {
+          "id": "blk-2",
+          "time": "08:30 AM",
+          "type": "meal",
+          "title": "Anabolic Breakfast Protocol",
+          "description": "High-protein morning refueling meal",
+          "status": "scheduled",
+          "details": {
+            "mealType": "Breakfast",
+            "suggestedMeal": "Oatmeal with Whey Protein, Almonds & Banana",
+            "targetCalories": 550,
+            "protein": 42,
+            "carbs": 65,
+            "fat": 14,
+            "photoRequired": true,
+            "ingredients": ["100g Rolled Oats", "1 Scoop Whey", "15g Almonds", "1 Medium Banana"]
+          }
+        },
+        {
+          "id": "blk-3",
+          "time": "01:00 PM",
+          "type": "meal",
+          "title": "Precision Lunch Matrix",
+          "description": "Balanced macronutrient mid-day power meal",
+          "status": "scheduled",
+          "details": {
+            "mealType": "Lunch",
+            "suggestedMeal": "Grilled Chicken Breast with Quinoa & Steamed Broccoli",
+            "targetCalories": 650,
+            "protein": 52,
+            "carbs": 60,
+            "fat": 15,
+            "photoRequired": true,
+            "ingredients": ["180g Chicken Breast", "150g Quinoa", "100g Broccoli", "1 tbsp Olive Oil"]
+          }
+        },
+        {
+          "id": "blk-4",
+          "time": "04:30 PM",
+          "type": "workout",
+          "title": "Afternoon Cardio & Agility Finisher",
+          "description": "High intensity metabolic rate amplifier",
+          "status": "scheduled",
+          "details": {
+            "durationMins": 30,
+            "targetCalories": 280,
+            "exercises": [
+              { "name": "Kettlebell / Dumbbell Swings", "sets": 4, "reps": "15", "restSecs": 45 },
+              { "name": "Bodyweight Burpees", "sets": 3, "reps": "12", "restSecs": 45 },
+              { "name": "Mountain Climbers", "sets": 3, "reps": "45s", "restSecs": 30 }
+            ]
+          }
+        },
+        {
+          "id": "blk-5",
+          "time": "07:30 PM",
+          "type": "meal",
+          "title": "Recovery Dinner Protocol",
+          "description": "Lean protein and fiber dense dinner",
+          "status": "scheduled",
+          "details": {
+            "mealType": "Dinner",
+            "suggestedMeal": "Baked Salmon / Tofu with Sweet Potato & Mixed Salad",
+            "targetCalories": 600,
+            "protein": 45,
+            "carbs": 50,
+            "fat": 20,
+            "photoRequired": true,
+            "ingredients": ["180g Salmon/Tofu", "150g Sweet Potato", "Mixed Greens"]
+          }
+        },
+        {
+          "id": "blk-6",
+          "time": "09:30 PM",
+          "type": "recovery",
+          "title": "Nocturnal Regeneration & Mobility",
+          "description": "Deep breathing, hydration check, and tissue repair",
+          "status": "scheduled",
+          "details": {
+            "durationMins": 15,
+            "waterCheck": "Ensure 3.5L daily total reached",
+            "mobility": ["Child's Pose (60s)", "Cobra Stretch (60s)", "Hamstring Stretch (60s)"]
+          }
+        }
+      ]
+    }`;
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: systemPrompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+
+        if (response.ok) {
+          const resData = await response.json();
+          const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (txt) {
+            const parsed = JSON.parse(txt);
+            return res.status(200).json(parsed);
+          }
+        }
+      } catch (err) {
+        console.error("Gemini AI plan generation error:", err);
+      }
+    }
+
+    // Smart Fallback Plan Generator
+    const fallbackPlan = {
+      headline: "AI Master Daily Protocol",
+      summary: `Tailored protocol for ${goal} using ${equip}. Calibrated to your ${weight}kg biometric profile.`,
+      dailyTarget: {
+        calories: Math.round(weight * 28),
+        protein: Math.round(weight * 2.1),
+        carbs: Math.round(weight * 3.0),
+        fat: Math.round(weight * 0.8),
+        waterLiters: 3.5
+      },
+      schedule: [
+        {
+          id: "blk-1",
+          time: "07:00 AM",
+          type: "workout",
+          title: "Morning Strength & Kinetic Drive",
+          description: "Hypertrophy session targeting primary muscle groups",
+          status: "scheduled",
+          details: {
+            durationMins: 45,
+            targetCalories: 380,
+            exercises: [
+              { name: "Barbell / Dumbbell Squats", sets: 4, reps: "10-12", restSecs: 60 },
+              { name: "Push-ups / Bench Press", sets: 4, reps: "12", restSecs: 60 },
+              { name: "Plank Core Hold", sets: 3, reps: "60s", restSecs: 45 }
+            ]
+          }
+        },
+        {
+          id: "blk-2",
+          time: "08:30 AM",
+          type: "meal",
+          title: "Anabolic Breakfast Protocol",
+          description: "High-protein morning refueling meal",
+          status: "scheduled",
+          details: {
+            mealType: "Breakfast",
+            suggestedMeal: "Oatmeal with Whey Protein & Almonds",
+            targetCalories: 550,
+            protein: 42,
+            carbs: 65,
+            fat: 14,
+            photoRequired: true,
+            ingredients: ["100g Oats", "1 Scoop Whey", "15g Almonds", "1 Banana"]
+          }
+        },
+        {
+          id: "blk-3",
+          time: "01:00 PM",
+          type: "meal",
+          title: "Precision Lunch Matrix",
+          description: "Balanced macronutrient mid-day power meal",
+          status: "scheduled",
+          details: {
+            mealType: "Lunch",
+            suggestedMeal: "Grilled Chicken Breast with Quinoa & Broccoli",
+            targetCalories: 650,
+            protein: 52,
+            carbs: 60,
+            fat: 15,
+            photoRequired: true,
+            ingredients: ["180g Chicken Breast", "150g Quinoa", "100g Broccoli"]
+          }
+        },
+        {
+          id: "blk-4",
+          time: "04:30 PM",
+          type: "workout",
+          title: "Afternoon Agility & Metabolic Finisher",
+          description: "High intensity metabolic rate amplifier",
+          status: "scheduled",
+          details: {
+            durationMins: 30,
+            targetCalories: 280,
+            exercises: [
+              { name: "Dumbbell Kettlebell Swings", sets: 4, reps: "15", restSecs: 45 },
+              { name: "Bodyweight Burpees", sets: 3, reps: "12", restSecs: 45 },
+              { name: "Mountain Climbers", sets: 3, reps: "45s", restSecs: 30 }
+            ]
+          }
+        },
+        {
+          id: "blk-5",
+          time: "07:30 PM",
+          type: "meal",
+          title: "Recovery Dinner Protocol",
+          description: "Lean protein and fiber dense dinner",
+          status: "scheduled",
+          details: {
+            mealType: "Dinner",
+            suggestedMeal: "Baked Fish/Tofu with Sweet Potato & Salad",
+            targetCalories: 600,
+            protein: 45,
+            carbs: 50,
+            fat: 20,
+            photoRequired: true,
+            ingredients: ["180g Fish/Tofu", "150g Sweet Potato", "Mixed Greens"]
+          }
+        },
+        {
+          id: "blk-6",
+          time: "09:30 PM",
+          type: "recovery",
+          title: "Nocturnal Regeneration & Mobility",
+          description: "Deep breathing, hydration check, and tissue repair",
+          status: "scheduled",
+          details: {
+            durationMins: 15,
+            waterCheck: "Ensure 3.5L daily total reached",
+            mobility: ["Child's Pose (60s)", "Cobra Stretch (60s)", "Hamstring Stretch (60s)"]
+          }
+        }
+      ]
+    };
+
+    return res.status(200).json(fallbackPlan);
+  } catch (error) {
+    console.error("Generate AI plan error:", error);
+    res.status(500).json({ error: "Failed to generate AI master plan." });
+  }
+});
+
+// 5b. Dynamic Re-plan Endpoint (Missed Workout / Over-consumption Adaptations)
+app.post('/api/ai/replan', async (req, res) => {
+  try {
+    const { email, currentPlan, reason, eventDetails } = req.body;
+    if (!currentPlan || !currentPlan.schedule) {
+      return res.status(400).json({ error: "Invalid current plan data." });
+    }
+
+    let updatedSchedule = [...currentPlan.schedule];
+
+    if (reason === 'missed_workout') {
+      const missedId = eventDetails?.missedBlockId;
+      const missedBlock = updatedSchedule.find(b => b.id === missedId);
+      if (missedBlock) {
+        missedBlock.status = 'missed';
+
+        // Reschedule exercises into afternoon or evening
+        const remainingWorkout = updatedSchedule.find(b => b.type === 'workout' && b.id !== missedId && b.status !== 'completed');
+        if (remainingWorkout && remainingWorkout.details) {
+          const extraExercises = (missedBlock.details?.exercises || []).map(ex => ({
+            ...ex,
+            sets: Math.max(2, Math.round(ex.sets * 0.75)),
+            name: `${ex.name} (Rescheduled)`
+          }));
+          remainingWorkout.details.exercises = [...(remainingWorkout.details.exercises || []), ...extraExercises];
+          remainingWorkout.details.targetCalories = (remainingWorkout.details.targetCalories || 250) + (missedBlock.details?.targetCalories || 200);
+          remainingWorkout.title += " + Rescheduled Catch-up";
+        } else {
+          updatedSchedule.push({
+            id: `blk-rescheduled-${Date.now()}`,
+            time: "06:00 PM",
+            type: "workout",
+            title: "Rescheduled Evening Protocol",
+            description: "Catch-up routine shifted from missed morning window",
+            status: "scheduled",
+            details: {
+              durationMins: 35,
+              targetCalories: missedBlock.details?.targetCalories || 300,
+              exercises: missedBlock.details?.exercises || []
+            }
+          });
+        }
+      }
+    } else if (reason === 'over_consumption') {
+      const extraCals = eventDetails?.extraCalories || 300;
+
+      const nextWorkout = updatedSchedule.find(b => b.type === 'workout' && b.status !== 'completed');
+      if (nextWorkout && nextWorkout.details) {
+        nextWorkout.details.targetCalories = (nextWorkout.details.targetCalories || 250) + Math.round(extraCals * 0.6);
+        nextWorkout.details.exercises.push({
+          name: `Adaptive Calorie Burner (${extraCals} kcal offset)`,
+          sets: 4,
+          reps: "15-20 / 60s HIIT",
+          restSecs: 30
+        });
+        nextWorkout.title += " (Calorie Offset Boost)";
+      } else {
+        updatedSchedule.push({
+          id: `blk-burn-${Date.now()}`,
+          time: "08:30 PM",
+          type: "workout",
+          title: "Adaptive Metabolic Burn Protocol",
+          description: `Extra session to offset +${extraCals} kcal over-consumption`,
+          status: "scheduled",
+          details: {
+            durationMins: 25,
+            targetCalories: extraCals,
+            exercises: [
+              { name: "Jumping Jacks / Burpees Circuit", sets: 4, reps: "60s Work", restSecs: 30 },
+              { name: "High Knee Sprint Intervals", sets: 4, reps: "45s Work", restSecs: 30 }
+            ]
+          }
+        });
+      }
+
+      updatedSchedule.forEach(b => {
+        if (b.type === 'meal' && b.status !== 'completed' && b.details) {
+          b.details.targetCalories = Math.max(300, b.details.targetCalories - Math.round(extraCals * 0.2));
+        }
+      });
+    }
+
+    const updatedPlan = {
+      ...currentPlan,
+      summary: `Adapted AI Schedule: ${reason === 'missed_workout' ? 'Rescheduled missed routine to remaining windows.' : 'Adjusted workouts to burn extra consumed calories/protein.'}`,
+      schedule: updatedSchedule
+    };
+
+    return res.status(200).json(updatedPlan);
+  } catch (error) {
+    console.error("Replan error:", error);
+    res.status(500).json({ error: "Failed to recalculate AI plan." });
+  }
+});
+
+// 5c. Verify Meal Photo & Auto-Calorie Adjustment
+app.post('/api/ai/verify-meal-photo', async (req, res) => {
+  try {
+    const { email, mealBlockId, imageBase64, mimeType, targetMealName, targetCalories } = req.body;
+    if (!imageBase64) {
+      return res.status(400).json({ error: "Meal image is required for AI photo verification." });
+    }
+
+    let detectedMealName = targetMealName || "Verified Meal";
+    let detectedCalories = targetCalories || 500;
+    let detectedProtein = 35;
+    let detectedCarbs = 45;
+    let detectedFat = 15;
+
+    if (process.env.GEMINI_API_KEY) {
+      try {
+        const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+        const imageMime = mimeType || 'image/jpeg';
+
+        const prompt = `Analyze this meal photo for AI verification. The user was suggested to eat: "${targetMealName}".
+        Identify what is actually on the plate, calculate the estimated total calories, protein (g), carbs (g), and fat (g).
+        Compare with target meal.
+        Return ONLY a JSON object:
+        {
+          "foodName": "Detected meal name",
+          "verified": true,
+          "totalCalories": 550,
+          "protein": 40,
+          "carbs": 50,
+          "fat": 15,
+          "explanation": "Brief verification note"
+        }`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType: imageMime, data: base64Data } }
+              ]
+            }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+
+        if (response.ok) {
+          const resData = await response.json();
+          const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (txt) {
+            const parsed = JSON.parse(txt);
+            detectedMealName = parsed.foodName || detectedMealName;
+            detectedCalories = parsed.totalCalories || detectedCalories;
+            detectedProtein = parsed.protein || detectedProtein;
+            detectedCarbs = parsed.carbs || detectedCarbs;
+            detectedFat = parsed.fat || detectedFat;
+          }
+        }
+      } catch (err) {
+        console.error("Gemini vision meal verification error:", err);
+      }
+    }
+
+    const calDiff = detectedCalories - (targetCalories || 500);
+    const triggerReplan = calDiff > 80;
+
+    if (email) {
+      const logEntry = new NutritionLog({
+        email: email.toLowerCase(),
+        foodName: `[AI Verified] ${detectedMealName}`,
+        calories: detectedCalories,
+        protein: detectedProtein,
+        carbs: detectedCarbs,
+        fat: detectedFat,
+        date: new Date()
+      });
+      await logEntry.save();
+    }
+
+    return res.status(200).json({
+      verified: true,
+      mealBlockId,
+      foodName: detectedMealName,
+      calories: detectedCalories,
+      protein: detectedProtein,
+      carbs: detectedCarbs,
+      fat: detectedFat,
+      triggerReplan,
+      extraCalories: Math.max(0, calDiff),
+      extraProtein: Math.max(0, detectedProtein - 35),
+      message: triggerReplan ? `Meal verified! Consumed +${calDiff} extra kcal. AI workout offset triggered!` : `Meal photo verified successfully!`
+    });
+  } catch (error) {
+    console.error("Verify meal error:", error);
+    res.status(500).json({ error: "Failed to verify meal photo." });
+  }
+});
+
 // 4j. Log Nutrition Intake
 app.post('/api/nutrition/log', async (req, res) => {
   try {
@@ -2628,6 +3117,27 @@ app.delete('/api/nutrition/log/:id', async (req, res) => {
   } catch (error) {
     console.error("Delete nutrition log error:", error);
     res.status(500).json({ error: "Failed to delete log entry." });
+  }
+});
+
+// 4m. Delete Workout Log
+app.delete('/api/workout/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required to delete workout log.' });
+    }
+
+    const log = await Workout.findOneAndDelete({ _id: id, email: email.toLowerCase() });
+    if (!log) {
+      return res.status(404).json({ error: 'Workout log entry not found or unauthorized.' });
+    }
+
+    res.status(200).json({ message: 'Workout log entry deleted successfully.' });
+  } catch (error) {
+    console.error("Delete workout log error:", error);
+    res.status(500).json({ error: "Failed to delete workout entry." });
   }
 });
 

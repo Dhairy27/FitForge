@@ -20,20 +20,43 @@
                 extend: {
                     colors: {
                         "surface-obsidian": "#050505",
-                        "surface": "#0d0d0f",
-                        "surface-card": "#121215",
-                        "glass-border": "rgba(255,255,255,0.08)",
+                        "surface": "#131313",
+                        "surface-container": "#201f1f",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container-highest": "#353534",
+                        "surface-variant": "#353534",
+                        "surface-bright": "#3a3939",
+                        "surface-dim": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
                         "primary": "#ffffff",
-                        "on-primary": "#050505",
-                        "secondary": "#a1a1aa",
+                        "on-primary": "#2f3131",
+                        "secondary": "#c4c7c8",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-background": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "outline-variant": "#444748",
+                        "glass-border": "#2B2B2B",
+                        "accent-silver": "#c6c6c6",
+                        "error": "#ffb4ab",
+                        "status-error": "#ffb4ab",
                         "accent-emerald": "#10b981",
                         "accent-amber": "#f59e0b",
                         "accent-rose": "#f43f5e",
                         "accent-sky": "#0ea5e9"
                     },
-                    fontFamily: {
-                        "headline": ["Space Grotesk", "sans-serif"],
-                        "body": ["Inter", "sans-serif"]
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    spacing: { "gutter": "32px", "stack-sm": "16px", "stack-md": "32px", "stack-lg": "64px", "stack-xl": "120px", "margin-desktop": "80px", "margin-mobile": "24px", "container-max": "1440px" },
+                    fontFamily: { "body-md": ["Inter"], "headline-lg": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Inter"], "headline-md": ["Space Grotesk"], "label-sm": ["Inter"], "display-lg": ["Space Grotesk"] },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-md": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "500" }],
+                        "label-md": ["14px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "display-lg": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }]
                     }
                 }
             }
@@ -42,21 +65,32 @@
     <style>
         body {
             background-color: #050505;
-            color: #e4e4e7;
+            color: #e5e2e1;
             -webkit-font-smoothing: antialiased;
-            font-family: 'Inter', sans-serif;
         }
 
-        .glass-panel {
-            background: rgba(18, 18, 21, 0.6);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .glass-card, .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #2B2B2B;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before, .glass-panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
 
         .glass-button {
             background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid #2B2B2B;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -66,7 +100,7 @@
         }
 
         .gradient-text {
-            background: linear-gradient(135deg, #ffffff 30%, #a1a1aa 100%);
+            background: linear-gradient(180deg, #FFFFFF 0%, #8e9192 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -82,8 +116,8 @@
         }
 
         ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 99px;
+            background: #2B2B2B;
+            border-radius: 3px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
@@ -109,53 +143,58 @@
     </style>
 </head>
 
-<body class="overflow-x-hidden bg-surface-obsidian text-on-surface">
+<body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
 
     <!-- Sidebar Navigation -->
     <aside id="sidebar-nav"
-        class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
         <div class="p-8">
             <a href="index.html" class="flex items-center gap-2 mb-2">
-                <img alt="FitForge Logo" class="h-8 w-auto object-contain" src="assets/logo.svg">
+                <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
             </a>
-            <h1 class="font-headline text-xl font-bold tracking-tighter text-primary">FitForge</h1>
-            <p class="text-[9px] uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine</p>
+            <h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">FitForge</h1>
+            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine</p>
         </div>
         <nav class="flex-1 px-4 space-y-2 mt-4">
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
                 <span class="material-symbols-outlined">dashboard</span>
-                <span class="text-sm font-semibold tracking-tight">Dashboard</span>
+                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="planner.html">
+                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
+                <span class="font-body-md text-body-md tracking-tight">AI Planner</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
                 href="workout.html">
                 <span class="material-symbols-outlined">fitness_center</span>
-                <span class="text-sm font-semibold tracking-tight">Workouts</span>
+                <span class="font-body-md text-body-md tracking-tight">Workouts</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="nutrition.html">
                 <span class="material-symbols-outlined">restaurant</span>
-                <span class="text-sm font-semibold tracking-tight">Nutrition</span>
+                <span class="font-body-md text-body-md tracking-tight">Nutrition</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="scanner.html">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
-                <span class="text-sm font-semibold tracking-tight">Scanner</span>
+                <span class="font-body-md text-body-md tracking-tight">Scanner</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="progress.html">
                 <span class="material-symbols-outlined">query_stats</span>
-                <span class="text-sm font-semibold tracking-tight">Progress</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-xl text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="profile.html">
                 <span class="material-symbols-outlined">person</span>
-                <span class="text-sm font-semibold tracking-tight">Profile</span>
+                <span class="font-body-md text-body-md tracking-tight">Profile</span>
             </a>
         </nav>
         <div class="p-4 border-t border-glass-border mb-4">
             <button id="sidebar-upgrade-btn"
-                class="w-full py-3 bg-primary text-on-primary rounded-full font-headline text-xs font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                class="w-full py-3 bg-primary text-on-primary font-label-md text-label-md rounded-full font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
                 Upgrade to Pro
             </button>
         </div>
@@ -166,17 +205,16 @@
         onclick="toggleSidebar()"></div>
 
     <!-- Main Content Shell -->
-    <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-[#050505] text-white transition-all duration-300 pb-16">
+    <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
         <!-- Top Navbar -->
         <header
-            class="h-20 flex justify-between items-center px-6 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-md border-b border-white/5">
+            class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
             <div class="flex items-center gap-4">
                 <button onclick="toggleSidebar()"
                     class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h2 class="font-headline text-xl text-white font-bold uppercase tracking-tight">Workout Protocol Suite
-                </h2>
+                <h2 class="font-headline-md text-headline-md text-primary font-bold">Workout Protocol Suite</h2>
             </div>
             <div class="flex items-center gap-4">
                 <!-- Favorites Quick Access Button -->
@@ -194,11 +232,11 @@
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-6 md:px-12 py-8 flex-1 space-y-10 max-w-7xl w-full mx-auto">
+        <div class="px-4 md:px-12 py-stack-lg flex-1 space-y-10">
 
             <!-- Hero Dashboard Banner -->
             <section
-                class="glass-panel p-8 rounded-[2rem] border-white/10 relative overflow-hidden flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
+                class="glass-card p-8 rounded-[2rem] border-glass-border relative overflow-hidden flex flex-col md:flex-row justify-between gap-6 items-start md:items-center">
                 <!-- Ambient glow inside hero -->
                 <div
                     class="absolute -right-10 -top-10 w-48 h-48 bg-emerald-500/10 blur-[80px] rounded-full pointer-events-none">
