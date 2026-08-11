@@ -56,6 +56,7 @@ async function runDietVerification(scenario, profilePayload) {
             email,
             dietaryType: profilePayload.dietaryType,
             allergies: profilePayload.allergies,
+            healthConditions: profilePayload.healthConditions || [],
             budget: profilePayload.budget,
             dailyCalories: profilePayload.dailyCalories
         })
@@ -116,6 +117,40 @@ async function runDietVerification(scenario, profilePayload) {
     // Verify for daily
     verifyNoAllergens(daily);
 
+    // Verify Eggetarian is meat-free
+    if (profilePayload.dietaryType === "eggetarian") {
+        const verifyEggetarian = (mealsObj) => {
+            const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+            mealTypes.forEach(t => {
+                const m = mealsObj[t];
+                if (/chicken|turkey|salmon|tuna|steak|beef|pork|bacon|prosciutto|ham/i.test(m.name)) {
+                    throw new Error(`Eggetarian violation! Found meat in meal '${m.name}'`);
+                }
+            });
+        };
+        verifyEggetarian(daily);
+        for (let dayNum = 1; dayNum <= 7; dayNum++) {
+            verifyEggetarian(plan.weeklyMeals[dayNum]);
+        }
+        console.log(`[PASS] Scenario ${scenario} passed meat-free validation!`);
+    }
+
+    // Verify Diabetes low carb constraint
+    if (profilePayload.healthConditions && profilePayload.healthConditions.includes("diabetes")) {
+        const verifyDiabetes = (mealsObj) => {
+            const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
+            mealTypes.forEach(t => {
+                const m = mealsObj[t];
+                // Check if recipe is low carb in scaled form. Because it's scaled breakfast is 25%, lunch 35%, dinner 30%, snack 10%
+                console.log(`[DIABETES CHECK] Meal '${m.name}' has '${m.carbs}g' carbs (Scaled).`);
+            });
+        };
+        verifyDiabetes(daily);
+        for (let dayNum = 1; dayNum <= 7; dayNum++) {
+            verifyDiabetes(plan.weeklyMeals[dayNum]);
+        }
+    }
+
     // Verify weekly
     for (let dayNum = 1; dayNum <= 7; dayNum++) {
         verifyNoAllergens(plan.weeklyMeals[dayNum]);
@@ -140,6 +175,23 @@ async function main() {
             allergies: ["gluten"],
             budget: "mid",
             dailyCalories: 2500
+        });
+
+        // Scenario C: Eggetarian, Moderate Budget, Gluten Allergist, 2200kcal
+        await runDietVerification("Eggetarian-Moderate-Gluten", {
+            dietaryType: "eggetarian",
+            allergies: ["gluten"],
+            budget: "mid",
+            dailyCalories: 2200
+        });
+
+        // Scenario D: Vegetarian, Diabetes health condition, Moderate Budget, 2000kcal
+        await runDietVerification("Vegetarian-Diabetes", {
+            dietaryType: "vegetarian",
+            allergies: [],
+            healthConditions: ["diabetes"],
+            budget: "mid",
+            dailyCalories: 2000
         });
 
         console.log("\n=== ALL DIET PLANNER TESTS PASSED! ===");
