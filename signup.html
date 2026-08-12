@@ -273,6 +273,7 @@
                     }
 
                     // Save session data in localStorage
+                    localStorage.removeItem('userProtocol');
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
 

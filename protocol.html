@@ -557,16 +557,57 @@
                 return;
             }
 
-            // Check if protocol details are already filled (details are fixed and cannot be changed)
+            function prefillProtocol(proto) {
+                if (!proto) return;
+                if (proto.age) document.getElementById('age').value = proto.age;
+                if (proto.biologicalSex) document.getElementById('gender').value = proto.biologicalSex;
+                if (proto.height) document.getElementById('height').value = proto.height;
+                if (proto.weight) document.getElementById('weight').value = proto.weight;
+                if (proto.occupation) document.getElementById('occupation').value = proto.occupation;
+
+                if (proto.activityLevel) {
+                    const el = document.querySelector(`input[name="activity_level"][value="${proto.activityLevel}"]`);
+                    if (el) el.checked = true;
+                }
+                if (proto.fitnessLevel) {
+                    const el = document.querySelector(`input[name="fitness_level"][value="${proto.fitnessLevel}"]`);
+                    if (el) el.checked = true;
+                }
+                if (proto.location) {
+                    const el = document.querySelector(`input[name="location"][value="${proto.location}"]`);
+                    if (el) el.checked = true;
+                }
+                if (proto.duration) {
+                    const el = document.querySelector(`input[name="duration"][value="${proto.duration}"]`);
+                    if (el) el.checked = true;
+                }
+                if (Array.isArray(proto.equipment)) {
+                    document.querySelectorAll('.equipment-checkbox').forEach(cb => {
+                        cb.checked = proto.equipment.includes(cb.value);
+                    });
+                }
+                if (Array.isArray(proto.goals)) {
+                    document.querySelectorAll('.goal-checkbox').forEach(cb => {
+                        cb.checked = proto.goals.includes(cb.value);
+                    });
+                }
+            }
+
+            // Pre-fill existing protocol if cached or from server
+            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+            if (cachedProto.age || cachedProto.height || cachedProto.weight) {
+                prefillProtocol(cachedProto);
+            }
             fetch(`/api/user/protocol?email=${encodeURIComponent(email)}`)
                 .then(res => res.json())
                 .then(data => {
                     const proto = data.protocol || {};
-                    if (proto.age && proto.height && proto.weight && proto.biologicalSex) {
-                        window.location.href = 'dashboard.html';
+                    if (proto.age || proto.height || proto.weight) {
+                        localStorage.setItem('userProtocol', JSON.stringify(proto));
+                        prefillProtocol(proto);
                     }
                 })
-                .catch(err => console.error("Error validating protocol status:", err));
+                .catch(err => console.error("Error retrieving protocol baseline:", err));
 
             const steps = [
                 document.getElementById('step-1'),

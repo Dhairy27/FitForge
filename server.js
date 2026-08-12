@@ -163,6 +163,9 @@ mongoose.set('bufferCommands', false);
 
 const dns = require('dns');
 
+// Use Google DNS to resolve SRV records (local ISP DNS may block SRV queries)
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+
 // Extract host to test reachability
 let dbHost = '';
 let isSrv = false;
@@ -188,8 +191,8 @@ const handleReachabilityResult = (dnsErr) => {
     });
 
     mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 3000,
-      connectTimeoutMS: 3000,
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
       family: 4
     })
       .then(() => console.log('🟢 Connected to MongoDB Atlas successfully!'))

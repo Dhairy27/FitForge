@@ -636,6 +636,7 @@
                 localStorage.setItem('userName', data.name);
 
                 if (data.isNewUser) {
+                    localStorage.removeItem('userProtocol');
                     window.location.href = 'protocol.html';
                 } else {
                     window.location.href = 'dashboard.html';

@@ -714,6 +714,7 @@
         function logout() {
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
+            localStorage.removeItem('userProtocol');
             window.location.href = 'login.html';
         }
 
@@ -811,10 +812,18 @@
 
         async function loadUserProfileAndCalculate() {
             try {
-                // 1. Get user protocol
-                const protocolResponse = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
-                const protoData = await protocolResponse.json();
-                userProtocol = protoData.protocol || {};
+                // 1. Get user protocol - check localStorage first (avoids offline mode redirect loop)
+                const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+                if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
+                    userProtocol = cachedProto;
+                } else {
+                    const protocolResponse = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
+                    const protoData = await protocolResponse.json();
+                    userProtocol = protoData.protocol || {};
+                    if (userProtocol.age && userProtocol.height && userProtocol.weight && userProtocol.biologicalSex) {
+                        localStorage.setItem('userProtocol', JSON.stringify(userProtocol));
+                    }
+                }
 
                 // Validate protocol exists
                 if (!userProtocol.age || !userProtocol.height || !userProtocol.weight || !userProtocol.biologicalSex) {

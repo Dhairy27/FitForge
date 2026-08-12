@@ -379,22 +379,31 @@
         if (!userEmail) {
             window.location.href = 'login.html';
         } else {
-            // Enforce completed protocol details
-            fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
-                .then(res => res.json())
-                .then(data => {
-                    const proto = data.protocol || {};
-                    if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
-                        window.location.href = 'protocol.html';
-                    }
-                })
-                .catch(err => console.error("Error validating protocol completion:", err));
+            // Check localStorage cache first (avoids redirect loop in offline mode)
+            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+            if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
+                // Protocol already complete - no redirect needed
+            } else {
+                // Fallback: verify via API
+                fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const proto = data.protocol || {};
+                        if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
+                            window.location.href = 'protocol.html';
+                        } else {
+                            localStorage.setItem('userProtocol', JSON.stringify(proto));
+                        }
+                    })
+                    .catch(err => console.error("Error validating protocol completion:", err));
+            }
         }
 
         // Logout
         function logout() {
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
+            localStorage.removeItem('userProtocol');
             window.location.href = 'login.html';
         }
 
