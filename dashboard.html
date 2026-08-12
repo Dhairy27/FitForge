@@ -182,11 +182,6 @@
                 </div>
             </div>
             <div class="flex items-center gap-4">
-                <button onclick="fetchStatsAndLogs()"
-                    class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white font-bold text-xs rounded-full border border-white/10 flex items-center gap-2 cursor-pointer transition-all">
-                    <span class="material-symbols-outlined text-sm">refresh</span>
-                    Refresh Data
-                </button>
                 <a href="profile.html"
                     class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
                     <span class="material-symbols-outlined text-2xl">account_circle</span>
@@ -704,12 +699,6 @@
 
             let filtered = mergedLogs.filter(item => {
                 // Category Filter
-                if (currentFilterType === 'all') {
-                    // Hide completed meals from All Logs tab
-                    if (item.logType === 'nutrition' && item.raw.imageUrl === 'meal_done_log') {
-                        return false;
-                    }
-                }
                 if (currentFilterType === 'workout' && item.logType !== 'workout') return false;
                 if (currentFilterType === 'nutrition' && item.logType !== 'nutrition') return false;
 
