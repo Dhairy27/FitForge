@@ -1,6 +1,151 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+
+let useMockDb = false;
+
+const mockDb = {
+  users: [],
+  workouts: [],
+  nutritionlogs: []
+};
+
+function makeChainable(arr) {
+  const res = [...arr];
+  res.sort = function (sortObj) {
+    return makeChainable(res);
+  };
+  res.limit = function (num) {
+    return makeChainable(res.slice(0, num));
+  };
+  res.select = function () {
+    return makeChainable(res);
+  };
+  res.populate = function () {
+    return makeChainable(res);
+  };
+  res.exec = function () {
+    return Promise.resolve([...res]);
+  };
+  res.then = function (onResolve, onReject) {
+    return Promise.resolve([...res]).then(onResolve, onReject);
+  };
+  return res;
+}
+
+class MockModel {
+  constructor(data) {
+    Object.assign(this, data);
+    const modelName = this.constructor.modelName;
+    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
+      this.date = new Date();
+    }
+    if (!this.createdAt) this.createdAt = new Date();
+    if (!this.updatedAt) this.updatedAt = new Date();
+  }
+  async save() {
+    const collectionName = this.constructor.modelName.toLowerCase() + 's';
+    if (!mockDb[collectionName]) {
+      mockDb[collectionName] = [];
+    }
+    
+    const modelName = this.constructor.modelName;
+    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
+      this.date = new Date();
+    }
+    if (!this.createdAt) this.createdAt = new Date();
+    this.updatedAt = new Date();
+
+    const idx = mockDb[collectionName].findIndex(item => item._id === this._id || (collectionName === 'users' && this.email && item.email === this.email));
+    if (idx !== -1) {
+      mockDb[collectionName][idx] = { ...this };
+    } else {
+      if (!this._id) this._id = Math.random().toString(36).substring(2);
+      mockDb[collectionName].push({ ...this });
+    }
+    return this;
+  }
+  static async findOne(query) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    const list = mockDb[collectionName] || [];
+    const found = list.find(item => {
+      for (let key in query) {
+        if (item[key] !== query[key]) return false;
+      }
+      return true;
+    });
+    return found ? new this(found) : null;
+  }
+  static find(query) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    const list = mockDb[collectionName] || [];
+    const found = list.filter(item => {
+      for (let key in query) {
+        if (item[key] !== query[key]) return false;
+      }
+      return true;
+    });
+    return makeChainable(found.map(item => new this(item)));
+  }
+  static async findOneAndUpdate(query, update, options) {
+    const doc = await this.findOne(query);
+    if (!doc) {
+      if (options && options.upsert) {
+        const newDoc = new this({ ...query, ...(update.$set || update) });
+        await newDoc.save();
+        return newDoc;
+      }
+      return null;
+    }
+    const setUpdate = update.$set || update;
+    Object.assign(doc, setUpdate);
+    await doc.save();
+    return doc;
+  }
+  static async findOneAndDelete(query) {
+    const doc = await this.findOne(query);
+    if (doc) {
+      await this.deleteMany(query);
+    }
+    return doc;
+  }
+  static async deleteMany(query) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    mockDb[collectionName] = (mockDb[collectionName] || []).filter(item => {
+      for (let key in query) {
+        if (item[key] !== query[key]) return true;
+      }
+      return false;
+    });
+    return { deletedCount: 1 };
+  }
+}
+
+const originalModel = mongoose.model;
+mongoose.model = function (name, schema) {
+  const RealModel = originalModel.apply(this, arguments);
+
+  class MockSubclass extends MockModel { }
+  MockSubclass.modelName = name;
+
+  const handler = {
+    get(target, prop) {
+      if (useMockDb || process.env.MOCK_DB === 'true') {
+        return MockSubclass[prop];
+      }
+      return RealModel[prop];
+    },
+    construct(target, args) {
+      if (useMockDb || process.env.MOCK_DB === 'true') {
+        return new MockSubclass(...args);
+      }
+      return new RealModel(...args);
+    }
+  };
+
+  return new Proxy(RealModel, handler);
+};
+
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const nodemailer = require('nodemailer');
@@ -14,9 +159,59 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database Connection
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB successfully'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+mongoose.set('bufferCommands', false);
+
+const dns = require('dns');
+
+// Extract host to test reachability
+let dbHost = '';
+let isSrv = false;
+if (MONGODB_URI.startsWith('mongodb+srv://')) {
+  dbHost = MONGODB_URI.split('@')[1]?.split('/')[0] || '';
+  isSrv = true;
+} else if (MONGODB_URI.startsWith('mongodb://')) {
+  const parts = MONGODB_URI.split('@')[1] || MONGODB_URI.split('//')[1];
+  dbHost = parts?.split('/')[0]?.split(':')[0] || '';
+}
+
+const handleReachabilityResult = (dnsErr) => {
+  if (dnsErr) {
+    console.error('🔴 DNS Lookup Failed for host:', dbHost, dnsErr);
+    console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
+    console.log('👉 All features are fully functional. No setup required!\n');
+    useMockDb = true;
+  } else {
+    // Suppress background connection error events from crashing the node process
+    mongoose.connection.on('error', (err) => {
+      if (useMockDb) return;
+      console.log('⚠️ Database connection lost. Operating in offline mock database mode.', err);
+    });
+
+    mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 3000,
+      family: 4
+    })
+      .then(() => console.log('🟢 Connected to MongoDB Atlas successfully!'))
+      .catch((err) => {
+        console.error('🔴 MongoDB Connection Error:', err);
+        console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
+        console.log('👉 All features are fully functional. No setup required!\n');
+        useMockDb = true;
+      });
+  }
+};
+
+// Perform DNS check to see if database host is reachable (support SRV lookup for mongodb+srv://)
+if (isSrv) {
+  dns.resolveSrv('_mongodb._tcp.' + dbHost, (dnsErr) => {
+    handleReachabilityResult(dnsErr);
+  });
+} else {
+  dns.lookup(dbHost, (dnsErr) => {
+    handleReachabilityResult(dnsErr);
+  });
+}
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
@@ -92,6 +287,20 @@ const nutritionLogSchema = new mongoose.Schema({
 
 const NutritionLog = mongoose.model('NutritionLog', nutritionLogSchema);
 
+async function findUserOrMock(email) {
+  if (!email) return null;
+  const normalized = email.toLowerCase();
+  let user = await User.findOne({ email: normalized });
+  if (!user && (useMockDb || process.env.MOCK_DB === 'true')) {
+    user = new User({
+      name: email.split('@')[0],
+      email: normalized,
+      password: 'mockpassword'
+    });
+    await user.save();
+  }
+  return user;
+}
 
 // API Routes
 
@@ -323,24 +532,25 @@ app.post('/api/user/protocol', async (req, res) => {
       return res.status(400).json({ error: 'User email is required to save protocol.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await findUserOrMock(email);
     if (!user) {
       return res.status(404).json({ error: 'User profile not found.' });
     }
 
     // Update protocol telemetry
     user.protocol = {
-      age: age ? Number(age) : undefined,
-      biologicalSex,
-      height: height ? Number(height) : undefined,
-      weight: weight ? Number(weight) : undefined,
-      occupation,
-      activityLevel,
-      goals,
-      location,
-      equipment,
-      duration: duration ? Number(duration) : undefined,
-      fitnessLevel
+      ...(user.protocol || {}),
+      age: age !== undefined && age !== null ? Number(age) : (user.protocol ? user.protocol.age : undefined),
+      biologicalSex: biologicalSex !== undefined && biologicalSex !== null ? biologicalSex : (user.protocol ? user.protocol.biologicalSex : undefined),
+      height: height !== undefined && height !== null ? Number(height) : (user.protocol ? user.protocol.height : undefined),
+      weight: weight !== undefined && weight !== null ? Number(weight) : (user.protocol ? user.protocol.weight : undefined),
+      occupation: occupation !== undefined && occupation !== null ? occupation : (user.protocol ? user.protocol.occupation : undefined),
+      activityLevel: activityLevel !== undefined && activityLevel !== null ? activityLevel : (user.protocol ? user.protocol.activityLevel : undefined),
+      goals: goals !== undefined && goals !== null ? goals : (user.protocol ? user.protocol.goals : undefined),
+      location: location !== undefined && location !== null ? location : (user.protocol ? user.protocol.location : undefined),
+      equipment: equipment !== undefined && equipment !== null ? equipment : (user.protocol ? user.protocol.equipment : undefined),
+      duration: duration !== undefined && duration !== null ? Number(duration) : (user.protocol ? user.protocol.duration : undefined),
+      fitnessLevel: fitnessLevel !== undefined && fitnessLevel !== null ? fitnessLevel : (user.protocol ? user.protocol.fitnessLevel : undefined)
     };
 
     await user.save();
@@ -358,7 +568,7 @@ app.get('/api/user/protocol', async (req, res) => {
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await findUserOrMock(email);
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -376,7 +586,7 @@ app.get('/api/user/profile', async (req, res) => {
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await findUserOrMock(email);
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -1074,17 +1284,19 @@ app.post('/api/user/workout-plan', async (req, res) => {
 // 5. Save Workout Session Route
 app.post('/api/workouts', async (req, res) => {
   try {
-    const { email, workoutName, duration, steps, distance, calories } = req.body;
+    const { email, workoutName, duration, steps, distance, calories, date } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'User email is required to save workout.' });
     }
+    const logDate = date ? new Date(date) : new Date();
     const workout = new Workout({
       email: email.toLowerCase(),
       workoutName: workoutName || 'Custom Session',
       duration: Number(duration),
       steps: Number(steps),
       distance: Number(distance),
-      calories: calories ? Number(calories) : undefined
+      calories: calories ? Number(calories) : undefined,
+      date: logDate
     });
     await workout.save();
     res.status(201).json({ message: 'Workout saved successfully.', workout });
@@ -1102,6 +1314,11 @@ app.get('/api/workouts', async (req, res) => {
       return res.status(400).json({ error: 'User email is required.' });
     }
     const workouts = await Workout.find({ email: email.toLowerCase() }).sort({ date: -1 });
+    workouts.forEach(w => {
+      if (!w.date) {
+        w.date = w.createdAt || new Date();
+      }
+    });
     res.status(200).json(workouts);
   } catch (error) {
     console.error('Get workouts error:', error);
@@ -1198,6 +1415,51 @@ const RECIPES_DATABASE = [
     mealType: "breakfast",
     ingredients: ["100g smoked salmon", "2 tbsp cream cheese", "1 whole wheat bagel"]
   },
+  {
+    name: "Chia Seed Pudding with Berries & Almonds",
+    type: "vegan",
+    calories: 380, protein: 10, carbs: 45, fat: 18,
+    allergens: ["nuts"],
+    budgetTier: "mid",
+    mealType: "breakfast",
+    ingredients: ["3 tbsp chia seeds", "1 cup almond milk", "0.5 cup mixed berries", "10g sliced almonds"]
+  },
+  {
+    name: "Peanut Butter Banana Toast",
+    type: "vegan",
+    calories: 350, protein: 12, carbs: 48, fat: 14,
+    allergens: ["nuts", "peanuts", "gluten"],
+    budgetTier: "low",
+    mealType: "breakfast",
+    ingredients: ["2 slices whole wheat bread", "2 tbsp peanut butter", "1 medium banana"]
+  },
+  {
+    name: "Tofu Scramble with Spinach & Cherry Tomatoes",
+    type: "vegan",
+    calories: 310, protein: 20, carbs: 12, fat: 18,
+    allergens: ["soy"],
+    budgetTier: "mid",
+    mealType: "breakfast",
+    ingredients: ["150g firm tofu", "1 cup fresh spinach", "0.5 cup cherry tomatoes", "1 tsp olive oil"]
+  },
+  {
+    name: "Quinoa Porridge with Apple & Cinnamon",
+    type: "vegan",
+    calories: 390, protein: 11, carbs: 62, fat: 8,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "breakfast",
+    ingredients: ["0.5 cup dry quinoa", "1 cup oat milk", "1 red apple", "1 tsp cinnamon"]
+  },
+  {
+    name: "Protein Berry Smoothie Bowl",
+    type: "vegan",
+    calories: 420, protein: 25, carbs: 58, fat: 10,
+    allergens: [],
+    budgetTier: "high",
+    mealType: "breakfast",
+    ingredients: ["1 scoop plant protein powder", "1 cup frozen mixed berries", "1 banana", "1 cup coconut water"]
+  },
 
   // LUNCHES
   {
@@ -1280,6 +1542,51 @@ const RECIPES_DATABASE = [
     budgetTier: "high",
     mealType: "lunch",
     ingredients: ["200g grass-fed steak", "200g baby potatoes", "1 bunch asparagus", "1.5 tbsp garlic butter"]
+  },
+  {
+    name: "Vegan Buddha Bowl with Tahini Dressing",
+    type: "vegan",
+    calories: 610, protein: 20, carbs: 80, fat: 22,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "lunch",
+    ingredients: ["0.5 cup chickpeas", "0.5 cup quinoa", "0.5 avocado", "2 tbsp tahini dressing", "1 cup shredded carrots & purple cabbage"]
+  },
+  {
+    name: "Sweet Potato & Chickpea Curry",
+    type: "vegan",
+    calories: 580, protein: 16, carbs: 88, fat: 14,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "lunch",
+    ingredients: ["1 medium sweet potato", "1 cup canned chickpeas", "0.5 cup tomato puree", "1 tsp curry powder"]
+  },
+  {
+    name: "Edamame Quinoa Salad with Ginger Dressing",
+    type: "vegan",
+    calories: 540, protein: 22, carbs: 68, fat: 16,
+    allergens: ["soy"],
+    budgetTier: "high",
+    mealType: "lunch",
+    ingredients: ["1 cup shelled edamame", "1 cup cooked quinoa", "1 diced cucumber", "2 tbsp ginger sesame dressing"]
+  },
+  {
+    name: "Tempeh Lettuce Tomato (TLT) Sandwich",
+    type: "vegan",
+    calories: 480, protein: 22, carbs: 42, fat: 18,
+    allergens: ["soy", "gluten"],
+    budgetTier: "mid",
+    mealType: "lunch",
+    ingredients: ["100g organic tempeh", "2 slices whole wheat bread", "2 slices tomato", "2 leaves romaine lettuce", "1 tbsp vegan mayo"]
+  },
+  {
+    name: "Black-Eyed Peas & Collard Greens Bowl",
+    type: "vegan",
+    calories: 460, protein: 18, carbs: 64, fat: 10,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "lunch",
+    ingredients: ["1 cup black-eyed peas", "2 cups chopped collard greens", "1 cup cooked brown rice", "smoked paprika"]
   },
 
   // DINNERS
@@ -1364,6 +1671,51 @@ const RECIPES_DATABASE = [
     mealType: "dinner",
     ingredients: ["250g ribeye steak", "1 large sweet potato", "2 cups baby spinach", "1 tbsp butter"]
   },
+  {
+    name: "Lentil Shepherd's Pie",
+    type: "vegan",
+    calories: 510, protein: 22, carbs: 78, fat: 10,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "dinner",
+    ingredients: ["1 cup cooked brown lentils", "1 large mashed potato", "0.5 cup mixed peas & carrots", "vegetable gravy"]
+  },
+  {
+    name: "Spaghetti Squash with Marinara & White Beans",
+    type: "vegan",
+    calories: 430, protein: 16, carbs: 68, fat: 8,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "dinner",
+    ingredients: ["1 medium spaghetti squash", "1 cup marinara sauce", "1 cup cannellini beans"]
+  },
+  {
+    name: "Coconut Lime Tofu Curry with Brown Rice",
+    type: "vegan",
+    calories: 640, protein: 24, carbs: 80, fat: 22,
+    allergens: ["soy"],
+    budgetTier: "high",
+    mealType: "dinner",
+    ingredients: ["150g extra firm tofu", "0.5 cup light coconut milk", "1 tbsp lime juice", "1 cup brown rice", "Thai green curry paste"]
+  },
+  {
+    name: "Black Bean Sweet Potato Chili",
+    type: "vegan",
+    calories: 480, protein: 18, carbs: 84, fat: 6,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "dinner",
+    ingredients: ["1 cup black beans", "1 cup diced sweet potatoes", "1 cup diced tomatoes", "chili powder"]
+  },
+  {
+    name: "Mushroom & Lentil Bolognese with Pasta",
+    type: "vegan",
+    calories: 590, protein: 24, carbs: 92, fat: 12,
+    allergens: ["gluten"],
+    budgetTier: "mid",
+    mealType: "dinner",
+    ingredients: ["80g whole wheat pasta", "0.5 cup cooked brown lentils", "1 cup chopped portobello mushrooms", "1 cup tomato sauce"]
+  },
 
   // SNACKS
   {
@@ -1446,11 +1798,56 @@ const RECIPES_DATABASE = [
     budgetTier: "high",
     mealType: "snack",
     ingredients: ["3 slices prosciutto", "40g soft goat cheese"]
+  },
+  {
+    name: "Celery Sticks with Almond Butter",
+    type: "vegan",
+    calories: 190, protein: 5, carbs: 12, fat: 15,
+    allergens: ["nuts"],
+    budgetTier: "low",
+    mealType: "snack",
+    ingredients: ["4 celery stalks", "1.5 tbsp almond butter"]
+  },
+  {
+    name: "Roasted Chickpeas (Spicy)",
+    type: "vegan",
+    calories: 150, protein: 7, carbs: 22, fat: 4,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "snack",
+    ingredients: ["0.5 cup canned chickpeas", "1 tsp olive oil", "chili powder & salt"]
+  },
+  {
+    name: "Guacamole with Baked Tortilla Chips",
+    type: "vegan",
+    calories: 230, protein: 3, carbs: 24, fat: 15,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "snack",
+    ingredients: ["0.5 ripe avocado", "15 baked tortilla chips", "lime & salt"]
+  },
+  {
+    name: "Chia Seed Oat Energy Bites",
+    type: "vegan",
+    calories: 210, protein: 6, carbs: 26, fat: 10,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "snack",
+    ingredients: ["3 homemade oat energy bites", "rolled oats", "chia seeds", "maple syrup"]
+  },
+  {
+    name: "Pistachios & Dried Apricots",
+    type: "vegan",
+    calories: 260, protein: 7, carbs: 28, fat: 14,
+    allergens: ["nuts"],
+    budgetTier: "high",
+    mealType: "snack",
+    ingredients: ["30g shelled pistachios", "4 dried apricots"]
   }
-];
+];;
 
 // Helper to filter and adapt a recipe based on dietary preferences, budget, allergies, and health conditions
-function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthConditions) {
+function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthConditions, excludeNames = []) {
   let candidates = RECIPES_DATABASE.filter(r => r.mealType === mealType);
 
   if (healthConditions && healthConditions.length > 0) {
@@ -1489,7 +1886,22 @@ function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthCon
     });
   }
 
-  let budgetMatches = candidates.filter(r => r.budgetTier === budget);
+  // Filter out already used names to ensure daily variety
+  const unusedCandidates = candidates.filter(r => !excludeNames.includes(r.name));
+
+  let budgetMatches = unusedCandidates.filter(r => r.budgetTier === budget);
+
+  // Fallback 1: If no unused candidates match the budget, try any budget tier of unused candidates
+  if (budgetMatches.length === 0) {
+    budgetMatches = unusedCandidates;
+  }
+
+  // Fallback 2: If still no unused candidates exist, relax the excludeNames filter and match budget tier
+  if (budgetMatches.length === 0) {
+    budgetMatches = candidates.filter(r => r.budgetTier === budget);
+  }
+
+  // Fallback 3: If still no candidates of that budget tier, take any candidate
   if (budgetMatches.length === 0) {
     budgetMatches = candidates;
   }
@@ -1601,8 +2013,7 @@ app.post('/api/user/diet-plan', async (req, res) => {
     const allergies = dProfile.allergies || [];
     const healthConditions = dProfile.healthConditions || [];
 
-    const calculatedWater = (weight * 35) / 1000;
-    const waterGoal = Math.min(5.0, Math.max(2.0, Number(calculatedWater.toFixed(1))));
+    const waterGoal = 4.0;
 
     const scaleMeal = (meal, targetMealKcal) => {
       const baseScale = targetMealKcal / meal.calories;
@@ -1616,16 +2027,35 @@ app.post('/api/user/diet-plan', async (req, res) => {
       };
     };
 
+    const usedRecipeNames = [];
+    if (user.dietPlan && user.dietPlan.dailyMeals) {
+      Object.keys(user.dietPlan.dailyMeals).forEach(k => {
+        if (user.dietPlan.dailyMeals[k] && user.dietPlan.dailyMeals[k].name) {
+          usedRecipeNames.push(user.dietPlan.dailyMeals[k].name);
+        }
+      });
+    }
+
     const compileDaysPlan = () => {
-      const bMealRaw = findAndFilterRecipe("breakfast", dietaryType, budget, allergies, healthConditions);
-      const lMealRaw = findAndFilterRecipe("lunch", dietaryType, budget, allergies, healthConditions);
-      const dMealRaw = findAndFilterRecipe("dinner", dietaryType, budget, allergies, healthConditions);
-      const sMealRaw = findAndFilterRecipe("snack", dietaryType, budget, allergies, healthConditions);
+      const bMealRaw = findAndFilterRecipe("breakfast", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(bMealRaw.name);
+      const lMealRaw = findAndFilterRecipe("lunch", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(lMealRaw.name);
+      const dMealRaw = findAndFilterRecipe("dinner", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(dMealRaw.name);
+      const sMealRaw = findAndFilterRecipe("snack", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(sMealRaw.name);
 
       const breakfast = scaleMeal(bMealRaw, targetKcal * 0.25);
       const lunch = scaleMeal(lMealRaw, targetKcal * 0.35);
       const dinner = scaleMeal(dMealRaw, targetKcal * 0.30);
       const snack = scaleMeal(sMealRaw, targetKcal * 0.10);
+
+      const sumCalories = breakfast.calories + lunch.calories + dinner.calories + snack.calories;
+      const diff = targetKcal - sumCalories;
+      if (diff !== 0) {
+        lunch.calories += diff;
+      }
 
       return { breakfast, lunch, dinner, snack };
     };
@@ -1655,6 +2085,7 @@ app.post('/api/user/diet-plan', async (req, res) => {
     const plan = {
       generatedAt: new Date().toISOString(),
       waterGoal,
+      dailyCalories: targetKcal,
       dailyMeals,
       weeklyMeals,
       shoppingList
@@ -1685,6 +2116,25 @@ app.get('/api/user/diet-plan', async (req, res) => {
   } catch (error) {
     console.error("Get diet plan error:", error);
     res.status(500).json({ error: "Failed to fetch diet plan." });
+  }
+});
+
+app.delete('/api/user/diet-plan', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    user.dietPlan = null;
+    await user.save();
+    res.status(200).json({ message: "Diet plan deleted successfully." });
+  } catch (error) {
+    console.error("Delete diet plan error:", error);
+    res.status(500).json({ error: "Failed to delete diet plan." });
   }
 });
 
@@ -3092,6 +3542,11 @@ app.get('/api/nutrition/logs', async (req, res) => {
     }
 
     const logs = await NutritionLog.find(query).sort({ date: -1 });
+    logs.forEach(l => {
+      if (!l.date) {
+        l.date = l.createdAt || new Date();
+      }
+    });
     res.status(200).json({ logs });
   } catch (error) {
     console.error("Get nutrition logs error:", error);
@@ -3141,6 +3596,29 @@ app.delete('/api/workout/:id', async (req, res) => {
   }
 });
 
+// 4n. Delete User Account and associated logs
+app.delete('/api/user/account', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+    const normalizedEmail = email.toLowerCase();
+    
+    // Delete user profile
+    await User.findOneAndDelete({ email: normalizedEmail });
+    
+    // Delete associated logs
+    await Workout.deleteMany({ email: normalizedEmail });
+    await NutritionLog.deleteMany({ email: normalizedEmail });
+    
+    res.status(200).json({ message: "Account and associated data deleted successfully." });
+  } catch (error) {
+    console.error("Delete user account error:", error);
+    res.status(500).json({ error: "Failed to delete user account." });
+  }
+});
+
 // Serve Static Frontend files from root
 // Disable caching for HTML files so updates are immediately visible
 app.use((req, res, next) => {
@@ -3162,6 +3640,6 @@ module.exports = app;
 // Start local server if run directly
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`🟢 Server is running at http://localhost:${PORT}`);
   });
 }

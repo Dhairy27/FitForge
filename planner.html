@@ -125,8 +125,8 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
                 href="planner.html">
@@ -147,11 +147,6 @@
                 href="scanner.html">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <span class="font-body-md text-body-md tracking-tight">Scanner</span>
-            </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
-                href="progress.html">
-                <span class="material-symbols-outlined">query_stats</span>
-                <span class="font-body-md text-body-md tracking-tight">Progress</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="profile.html">
@@ -666,7 +661,8 @@
                                 duration: (block.details?.durationMins || 30) * 60,
                                 steps: 2500,
                                 distance: 1500,
-                                calories: block.details?.targetCalories || 300
+                                calories: block.details?.targetCalories || 300,
+                                date: new Date().toISOString()
                             })
                         });
                     } catch (e) {}

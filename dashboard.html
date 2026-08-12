@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>FitForge | Dashboard</title>
+    <title>FitForge | Progress Analysis</title>
     <meta name="description"
-        content="FitForge Elite Performance Dashboard - AI-powered fitness intelligence at your fingertips.">
+        content="FitForge Elite Progress Analysis Dashboard - Real-time chronological tracking and visual analytics of your fitness journey.">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
@@ -40,7 +40,10 @@
                         "glass-border": "#2B2B2B",
                         "accent-silver": "#c6c6c6",
                         "error": "#ffb4ab",
-                        "status-error": "#ffb4ab"
+                        "status-error": "#ffb4ab",
+                        "accent-emerald": "#10b981",
+                        "accent-amber": "#f59e0b",
+                        "accent-sky": "#38bdf8"
                     },
                     borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
                     spacing: { "gutter": "32px", "stack-sm": "16px", "stack-md": "32px", "stack-lg": "64px", "stack-xl": "120px", "margin-desktop": "80px", "margin-mobile": "24px", "container-max": "1440px" },
@@ -91,11 +94,6 @@
             background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
         }
 
-        .sparkline {
-            height: 40px;
-            width: 100%;
-        }
-
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -111,7 +109,7 @@
     </style>
 </head>
 
-<body class="font-body-md overflow-x-hidden">
+<body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
 
     <!-- Sidebar Navigation -->
     <aside id="sidebar-nav"
@@ -127,8 +125,8 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="planner.html">
@@ -151,11 +149,6 @@
                 <span class="font-body-md text-body-md tracking-tight">Scanner</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
-                href="progress.html">
-                <span class="material-symbols-outlined">query_stats</span>
-                <span class="font-body-md text-body-md tracking-tight">Progress</span>
-            </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="profile.html">
                 <span class="material-symbols-outlined">person</span>
                 <span class="font-body-md text-body-md tracking-tight">Profile</span>
@@ -170,244 +163,87 @@
     </aside>
 
     <!-- Sidebar Mobile Backdrop -->
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"
+        onclick="toggleSidebar()"></div>
 
     <!-- Main Content Shell -->
     <main class="ml-0 lg:ml-64 min-h-screen flex flex-col transition-all duration-300">
         <!-- Top Navbar -->
         <header
-            class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
+            class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm border-b border-white/5">
             <div class="flex items-center gap-4">
-                <!-- Hamburger Toggle Menu Button -->
-                <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                <button onclick="toggleSidebar()"
+                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h2 class="font-headline-md text-headline-md text-primary font-bold" id="greeting-text">Welcome back</h2>
-            </div>
-            <div class="flex items-center gap-stack-md">
-                <div class="flex items-center gap-4">
-                    <button class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
-                    <a href="profile.html"
-                        class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
-                        <span class="material-symbols-outlined">account_circle</span>
-                    </a>
+                <div class="flex flex-col">
+                    <h2 class="font-headline-md text-xl md:text-2xl text-primary font-bold" id="greeting-text">Progress
+                        Analysis</h2>
                 </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button onclick="fetchStatsAndLogs()"
+                    class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white font-bold text-xs rounded-full border border-white/10 flex items-center gap-2 cursor-pointer transition-all">
+                    <span class="material-symbols-outlined text-sm">refresh</span>
+                    Refresh Data
+                </button>
+                <a href="profile.html"
+                    class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                    <span class="material-symbols-outlined text-2xl">account_circle</span>
+                </a>
             </div>
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-4 md:px-12 py-stack-lg flex-1">
+        <div class="px-4 md:px-12 py-8 flex-1 space-y-8">
+
             <!-- Hero Grid -->
-            <div class="grid grid-cols-12 gap-gutter mb-gutter">
-                <!-- AI Performance Hero Card -->
-                <div
-                    class="col-span-12 lg:col-span-8 glass-card rounded-xl p-stack-lg flex flex-col md:flex-row items-center gap-10">
-                    <div class="relative flex-shrink-0">
-                        <div class="w-48 h-48 rounded-full circular-progress flex items-center justify-center p-4">
-                            <div
-                                class="w-full h-full bg-surface-obsidian rounded-full flex flex-col items-center justify-center">
-                                <span class="font-headline-lg text-display-lg leading-none">94</span>
-                                <span
-                                    class="font-label-sm text-label-sm uppercase tracking-widest opacity-60">Index</span>
-                            </div>
-                        </div>
-                        <div class="absolute inset-0 radial-glow -z-10"></div>
-                    </div>
-                    <div class="flex-1 text-center md:text-left">
-                        <h2 class="font-headline-lg text-headline-lg mb-2">AI Performance Index</h2>
-                        <p class="text-secondary opacity-80 mb-8 max-w-md">Your biological systems are operating at peak
-                            efficiency. Recommendation: Execute maximum load training protocols today.</p>
-                        <div class="flex flex-wrap gap-stack-md justify-center md:justify-start">
-                            <div
-                                class="glass-card bg-white/5 border-glass-border px-6 py-3 rounded-full flex items-center gap-3">
-                                <span class="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-                                <span class="font-label-md text-label-md uppercase tracking-widest">Readiness:
-                                    High</span>
-                            </div>
-                            <div
-                                class="glass-card bg-white/5 border-glass-border px-6 py-3 rounded-full flex items-center gap-3">
-                                <span class="w-2 h-2 bg-accent-silver opacity-40 rounded-full"></span>
-                                <span class="font-label-md text-label-md uppercase tracking-widest">Fatigue:
-                                    Minimal</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Live AI Synthesis Card -->
-                <div class="col-span-12 lg:col-span-4 glass-card rounded-xl p-stack-md flex flex-col">
-                    <div class="flex items-center gap-3 mb-6">
-                        <span class="material-symbols-outlined text-primary">psychology</span>
-                        <h3 class="font-headline-md text-headline-md leading-none">Live Synthesis</h3>
-                    </div>
-                    <div class="flex-1 flex flex-col justify-center">
-                        <p
-                            class="font-body-lg text-body-lg text-primary opacity-90 leading-relaxed italic border-l-2 border-primary pl-6 py-2">
-                            "Based on last night's HRV data, an emphasis on hypertrophic stimulus is recommended over
-                            maximal strength."
-                        </p>
-                    </div>
-                    <div
-                        class="mt-8 flex items-center justify-between text-secondary opacity-60 border-t border-glass-border pt-4">
-                        <span class="text-label-sm uppercase tracking-widest">Update 2m ago</span>
-                        <span class="material-symbols-outlined">trending_up</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bento Data Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
-                <!-- Energy Balance -->
-                <div class="glass-card p-stack-md rounded-xl">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">Energy
-                                Balance</p>
-                            <h4 class="font-headline-md text-headline-md">2,140 <span class="text-body-md opacity-40">/
-                                    2,800 kcal</span></h4>
-                        </div>
-                        <span class="material-symbols-outlined text-primary/40">restaurant</span>
-                    </div>
-                    <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary" style="width: 76.4%"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-label-sm opacity-40">
-                        <span>76% Complete</span>
-                        <span>660 kcal remaining</span>
-                    </div>
-                </div>
-                <!-- Hydration -->
-                <div class="glass-card p-stack-md rounded-xl">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">Hydration
-                                Status</p>
-                            <h4 class="font-headline-md text-headline-md">2.4 <span
-                                    class="text-body-md opacity-40">Liters</span></h4>
-                        </div>
-                        <span class="material-symbols-outlined text-primary/40">water_drop</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <div class="h-1 flex-1 bg-primary rounded-full"></div>
-                        <div class="h-1 flex-1 bg-primary rounded-full"></div>
-                        <div class="h-1 flex-1 bg-primary rounded-full"></div>
-                        <div class="h-1 flex-1 bg-white/10 rounded-full"></div>
-                        <div class="h-1 flex-1 bg-white/10 rounded-full"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-label-sm opacity-40">
-                        <span>Optimal Range</span>
-                        <span>Target: 3.5L</span>
-                    </div>
-                </div>
-                <!-- Load Volume -->
-                <div class="glass-card p-stack-md rounded-xl">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">Load
-                                Volume</p>
-                            <h4 class="font-headline-md text-headline-md">+12% <span
-                                    class="text-body-md opacity-40 text-primary">Weekly</span></h4>
-                        </div>
-                        <span class="material-symbols-outlined text-primary/40">equalizer</span>
-                    </div>
-                    <div class="sparkline flex items-end gap-1 px-1">
-                        <div class="bg-white/10 w-full h-[40%] rounded-t-sm"></div>
-                        <div class="bg-white/20 w-full h-[60%] rounded-t-sm"></div>
-                        <div class="bg-white/10 w-full h-[35%] rounded-t-sm"></div>
-                        <div class="bg-white/40 w-full h-[80%] rounded-t-sm"></div>
-                        <div class="bg-white/20 w-full h-[55%] rounded-t-sm"></div>
-                        <div class="bg-primary w-full h-[95%] rounded-t-sm"></div>
-                        <div class="bg-white/20 w-full h-[70%] rounded-t-sm"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-label-sm opacity-40">
-                        <span>Lifting Capacity</span>
-                        <span>Upward Trend</span>
-                    </div>
-                </div>
-                <!-- CNS Recovery -->
-                <div class="glass-card p-stack-md rounded-xl">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">CNS
-                                Recovery</p>
-                            <h4 class="font-headline-md text-headline-md">88 <span
-                                    class="text-body-md opacity-40">%</span></h4>
-                        </div>
-                        <span class="material-symbols-outlined text-primary/40">neurology</span>
-                    </div>
-                    <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary" style="width: 88%"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-label-sm opacity-40">
-                        <span>Neural Readiness</span>
-                        <span>Stable</span>
-                    </div>
-                </div>
-                <!-- Metabolic Efficiency -->
-                <div class="glass-card p-stack-md rounded-xl">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">Metabolic
-                                Efficiency</p>
-                            <h4 class="font-headline-md text-headline-md">0.84 <span
-                                    class="text-body-md opacity-40">RQ</span></h4>
-                        </div>
-                        <span class="material-symbols-outlined text-primary/40">bolt</span>
-                    </div>
-                    <div class="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary" style="width: 65%"></div>
-                    </div>
-                    <div class="flex justify-between mt-3 text-label-sm opacity-40">
-                        <span>Fat Oxidation</span>
-                        <span>High</span>
-                    </div>
-                </div>
-
+            <div class="grid grid-cols-12 gap-6">
                 <!-- Active Workout Tracker Card -->
                 <div id="workout-tracker-card"
-                    class="glass-card p-stack-md rounded-xl flex flex-col justify-between border-glass-border">
+                    class="col-span-12 lg:col-span-8 glass-card p-8 rounded-[2rem] flex flex-col justify-between border-glass-border">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">Active
-                                Workout</p>
-                            <h4 id="workout-timer" class="font-headline-md text-headline-md">00:00</h4>
+                            <p class="text-[10px] uppercase tracking-widest text-secondary opacity-60 mb-0.5">Active
+                                Tracker</p>
+                            <h4 id="workout-timer" class="font-headline text-3xl font-bold text-white tracking-tight">
+                                00:00</h4>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-1.5">
                             <span id="sensor-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
                             <span id="workout-sensor-status"
-                                class="font-label-sm text-[10px] uppercase text-secondary opacity-60">Inactive</span>
+                                class="text-[9px] uppercase tracking-wider text-secondary opacity-60 font-semibold">Inactive</span>
                         </div>
                     </div>
 
                     <!-- Live Stats Display -->
                     <div id="workout-live-stats"
                         class="my-3 grid grid-cols-3 gap-2 text-center opacity-40 transition-opacity duration-300">
-                        <div class="bg-white/5 p-2 rounded-lg border border-glass-border">
-                            <p class="text-[9px] uppercase text-secondary opacity-60 tracking-wider">Steps</p>
-                            <p id="live-steps" class="font-headline text-lg font-bold text-primary mt-1">0</p>
+                        <div class="bg-white/5 p-2 rounded-xl border border-glass-border">
+                            <p class="text-[8px] uppercase text-secondary/60 tracking-wider">Steps</p>
+                            <p id="live-steps" class="font-headline text-sm font-bold text-white mt-0.5">0</p>
                         </div>
-                        <div class="bg-white/5 p-2 rounded-lg border border-glass-border">
-                            <p class="text-[9px] uppercase text-secondary opacity-60 tracking-wider">Distance</p>
-                            <p id="live-distance" class="font-headline text-lg font-bold text-primary mt-1">0.00 km</p>
+                        <div class="bg-white/5 p-2 rounded-xl border border-glass-border">
+                            <p class="text-[8px] uppercase text-secondary/60 tracking-wider">Distance</p>
+                            <p id="live-distance" class="font-headline text-sm font-bold text-white mt-0.5">0.00 km</p>
                         </div>
-                        <div class="bg-white/5 p-2 rounded-lg border border-glass-border">
-                            <p class="text-[9px] uppercase text-secondary opacity-60 tracking-wider">Est. kcal</p>
-                            <p id="live-calories" class="font-headline text-lg font-bold text-primary mt-1">0</p>
+                        <div class="bg-white/5 p-2 rounded-xl border border-glass-border">
+                            <p class="text-[8px] uppercase text-secondary/60 tracking-wider">Burned</p>
+                            <p id="live-calories" class="font-headline text-sm font-bold text-white mt-0.5">0 kcal</p>
                         </div>
                     </div>
 
                     <!-- Simulation controls for desktop testing -->
                     <div id="workout-sim-controls"
                         class="hidden my-2 flex items-center justify-between gap-2 border-t border-glass-border/30 pt-2">
-                        <span class="text-[10px] text-secondary opacity-50 uppercase tracking-wider">Simulation</span>
+                        <span class="text-[9px] text-secondary opacity-50 uppercase tracking-wider">Simulate</span>
                         <div class="flex gap-1.5">
                             <button onclick="simulateStep()"
-                                class="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-glass-border text-[9px] font-bold uppercase rounded-full transition-all active:scale-95">
+                                class="px-2 py-0.5 bg-white/5 hover:bg-white/10 border border-glass-border text-[8px] font-bold uppercase rounded-full transition-all active:scale-95">
                                 +1 Step
                             </button>
                             <button id="btn-auto-sim" onclick="toggleAutoSim()"
-                                class="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-glass-border text-[9px] font-bold uppercase rounded-full transition-all active:scale-95">
+                                class="px-2 py-0.5 bg-white/5 hover:bg-white/10 border border-glass-border text-[8px] font-bold uppercase rounded-full transition-all active:scale-95">
                                 Auto Walk
                             </button>
                         </div>
@@ -416,79 +252,123 @@
                     <!-- Action Button -->
                     <div class="mt-2">
                         <button id="btn-workout-action" onclick="toggleWorkout()"
-                            class="w-full py-3 bg-primary text-on-primary font-label-md text-label-md rounded-full font-bold hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
-                            <span class="material-symbols-outlined text-[18px]">play_arrow</span>
-                            Start Workout
+                            class="w-full py-3 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                            Start Session
                         </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Technical Telemetry Section -->
-            <div class="mt-gutter grid grid-cols-12 gap-gutter">
-                <div
-                    class="col-span-12 glass-card rounded-xl overflow-hidden relative min-h-[300px] flex flex-col justify-end p-stack-lg">
-                    <div class="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-stack-lg">
-                        <div class="border-l border-glass-border pl-6">
-                            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary mb-2">Heart
-                                Rate Variability</p>
-                            <p class="font-headline-md text-headline-md">82 <span
-                                    class="text-label-md text-secondary">ms</span></p>
+                <!-- Hydration Bento Card -->
+                <div class="col-span-12 lg:col-span-4 glass-card p-8 rounded-[2rem] flex flex-col justify-center">
+                    <div class="flex justify-between items-center">
+                        <div class="space-y-1">
+                            <span class="text-[10px] uppercase tracking-widest text-secondary opacity-60">Hydration Status</span>
+                            <h4 id="hydration-summary" class="font-headline text-xl font-bold text-white">0.0 / 3.5
+                                <span class="text-xs font-normal text-secondary/60">Liters</span>
+                            </h4>
                         </div>
-                        <div class="border-l border-glass-border pl-6">
-                            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary mb-2">Resting
-                                Heart Rate</p>
-                            <p class="font-headline-md text-headline-md">48 <span
-                                    class="text-label-md text-secondary">bpm</span></p>
-                        </div>
-                        <div class="border-l border-glass-border pl-6">
-                            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary mb-2">Sleep
-                                Efficiency</p>
-                            <p class="font-headline-md text-headline-md">92 <span
-                                    class="text-label-md text-secondary">%</span></p>
-                        </div>
-                        <div class="border-l border-glass-border pl-6">
-                            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary mb-2">
-                                Recovery Score</p>
-                            <p class="font-headline-md text-headline-md">Opt <span
-                                    class="text-label-md text-secondary">1.0</span></p>
+                        <div
+                            class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-emerald-400 text-sm">water_drop</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Workout History Section -->
-            <div class="mt-gutter grid grid-cols-12 gap-gutter">
-                <div class="col-span-12 glass-card rounded-xl p-stack-md flex flex-col">
+            <!-- Weekly Analytics & Diagnostics Section -->
+            <div class="grid grid-cols-12 gap-6">
+                <!-- Weekly Calorie Intake vs Burn Analytics Chart -->
+                <div class="col-span-12 glass-card rounded-[2rem] p-8 flex flex-col justify-between min-h-[320px]">
                     <div class="flex justify-between items-center mb-6">
-                        <div class="flex items-center gap-3">
-                            <span class="material-symbols-outlined text-primary">history</span>
-                            <h3 class="font-headline-md text-headline-md leading-none">Workout Sessions History</h3>
+                        <div class="space-y-1">
+                            <h3 class="font-headline text-lg font-bold text-white tracking-tight">Weekly Metabolism
+                                Analytics</h3>
+                            <p class="text-xs text-secondary/60">Calorie intake (blue) vs Active burn (green) trends</p>
                         </div>
-                        <span class="text-label-sm text-secondary opacity-60 uppercase tracking-widest"
-                            id="history-count">0 Sessions</span>
+                        <div class="flex gap-4 text-[10px] font-bold uppercase tracking-wider">
+                            <span class="flex items-center gap-1.5 text-sky-400">
+                                <span class="w-2.5 h-2.5 bg-sky-400 rounded-sm"></span> Intake
+                            </span>
+                            <span class="flex items-center gap-1.5 text-emerald-400">
+                                <span class="w-2.5 h-2.5 bg-emerald-400 rounded-sm"></span> Burn
+                            </span>
+                        </div>
                     </div>
-                    <div class="overflow-x-auto w-full">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr
-                                    class="border-b border-glass-border font-label-sm text-label-sm uppercase tracking-widest text-secondary opacity-60 text-xs">
-                                    <th class="py-3 px-6">Date &amp; Time</th>
-                                    <th class="py-3 px-6">Duration</th>
-                                    <th class="py-3 px-6 font-semibold">Steps</th>
-                                    <th class="py-3 px-6">Distance</th>
-                                    <th class="py-3 px-6">Est. Calories</th>
-                                </tr>
-                            </thead>
-                            <tbody id="workout-history-rows"
-                                class="font-body-md text-body-md divide-y divide-glass-border/30">
-                                <tr>
-                                    <td colspan="5" class="py-8 text-center text-secondary opacity-60 italic text-sm">
-                                        No workouts recorded yet. Start your first session above!
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+
+                    <!-- Target element for SVG chart -->
+                    <div id="weekly-chart-container" class="flex-1 w-full flex items-center justify-center p-2">
+                        <div class="text-xs text-secondary/40 italic">Synthesizing chart data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Logs Telemetry Stream -->
+            <div class="glass-card rounded-[2rem] p-8 space-y-6">
+
+                <!-- Stream Title and Aggregates -->
+                <div
+                    class="flex flex-col lg:flex-row justify-between gap-4 items-start lg:items-center border-b border-white/5 pb-6">
+                    <div class="space-y-1">
+                        <h3 class="font-headline text-xl font-bold text-white tracking-tight">Recent Activity Stream
+                        </h3>
+                        <p class="text-xs text-secondary/60">Chronological telemetry records of your workout sessions
+                            and nutrition entries.</p>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
+                        <div class="bg-white/5 p-3 rounded-2xl text-center">
+                            <span
+                                class="text-[8px] uppercase tracking-wider text-secondary block font-semibold mb-0.5">Workouts</span>
+                            <span id="total-workouts-count"
+                                class="text-sm font-bold text-emerald-400 font-headline">0</span>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-2xl text-center">
+                            <span
+                                class="text-[8px] uppercase tracking-wider text-secondary block font-semibold mb-0.5">Burned</span>
+                            <span id="total-cals-burned" class="text-sm font-bold text-white font-headline">0
+                                kcal</span>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-2xl text-center">
+                            <span
+                                class="text-[8px] uppercase tracking-wider text-secondary block font-semibold mb-0.5">Meals</span>
+                            <span id="total-meals-count" class="text-sm font-bold text-amber-400 font-headline">0</span>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-2xl text-center">
+                            <span
+                                class="text-[8px] uppercase tracking-wider text-secondary block font-semibold mb-0.5">Consumed</span>
+                            <span id="total-cals-consumed" class="text-sm font-bold text-sky-400 font-headline">0
+                                kcal</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feed Search & Filters -->
+                <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+                    <!-- Filter Tabs -->
+                    <div class="flex gap-1.5 bg-white/5 p-1 rounded-2xl border border-white/5 w-full md:w-auto">
+                        <button id="tab-all" onclick="filterType('all')"
+                            class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black">All
+                            Logs</button>
+                        <button id="tab-workout" onclick="filterType('workout')"
+                            class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white">Workouts</button>
+                        <button id="tab-nutrition" onclick="filterType('nutrition')"
+                            class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white">Meals</button>
+                    </div>
+                </div>
+
+                <!-- Feed Output Stream Container -->
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-xs text-secondary/50">
+                        <span>Chronological Records</span>
+                        <span id="logs-count-badge" class="font-mono">0 Log Entries</span>
+                    </div>
+
+                    <!-- Container for logs list -->
+                    <div id="history-feed-container" class="space-y-3">
+                        <div class="glass-card p-12 text-center space-y-4 rounded-3xl">
+                            <span class="material-symbols-outlined animate-spin text-2xl text-secondary">sync</span>
+                            <p class="text-xs text-secondary">Syncing logs data...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -504,27 +384,27 @@
                 <span class="font-headline text-sm font-bold text-primary">FitForge</span>
             </div>
             <div class="flex flex-wrap justify-center gap-8 text-secondary opacity-60">
-                <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-                <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span>Privacy Policy</span>
+                <span>Terms of Service</span>
+                <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                     System Status: Online
-                </a>
+                </span>
             </div>
             <div class="text-secondary opacity-40 text-[10px]">
-                &copy; 2024 FitForge. Engineered for Excellence.
+                &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
     </main>
 
     <script>
-        // Auth check
+        // Authentication check & redirects
         const userEmail = localStorage.getItem('userEmail');
         const userName = localStorage.getItem('userName');
         if (!userEmail) {
             window.location.href = 'login.html';
         } else {
-            // Enforce completed protocol details
+            // Verify AI protocol completion
             fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
                 .then(res => res.json())
                 .then(data => {
@@ -536,7 +416,7 @@
                 .catch(err => console.error("Error validating protocol completion:", err));
         }
 
-        // Greeting
+        // Welcome greeting formulation
         const greetingEl = document.getElementById('greeting-text');
         if (greetingEl && userName) {
             const hour = new Date().getHours();
@@ -544,14 +424,14 @@
             greetingEl.textContent = `${greeting}, ${userName.split(' ')[0]}`;
         }
 
-        // Logout
+        // Logout routing
         function logout() {
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
             window.location.href = 'login.html';
         }
 
-        // Card interactivity
+        // Premium hover glow coordinates binding
         document.querySelectorAll('.glass-card').forEach(card => {
             card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect();
@@ -560,18 +440,390 @@
             });
         });
 
-        // Active Workout Telemetry System
+        // ------------------ DATA CORE STATE & ENGINE ------------------
+        let rawWorkoutLogs = [];
+        let rawNutritionLogs = [];
+        let mergedLogs = [];
+        let currentFilterType = 'all';
+        let strideLength = 0.75; // Default 75cm stride
+        let userWeight = 70; // Default 70kg weight
+        let dailyCaloriesTarget = 2500; // Default BMR target
+
+        // Load dynamic data on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (userEmail) {
+                fetchStatsAndLogs();
+            }
+        });
+
+        // Parallel telemetry database fetcher
+        async function fetchStatsAndLogs() {
+            try {
+                // Fetch user data (weight/height for calculations) and diet goals (calories)
+                const [protocolRes, profileRes, workoutRes, nutritionRes] = await Promise.all([
+                    fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`),
+                    fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`),
+                    fetch(`/api/workouts?email=${encodeURIComponent(userEmail)}`),
+                    fetch(`/api/nutrition/logs?email=${encodeURIComponent(userEmail)}`)
+                ]);
+
+                // 1. Calibrate Stride Length & Weight
+                if (protocolRes.ok) {
+                    const data = await protocolRes.json();
+                    if (data.protocol) {
+                        const p = data.protocol;
+                        if (p.height) strideLength = (p.height * 0.414) / 100;
+                        if (p.weight) userWeight = p.weight;
+                    }
+                }
+
+                // 2. Load Diet Calories Target
+                if (profileRes.ok) {
+                    const data = await profileRes.json();
+                    if (data.dailyCalories) {
+                        dailyCaloriesTarget = data.dailyCalories;
+                    } else if (data.dietProfile && data.dietProfile.dailyCalories) {
+                        dailyCaloriesTarget = data.dietProfile.dailyCalories;
+                    } else if (data.profile && data.profile.dailyCalories) {
+                        dailyCaloriesTarget = data.profile.dailyCalories;
+                    }
+                }
+
+                // 3. Store workout and nutrition telemetry logs
+                rawWorkoutLogs = workoutRes.ok ? await workoutRes.json() : [];
+                const nutritionData = nutritionRes.ok ? await nutritionRes.json() : { logs: [] };
+                rawNutritionLogs = nutritionData.logs || [];
+
+                // 4. Merge logs chronologically (latest first)
+                const formattedWorkouts = rawWorkoutLogs.map(w => ({
+                    id: w._id,
+                    logType: 'workout',
+                    title: w.workoutName || 'Completed Workout Session',
+                    subtitle: `${Math.round((w.duration || 0) / 60)} minutes • ${w.steps || 0} steps`,
+                    calories: w.calories || 0,
+                    date: new Date(w.date || w.createdAt || Date.now()),
+                    raw: w
+                }));
+
+                const formattedNutrition = rawNutritionLogs.map(n => ({
+                    id: n._id,
+                    logType: 'nutrition',
+                    title: n.foodName || 'Logged Meal',
+                    subtitle: `${n.protein || 0}g Protein • ${n.carbs || 0}g Carbs • ${n.fat || 0}g Fat`,
+                    calories: n.calories || 0,
+                    date: new Date(n.date || n.createdAt || Date.now()),
+                    raw: n
+                }));
+
+                mergedLogs = [...formattedWorkouts, ...formattedNutrition].sort((a, b) => b.date - a.date);
+
+                // 5. Update UI Blocks & Chart
+                calculateTodayTotals();
+                renderWeeklyChart();
+                applyFiltersAndRender();
+
+            } catch (err) {
+                console.error("Telemetry sync error:", err);
+            }
+        }
+
+        // Calculate and render bento grid stats
+        function calculateTodayTotals() {
+            // Filter logs for today
+            const today = new Date().toDateString();
+
+            let todayBurned = 0;
+            rawWorkoutLogs.forEach(w => {
+                if (new Date(w.date || w.createdAt || Date.now()).toDateString() === today) {
+                    todayBurned += (w.calories || 0);
+                }
+            });
+
+            let todayConsumed = 0;
+            rawNutritionLogs.forEach(n => {
+                if (new Date(n.date || n.createdAt || Date.now()).toDateString() === today) {
+                    todayConsumed += (n.calories || 0);
+                }
+            });
+
+            // Calculate history totals (all-time logs)
+            let allTimeBurned = 0;
+            rawWorkoutLogs.forEach(w => allTimeBurned += (w.calories || 0));
+
+            let allTimeConsumed = 0;
+            rawNutritionLogs.forEach(n => allTimeConsumed += (n.calories || 0));
+
+            // Update streams aggregates
+            document.getElementById('total-workouts-count').textContent = rawWorkoutLogs.length;
+            document.getElementById('total-cals-burned').textContent = `${allTimeBurned} kcal`;
+            document.getElementById('total-meals-count').textContent = rawNutritionLogs.length;
+            document.getElementById('total-cals-consumed').textContent = `${allTimeConsumed} kcal`;
+
+            // Energy balance card removed
+
+            // Update Today's Hydration Card
+            const todayStr = new Date().toLocaleDateString();
+            const dateKey = `waterLoggedDate_${userEmail}`;
+            const waterKey = `waterLogged_${userEmail}`;
+
+            // Check if date has changed (daily reset)
+            const savedDate = localStorage.getItem(dateKey);
+            if (savedDate !== todayStr) {
+                localStorage.setItem(dateKey, todayStr);
+                localStorage.setItem(waterKey, '0.00');
+            }
+
+            const loggedWater = Number(localStorage.getItem(waterKey)) || 0.0;
+            const hydrationTarget = 4.0;
+
+            if (loggedWater >= hydrationTarget) {
+                document.getElementById('hydration-summary').innerHTML = `
+                    <div class="flex flex-col gap-1">
+                        <span class="text-sm font-bold text-emerald-400 animate-pulse">Congrats! Today's target achieved!</span>
+                        <span class="text-[9px] text-secondary opacity-60 font-semibold uppercase tracking-wider block">Note: This tracker will reset tomorrow.</span>
+                    </div>
+                `;
+            } else {
+                document.getElementById('hydration-summary').innerHTML = `${loggedWater.toFixed(2)} / ${hydrationTarget.toFixed(1)} <span class="text-xs font-normal text-secondary/60">Liters</span>`;
+            }
+        }
+
+        // Render dynamic SVG chart showing Intake vs Active Burn
+        function renderWeeklyChart() {
+            const weeklyContainer = document.getElementById('weekly-chart-container');
+            if (!weeklyContainer) return;
+
+            // Last 7 days dates YYYY-MM-DD
+            const days = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push(d);
+            }
+
+            const statsByDate = {};
+            days.forEach(d => {
+                const key = d.toISOString().split('T')[0];
+                statsByDate[key] = { consumed: 0, burned: 0, label: d.toLocaleDateString([], { weekday: 'short' }) };
+            });
+
+            rawWorkoutLogs.forEach(w => {
+                const key = new Date(w.date || w.createdAt).toISOString().split('T')[0];
+                if (statsByDate[key]) {
+                    statsByDate[key].burned += (w.calories || 0);
+                }
+            });
+
+            rawNutritionLogs.forEach(n => {
+                const key = new Date(n.date || n.createdAt).toISOString().split('T')[0];
+                if (statsByDate[key]) {
+                    statsByDate[key].consumed += (n.calories || 0);
+                }
+            });
+
+            // Find max value to calibrate y-axis limit
+            let maxVal = 1200; // minimum scale baseline
+            days.forEach(d => {
+                const key = d.toISOString().split('T')[0];
+                maxVal = Math.max(maxVal, statsByDate[key].consumed, statsByDate[key].burned);
+            });
+            maxVal = Math.ceil(maxVal / 500) * 500; // Round to nearest 500
+
+            // SVG Configurations
+            const svgHeight = 180;
+            const svgWidth = weeklyContainer.clientWidth || 500;
+            const paddingLeft = 40;
+            const paddingRight = 10;
+            const paddingTop = 20;
+            const paddingBottom = 30;
+
+            const chartHeight = svgHeight - paddingTop - paddingBottom;
+            const chartWidth = svgWidth - paddingLeft - paddingRight;
+            const spacing = chartWidth / 7;
+            const barWidth = Math.max(8, spacing * 0.25);
+
+            let svgContent = `<svg width="100%" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}" class="overflow-visible">`;
+
+            // Draw Y-axis gridlines & labels
+            const gridTicks = [0, 0.5, 1];
+            gridTicks.forEach(tick => {
+                const y = paddingTop + chartHeight * (1 - tick);
+                const val = Math.round(maxVal * tick);
+                svgContent += `
+                    <line x1="${paddingLeft}" y1="${y}" x2="${svgWidth - paddingRight}" y2="${y}" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="2 4" />
+                    <text x="${paddingLeft - 10}" y="${y + 3}" fill="rgba(255,255,255,0.3)" font-size="9" text-anchor="end" font-family="Inter">${val}</text>
+                `;
+            });
+
+            // Plot weekly bars
+            days.forEach((d, idx) => {
+                const key = d.toISOString().split('T')[0];
+                const data = statsByDate[key];
+
+                const xCenter = paddingLeft + (idx * spacing) + (spacing / 2);
+                const xConsumed = xCenter - barWidth - 1.5;
+                const xBurned = xCenter + 1.5;
+
+                const hConsumed = Math.max(2, (data.consumed / maxVal) * chartHeight);
+                const hBurned = Math.max(2, (data.burned / maxVal) * chartHeight);
+
+                const yConsumed = paddingTop + chartHeight - hConsumed;
+                const yBurned = paddingTop + chartHeight - hBurned;
+
+                svgContent += `
+                    <!-- Consumed Bar (Sky Blue) -->
+                    <rect x="${xConsumed}" y="${yConsumed}" width="${barWidth}" height="${hConsumed}" fill="#38bdf8" rx="2" class="transition-all duration-500 hover:opacity-85" />
+                    
+                    <!-- Burned Bar (Emerald Green) -->
+                    <rect x="${xBurned}" y="${yBurned}" width="${barWidth}" height="${hBurned}" fill="#10b981" rx="2" class="transition-all duration-500 hover:opacity-85" />
+                    
+                    <!-- Day Text Label -->
+                    <text x="${xCenter}" y="${svgHeight - 10}" fill="rgba(255,255,255,0.4)" font-size="10" font-weight="600" text-anchor="middle" font-family="Space Grotesk">${data.label}</text>
+                `;
+            });
+
+            svgContent += `</svg>`;
+            weeklyContainer.innerHTML = svgContent;
+        }
+
+        // Active telemetry log filter tabs handler
+        function filterType(type) {
+            currentFilterType = type;
+
+            document.getElementById('tab-all').className = type === 'all' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
+            document.getElementById('tab-workout').className = type === 'workout' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
+            document.getElementById('tab-nutrition').className = type === 'nutrition' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
+
+            applyFiltersAndRender();
+        }
+
+        // Apply filters and print Activity Feed list
+        function applyFiltersAndRender() {
+            const searchInput = document.getElementById('history-search-input');
+            const query = searchInput ? (searchInput.value || '').toLowerCase().trim() : '';
+
+            let filtered = mergedLogs.filter(item => {
+                // Category Filter
+                if (currentFilterType === 'all') {
+                    // Hide completed meals from All Logs tab
+                    if (item.logType === 'nutrition' && item.raw.imageUrl === 'meal_done_log') {
+                        return false;
+                    }
+                }
+                if (currentFilterType === 'workout' && item.logType !== 'workout') return false;
+                if (currentFilterType === 'nutrition' && item.logType !== 'nutrition') return false;
+
+                // Search Query matches
+                if (query) {
+                    const matchTitle = item.title.toLowerCase().includes(query);
+                    const matchSubtitle = item.subtitle.toLowerCase().includes(query);
+                    const matchCal = String(item.calories).includes(query);
+                    if (!matchTitle && !matchSubtitle && !matchCal) return false;
+                }
+
+                return true;
+            });
+
+            document.getElementById('logs-count-badge').textContent = `${filtered.length} Log Entries`;
+            const container = document.getElementById('history-feed-container');
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card p-12 text-center space-y-3 rounded-3xl">
+                        <span class="material-symbols-outlined text-4xl text-secondary/30">history_toggle_off</span>
+                        <p class="text-xs text-secondary">No activity logs match your search.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(item => {
+                const isWorkout = item.logType === 'workout';
+                const icon = isWorkout ? 'fitness_center' : 'restaurant';
+                const iconColor = isWorkout ? 'text-emerald-400' : 'text-sky-400';
+                const badgeBg = isWorkout ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-sky-500/10 text-sky-400 border-sky-500/20';
+                const badgeText = isWorkout ? 'WORKOUT' : 'MEAL';
+                const calLabel = isWorkout ? `-${item.calories} kcal burned` : `+${item.calories} kcal consumed`;
+                const calColor = isWorkout ? 'text-emerald-400' : 'text-sky-400';
+
+                const formattedDate = item.date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                const formattedTime = item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                return `
+                    <div class="glass-card p-5 rounded-2xl border-glass-border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 transition-all hover:border-white/20">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-xl ${iconColor}">${icon}</span>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${badgeBg}">${badgeText}</span>
+                                    <span class="text-[10px] text-secondary/60 font-mono">${formattedDate} @ ${formattedTime}</span>
+                                </div>
+                                <h4 class="text-sm font-bold text-white font-headline">${item.title}</h4>
+                                <p class="text-xs text-secondary/75">${item.subtitle}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0">
+                            <div class="text-left sm:text-right">
+                                <p class="text-xs sm:text-sm font-bold ${calColor}">${calLabel}</p>
+                            </div>
+                            <button onclick="deleteLogEntry('${item.id}', '${item.logType}')" class="p-2 text-secondary/40 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0" title="Delete Log Entry">
+                                <span class="material-symbols-outlined text-lg">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Delete activity log from backend database
+        async function deleteLogEntry(id, type) {
+            if (!confirm(`Are you sure you want to delete this ${type} log entry?`)) return;
+
+            try {
+                const endpoint = type === 'workout'
+                    ? `/api/workout/${id}?email=${encodeURIComponent(userEmail)}`
+                    : `/api/nutrition/log/${id}?email=${encodeURIComponent(userEmail)}`;
+
+                const res = await fetch(endpoint, { method: 'DELETE' });
+                if (res.ok) {
+                    fetchStatsAndLogs(); // Reload everything and update all bento summaries & charts
+                } else {
+                    alert("Failed to delete log entry.");
+                }
+            } catch (err) {
+                console.error("Delete log error:", err);
+                alert("Failed to delete log entry.");
+            }
+        }
+
+        // ------------------ WATER LOG STORAGE MANAGEMENT ------------------
+        window.logWater = function (amount) {
+            const key = `waterLogged_${userEmail}`;
+            let logged = Number(localStorage.getItem(key)) || 0.0;
+            logged += amount;
+            localStorage.setItem(key, logged.toFixed(2));
+            calculateTodayTotals();
+        }
+
+        window.resetWater = function () {
+            const key = `waterLogged_${userEmail}`;
+            localStorage.setItem(key, '0.00');
+            calculateTodayTotals();
+        }
+
+        // ------------------ ACTIVE ACCELEROMETER WORKOUT TRACKER ------------------
         let workoutActive = false;
         let workoutStartTime = null;
         let workoutSeconds = 0;
         let workoutTimerInterval = null;
         let steps = 0;
-        let distance = 0; // in meters
+        let distance = 0; // In meters
         let calories = 0;
-        let strideLength = 0.75; // default 75cm
-        let userWeight = 70; // default 70kg
 
-        // Sensor & Processing variables
+        // Sensor algorithms
         let movingAverage = 9.8;
         const ACCEL_THRESHOLD = 1.5;
         const STEP_COOLDOWN = 350; // ms
@@ -579,31 +831,6 @@
         let autoSimInterval = null;
         let isAutoSimulating = false;
 
-        // Load user telemetry for personalized stride & calorie calibration
-        async function loadTelemetryCalibration() {
-            try {
-                const res = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.protocol) {
-                        const protocol = data.protocol;
-                        if (protocol.height) {
-                            // Stride length estimated as height * 0.414
-                            strideLength = (protocol.height * 0.414) / 100;
-                            console.log(`Stride length calibrated: ${strideLength.toFixed(3)}m`);
-                        }
-                        if (protocol.weight) {
-                            userWeight = protocol.weight;
-                            console.log(`Calorie formula calibrated for weight: ${userWeight}kg`);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error("Telemetry calibration loading failed:", e);
-            }
-        }
-
-        // Toggle workout session state
         function toggleWorkout() {
             if (!workoutActive) {
                 startWorkout();
@@ -612,7 +839,6 @@
             }
         }
 
-        // Start workout session
         function startWorkout() {
             workoutActive = true;
             workoutStartTime = Date.now();
@@ -621,20 +847,17 @@
             distance = 0;
             calories = 0;
 
-            // Update UI state
             document.getElementById('workout-live-stats').classList.remove('opacity-40');
             document.getElementById('workout-live-stats').classList.add('opacity-100');
             document.getElementById('workout-sim-controls').classList.remove('hidden');
 
             const actionBtn = document.getElementById('btn-workout-action');
-            actionBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">stop</span> Stop &amp; Save`;
+            actionBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">stop</span> Stop &amp; Save`;
             actionBtn.classList.remove('bg-primary', 'text-on-primary');
-            actionBtn.classList.add('bg-[#ffb4ab]', 'text-[#690005]', 'hover:scale-[1.02]'); // Premium error/stop styling matching color system
+            actionBtn.classList.add('bg-[#ffb4ab]', 'text-[#690005]', 'hover:scale-[1.02]');
 
-            // Reset display
             updateWorkoutDisplay();
 
-            // Start duration timer
             workoutTimerInterval = setInterval(() => {
                 workoutSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
                 const mins = String(Math.floor(workoutSeconds / 60)).padStart(2, '0');
@@ -642,26 +865,21 @@
                 document.getElementById('workout-timer').textContent = `${mins}:${secs}`;
             }, 1000);
 
-            // Request real mobile sensor access
             initializeSensor();
         }
 
-        // Stop and save workout session
         async function stopWorkout() {
             if (!workoutActive) return;
 
             workoutActive = false;
             clearInterval(workoutTimerInterval);
 
-            // Stop auto simulation if active
             if (isAutoSimulating) {
                 toggleAutoSim();
             }
 
-            // Remove device motion listener
             window.removeEventListener('devicemotion', handleDeviceMotion);
 
-            // Reset UI status
             document.getElementById('workout-live-stats').classList.add('opacity-40');
             document.getElementById('workout-live-stats').classList.remove('opacity-100');
             document.getElementById('workout-sim-controls').classList.add('hidden');
@@ -672,14 +890,13 @@
             statusText.textContent = "Inactive";
 
             const actionBtn = document.getElementById('btn-workout-action');
-            actionBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">play_arrow</span> Start Workout`;
+            actionBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">play_arrow</span> Start Session`;
             actionBtn.classList.add('bg-primary', 'text-on-primary');
             actionBtn.classList.remove('bg-[#ffb4ab]', 'text-[#690005]');
 
-            // Save workout session to backend database
             if (steps > 0 || workoutSeconds > 5) {
                 actionBtn.disabled = true;
-                actionBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[18px]">sync</span> Saving Session...`;
+                actionBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> Saving...`;
 
                 try {
                     const response = await fetch('/api/workouts', {
@@ -690,12 +907,14 @@
                             duration: workoutSeconds,
                             steps: steps,
                             distance: distance,
-                            calories: Math.round(calories)
+                            calories: Math.round(calories),
+                            date: new Date().toISOString()
                         })
                     });
 
                     if (response.ok) {
-                        console.log("Workout session saved successfully.");
+                        console.log("Workout session saved.");
+                        fetchStatsAndLogs(); // Reload data immediately to sync statistics & chart
                     } else {
                         console.error("Failed to save workout session.");
                     }
@@ -704,24 +923,18 @@
                 }
 
                 actionBtn.disabled = false;
-                actionBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">play_arrow</span> Start Workout`;
+                actionBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">play_arrow</span> Start Session`;
             }
 
-            // Reset timer display
             document.getElementById('workout-timer').textContent = "00:00";
-
-            // Reload history
-            loadWorkoutHistory();
         }
 
-        // Initialize/request sensor permission
         function initializeSensor() {
             const dot = document.getElementById('sensor-status-dot');
             const statusText = document.getElementById('workout-sensor-status');
 
             if (typeof DeviceMotionEvent !== 'undefined') {
                 if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    // iOS 13+ require permission gesture
                     DeviceMotionEvent.requestPermission()
                         .then(permissionState => {
                             if (permissionState === 'granted') {
@@ -731,29 +944,24 @@
                             } else {
                                 dot.className = "w-2 h-2 rounded-full bg-yellow-500";
                                 statusText.textContent = "Sim Active";
-                                console.warn("DeviceMotion permission denied. Falling back to simulator.");
                             }
                         })
                         .catch(err => {
-                            console.error("Error requesting DeviceMotion permission:", err);
+                            console.error("DeviceMotion error:", err);
                             dot.className = "w-2 h-2 rounded-full bg-yellow-500";
                             statusText.textContent = "Sim Active";
                         });
                 } else {
-                    // Android/standard browser where permission isn't explicitly required via popup
                     window.addEventListener('devicemotion', handleDeviceMotion);
                     dot.className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
                     statusText.textContent = "Sensor Active";
                 }
             } else {
-                // Not supported (e.g. desktop)
                 dot.className = "w-2 h-2 rounded-full bg-yellow-500";
                 statusText.textContent = "Sim Active";
-                console.log("DeviceMotionEvent not supported on this device. Simulation enabled.");
             }
         }
 
-        // Accelerometer Step Counter Peak Detection Algorithm
         function handleDeviceMotion(event) {
             let acc = event.accelerationIncludingGravity || event.acceleration;
             if (!acc) return;
@@ -761,10 +969,8 @@
             let x = acc.x || 0;
             let y = acc.y || 0;
             let z = acc.z || 0;
-
             let magnitude = Math.sqrt(x * x + y * y + z * z);
 
-            // Self-calibrating moving average
             movingAverage = movingAverage * 0.98 + magnitude * 0.02;
             let delta = Math.abs(magnitude - movingAverage);
 
@@ -777,39 +983,26 @@
             }
         }
 
-        // Increment step and update values
         function registerStep() {
             if (!workoutActive) return;
             steps++;
-
-            // Calculate distance (stride length in meters)
             distance = steps * strideLength;
-
-            // Calorie formula: steps * weight in kg * 0.0007
             calories = steps * userWeight * 0.0007;
-
             updateWorkoutDisplay();
         }
 
-        // Update frontend text fields
         function updateWorkoutDisplay() {
             document.getElementById('live-steps').textContent = steps;
-
-            // Display distance in kilometers
             const distKm = (distance / 1000).toFixed(2);
             document.getElementById('live-distance').textContent = `${distKm} km`;
-
-            // Display calories
-            document.getElementById('live-calories').textContent = Math.round(calories);
+            document.getElementById('live-calories').textContent = `${Math.round(calories)} kcal`;
         }
 
-        // Desktop Testing Simulation: Manual step increment
         function simulateStep() {
             if (!workoutActive) return;
             registerStep();
         }
 
-        // Desktop Testing Simulation: Toggle auto-walking
         function toggleAutoSim() {
             if (!workoutActive) return;
 
@@ -827,78 +1020,24 @@
                 autoBtn.textContent = "Walking...";
                 autoBtn.classList.add('bg-white/20', 'border-primary');
 
-                // Trigger step at variable intervals mimicking real walking pace
                 const triggerMockStep = () => {
                     if (!workoutActive) return;
                     registerStep();
-
-                    // Reschedule next step with random variation
-                    const nextInterval = 800 + Math.random() * 400; // 0.8s to 1.2s
+                    const nextInterval = 800 + Math.random() * 400;
                     autoSimInterval = setTimeout(triggerMockStep, nextInterval);
                 };
                 autoSimInterval = setTimeout(triggerMockStep, 900);
             }
         }
 
-        // Fetch and render Workout History list
-        async function loadWorkoutHistory() {
-            const rowsContainer = document.getElementById('workout-history-rows');
-            const countEl = document.getElementById('history-count');
-            if (!rowsContainer) return;
-
-            try {
-                const response = await fetch(`/api/workouts?email=${encodeURIComponent(userEmail)}`);
-                if (response.ok) {
-                    const workouts = await response.json();
-                    countEl.textContent = `${workouts.length} Session${workouts.length === 1 ? '' : 's'}`;
-
-                    if (workouts.length === 0) {
-                        rowsContainer.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="py-8 text-center text-secondary opacity-60 italic text-sm">
-                                No workouts recorded yet. Start your first session above!
-                            </td>
-                        </tr>`;
-                        return;
-                    }
-
-                    rowsContainer.innerHTML = workouts.map(w => {
-                        const dateStr = new Date(w.date).toLocaleString([], {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                        });
-
-                        const mins = String(Math.floor(w.duration / 60)).padStart(2, '0');
-                        const secs = String(w.duration % 60).padStart(2, '0');
-                        const durStr = `${mins}:${secs}`;
-
-                        const distKm = (w.distance / 1000).toFixed(2);
-                        const calStr = w.calories !== undefined ? Math.round(w.calories) : '-';
-
-                        return `
-                        <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="py-4 px-6 text-sm text-secondary">${dateStr}</td>
-                            <td class="py-4 px-6 font-semibold text-sm">${durStr}</td>
-                            <td class="py-4 px-6 text-sm text-primary font-bold">${w.steps}</td>
-                            <td class="py-4 px-6 text-sm text-secondary">${distKm} km</td>
-                            <td class="py-4 px-6 text-sm text-secondary">${calStr} kcal</td>
-                        </tr>`;
-                    }).join('');
-                }
-            } catch (e) {
-                console.error("Failed to load workout history:", e);
-                rowsContainer.innerHTML = `
-                <tr>
-                    <td colspan="5" class="py-8 text-center text-[#ffb4ab] opacity-60 italic text-sm">
-                        Failed to retrieve workout history from server.
-                    </td>
-                </tr>`;
+        // Responsive chart resize listener
+        window.addEventListener('resize', () => {
+            if (rawWorkoutLogs.length > 0 || rawNutritionLogs.length > 0) {
+                renderWeeklyChart();
             }
-        }
+        });
 
-        // Sidebar Navigation Drawer Toggle logic
+        // Sidebar mobile drawer toggler
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar-nav');
             const backdrop = document.getElementById('sidebar-backdrop');
@@ -909,12 +1048,6 @@
                 sidebar.classList.add('-translate-x-full');
                 backdrop.classList.add('hidden');
             }
-        }
-
-        // Run calibration and history loading on initialization
-        if (userEmail) {
-            loadTelemetryCalibration();
-            loadWorkoutHistory();
         }
     </script>
     <script src="subscription-check.js"></script>

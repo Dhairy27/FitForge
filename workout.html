@@ -158,8 +158,8 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="planner.html">
@@ -180,11 +180,6 @@
                 href="scanner.html">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <span class="font-body-md text-body-md tracking-tight">Scanner</span>
-            </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
-                href="progress.html">
-                <span class="material-symbols-outlined">query_stats</span>
-                <span class="font-body-md text-body-md tracking-tight">Progress</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="profile.html">
@@ -217,13 +212,7 @@
                 <h2 class="font-headline-md text-headline-md text-primary font-bold">Workout Protocol Suite</h2>
             </div>
             <div class="flex items-center gap-4">
-                <!-- Favorites Quick Access Button -->
-                <button id="btn-view-favorites"
-                    class="glass-button p-2.5 rounded-full flex items-center justify-center text-secondary hover:text-white relative">
-                    <span class="material-symbols-outlined text-xl">star</span>
-                    <span id="fav-badge"
-                        class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center hidden">0</span>
-                </button>
+
                 <a href="profile.html"
                     class="glass-button p-2.5 rounded-full flex items-center justify-center text-secondary hover:text-white">
                     <span class="material-symbols-outlined text-xl">account_circle</span>
@@ -839,7 +828,10 @@
             });
 
             // Bind favorites trigger drawer
-            document.getElementById('btn-view-favorites').addEventListener('click', toggleFavoritesDrawer);
+            const btnFav = document.getElementById('btn-view-favorites');
+            if (btnFav) {
+                btnFav.addEventListener('click', toggleFavoritesDrawer);
+            }
 
             // Fetch and render everything
             fetchStatsAndLogs();
@@ -1126,6 +1118,7 @@
 
         function updateFavoritesBadge() {
             const badge = document.getElementById('fav-badge');
+            if (!badge) return;
             if (favorites.length > 0) {
                 badge.textContent = favorites.length;
                 badge.classList.remove('hidden');
@@ -1490,7 +1483,8 @@
                         duration: sessionSeconds,
                         steps: currentDayWorkouts.length * 120,
                         distance: currentDayWorkouts.length * 80,
-                        calories: totalCals
+                        calories: totalCals,
+                        date: new Date().toISOString()
                     })
                 });
 
