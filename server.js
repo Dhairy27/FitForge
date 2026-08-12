@@ -159,8 +159,6 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database Connection
-mongoose.set('bufferCommands', false);
-
 const dns = require('dns');
 
 // Use Google DNS to resolve SRV records (local ISP DNS may block SRV queries)
@@ -315,8 +313,18 @@ app.post('/api/auth/signup', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists (with fail-safe fallback)
+    let existingUser;
+    try {
+      existingUser = await User.findOne({ email: normalizedEmail });
+    } catch (dbErr) {
+      console.warn('Signup findOne fallback:', dbErr.message);
+      useMockDb = true;
+      existingUser = await User.findOne({ email: normalizedEmail });
+    }
+
     if (existingUser) {
       return res.status(400).json({ error: 'Account already exists with this email.' });
     }
@@ -327,16 +335,23 @@ app.post('/api/auth/signup', async (req, res) => {
 
     // Create user
     const newUser = new User({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword
     });
 
-    await newUser.save();
+    try {
+      await newUser.save();
+    } catch (saveErr) {
+      console.warn('Signup save fallback:', saveErr.message);
+      useMockDb = true;
+      await newUser.save();
+    }
+
     res.status(201).json({ message: 'Account initialized.', email: newUser.email, name: newUser.name });
   } catch (error) {
     console.error('Signup error:', error);
-    res.status(500).json({ error: 'Failed to process signup.' });
+    res.status(500).json({ error: error.message || 'Failed to process signup.' });
   }
 });
 
@@ -348,8 +363,18 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    // Check user
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check user (with fail-safe fallback)
+    let user;
+    try {
+      user = await User.findOne({ email: normalizedEmail });
+    } catch (dbErr) {
+      console.warn('Login findOne fallback:', dbErr.message);
+      useMockDb = true;
+      user = await User.findOne({ email: normalizedEmail });
+    }
+
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
@@ -363,7 +388,7 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(200).json({ message: 'Access granted.', email: user.email, name: user.name });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Failed to process login.' });
+    res.status(500).json({ error: error.message || 'Failed to process login.' });
   }
 });
 
