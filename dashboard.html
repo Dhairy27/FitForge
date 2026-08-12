@@ -199,15 +199,19 @@
                     class="col-span-12 lg:col-span-8 glass-card p-8 rounded-[2rem] flex flex-col justify-between border-glass-border">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <p class="text-[10px] uppercase tracking-widest text-secondary opacity-60 mb-0.5">Active
-                                Tracker</p>
-                            <h4 id="workout-timer" class="font-headline text-3xl font-bold text-white tracking-tight">
-                                00:00</h4>
+                            <p class="text-[10px] uppercase tracking-widest text-secondary opacity-60 mb-0.5">Active Tracker</p>
+                            <h4 id="workout-timer" class="font-headline text-3xl font-bold text-white tracking-tight">00:00</h4>
                         </div>
-                        <div class="flex items-center gap-1.5">
-                            <span id="sensor-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
-                            <span id="workout-sensor-status"
-                                class="text-[9px] uppercase tracking-wider text-secondary opacity-60 font-semibold">Inactive</span>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <span id="sensor-status-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+                                <span id="workout-sensor-status" class="text-[9px] uppercase tracking-wider text-secondary opacity-60 font-semibold">Inactive</span>
+                            </div>
+                            <!-- Live motion state classification sub-badge -->
+                            <div class="flex items-center gap-1 bg-white/5 border border-white/5 px-2.5 py-0.5 rounded-full" id="motion-state-badge">
+                                <span id="motion-state-dot" class="w-1.5 h-1.5 rounded-full bg-gray-500"></span>
+                                <span class="text-[8px] uppercase tracking-wider text-secondary font-bold" id="motion-state-text">IDLE</span>
+                            </div>
                         </div>
                     </div>
 
@@ -228,6 +232,27 @@
                         </div>
                     </div>
 
+                    <!-- Unsupported device fallback banner -->
+                    <div id="unsupported-device-banner" class="hidden my-3 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-start gap-3">
+                        <span class="material-symbols-outlined text-yellow-400 shrink-0 text-lg">info</span>
+                        <div class="text-left space-y-0.5">
+                            <p class="text-[10px] font-bold text-yellow-400 uppercase tracking-wide">Motion tracking unavailable on this device</p>
+                            <p class="text-[9px] text-secondary/80">Use FitForge on a phone or tablet for automatic step detection. You can still use manual controls below.</p>
+                        </div>
+                    </div>
+
+                    <!-- Mobile permissions inline dialog overlay -->
+                    <div id="permission-request-overlay" class="hidden my-3 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex flex-col items-center text-center gap-3">
+                        <span class="material-symbols-outlined text-emerald-400 text-2xl">sensors</span>
+                        <div class="space-y-1">
+                            <p class="text-xs font-bold text-white uppercase tracking-wide">Motion Access Required</p>
+                            <p class="text-[10px] text-secondary/80 max-w-xs">FitForge uses your device motion sensors to automatically detect steps during an active session.</p>
+                        </div>
+                        <button onclick="requestMotionPermissionAndStart()" class="px-5 py-2.5 bg-emerald-500 text-black text-[10px] font-bold uppercase tracking-wider rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                            Allow Motion Access
+                        </button>
+                    </div>
+
                     <!-- Simulation controls for desktop testing -->
                     <div id="workout-sim-controls"
                         class="hidden my-2 flex items-center justify-between gap-2 border-t border-glass-border/30 pt-2">
@@ -244,13 +269,34 @@
                         </div>
                     </div>
 
-                    <!-- Action Button -->
-                    <div class="mt-2">
+                    <!-- Collapsible sensor developer debug log -->
+                    <div id="sensor-debug-box" class="hidden my-3 p-4 bg-black/40 border border-white/5 rounded-2xl text-[9px] font-mono text-left text-secondary/70 space-y-1">
+                        <div class="flex justify-between border-b border-white/5 pb-1 mb-1 font-bold">
+                            <span>SENSOR DEBUG INFO</span>
+                            <span class="text-emerald-400">DEV MODE</span>
+                        </div>
+                        <div>Motion Sensor: <span id="debug-sensor-available">Checking...</span></div>
+                        <div>Permission Status: <span id="debug-permission-status">Checking...</span></div>
+                        <div>Raw Accel (x, y, z): <span id="debug-raw-accel">0.00, 0.00, 0.00</span></div>
+                        <div>Linear Accel (x, y, z): <span id="debug-linear-accel">0.00, 0.00, 0.00</span></div>
+                        <div>Magnitude: <span id="debug-magnitude">0.00</span></div>
+                        <div>Filtered Signal: <span id="debug-filtered">0.00</span></div>
+                        <div>Last Step Time: <span id="debug-last-step">0</span></div>
+                        <div>Min Step Interval: <span id="debug-min-interval">350 ms</span></div>
+                    </div>
+
+                    <!-- Dynamic Action Buttons -->
+                    <div class="mt-2 flex flex-col sm:flex-row gap-3 w-full" id="workout-controls-container">
                         <button id="btn-workout-action" onclick="toggleWorkout()"
                             class="w-full py-3 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-[16px]">play_arrow</span>
                             Start Session
                         </button>
+                    </div>
+
+                    <!-- Dev Toggle Link -->
+                    <div class="mt-2 text-right">
+                        <button onclick="toggleDebugBox()" class="text-[8px] uppercase tracking-wider text-secondary/30 hover:text-secondary/60 transition-colors cursor-pointer bg-transparent border-0">Toggle Debug Info</button>
                     </div>
                 </div>
 
@@ -806,184 +852,275 @@
             localStorage.setItem(key, logged.toFixed(2));
             calculateTodayTotals();
         }
-
-        window.resetWater = function () {
+window.resetWater = function () {
             const key = `waterLogged_${userEmail}`;
             localStorage.setItem(key, '0.00');
             calculateTodayTotals();
-        }
+        };
 
         // ------------------ ACTIVE ACCELEROMETER WORKOUT TRACKER ------------------
+        // DSP Constants for Step Detection (centralized)
+        const STEP_THRESHOLD = 1.35; // Calibrated magnitude threshold
+        const MIN_STEP_INTERVAL = 360; // Minimum interval between steps in ms
+        const SMOOTHING_WINDOW = 5; // Moving average window size for smoothing
+        const HIGH_ACCEL_FILTER = 7.0; // Shaking/noise acceleration filter threshold
+
+        // State Machine Variables
         let workoutActive = false;
+        let isPaused = false;
         let workoutStartTime = null;
+        let accumulatedSeconds = 0;
         let workoutSeconds = 0;
         let workoutTimerInterval = null;
+
         let steps = 0;
         let distance = 0; // In meters
-        let calories = 0;
+        let calories = 0; // In kcal
 
-        // Sensor algorithms
-        let movingAverage = 9.8;
-        const ACCEL_THRESHOLD = 1.5;
-        const STEP_COOLDOWN = 350; // ms
+        // Sensor DSP Buffers
+        let gravity = { x: 0, y: 0, z: 9.8 }; // Low-pass filter for gravity isolation
+        const alpha = 0.85; // Gravity filter coefficient
+        let magnitudeHistory = []; // Circular buffer for smoothing filter
         let lastStepTime = 0;
+        let hasSensorData = false;
+
+        // Classification state variables
+        let lastMotionState = 'IDLE';
+        let recentDeltas = [];
+        const CLASSIFY_WINDOW = 20;
+        let walkingTimeout = null;
+
+        // iOS/Safari Permission States
+        let motionPermissionRequested = false;
+
+        // Simulated controls state
         let autoSimInterval = null;
         let isAutoSimulating = false;
+        let isDebugVisible = false;
 
         function toggleWorkout() {
             if (!workoutActive) {
-                startWorkout();
-            } else {
-                stopWorkout();
+                checkSensorAndStart();
             }
         }
 
-        function startWorkout() {
+        function checkSensorAndStart() {
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function' && !motionPermissionRequested) {
+                // Show mobile permissions inline request box
+                document.getElementById('permission-request-overlay').classList.remove('hidden');
+                document.getElementById('unsupported-device-banner').classList.add('hidden');
+            } else {
+                startWorkoutSession();
+            }
+        }
+
+        function requestMotionPermissionAndStart() {
+            if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+                DeviceMotionEvent.requestPermission()
+                    .then(permissionState => {
+                        document.getElementById('permission-request-overlay').classList.add('hidden');
+                        if (permissionState === 'granted') {
+                            motionPermissionRequested = true;
+                            document.getElementById('debug-permission-status').textContent = 'Granted';
+                            startWorkoutSession();
+                        } else {
+                            document.getElementById('debug-permission-status').textContent = 'Denied';
+                            alert("Permission denied. Starting session in manual simulation mode.");
+                            startWorkoutSession();
+                        }
+                    })
+                    .catch(err => {
+                        console.error("DeviceMotion permission error:", err);
+                        document.getElementById('permission-request-overlay').classList.add('hidden');
+                        document.getElementById('debug-permission-status').textContent = 'Error';
+                        startWorkoutSession();
+                    });
+            } else {
+                document.getElementById('permission-request-overlay').classList.add('hidden');
+                startWorkoutSession();
+            }
+        }
+
+        function startWorkoutSession() {
             workoutActive = true;
+            isPaused = false;
             workoutStartTime = Date.now();
+            accumulatedSeconds = 0;
             workoutSeconds = 0;
             steps = 0;
             distance = 0;
             calories = 0;
+            hasSensorData = false;
+            recentDeltas = [];
+            magnitudeHistory = [];
 
+            // UI Adjustments
             document.getElementById('workout-live-stats').classList.remove('opacity-40');
             document.getElementById('workout-live-stats').classList.add('opacity-100');
             document.getElementById('workout-sim-controls').classList.remove('hidden');
+            document.getElementById('unsupported-device-banner').classList.add('hidden');
 
-            const actionBtn = document.getElementById('btn-workout-action');
-            actionBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">stop</span> Stop &amp; Save`;
-            actionBtn.classList.remove('bg-primary', 'text-on-primary');
-            actionBtn.classList.add('bg-[#ffb4ab]', 'text-[#690005]', 'hover:scale-[1.02]');
+            document.getElementById('debug-sensor-available').textContent = 'Checking...';
+            document.getElementById('debug-permission-status').textContent = motionPermissionRequested ? 'Granted' : 'Checking/Standard';
 
+            updateControlsUI();
             updateWorkoutDisplay();
+            updateMotionStateUI('IDLE');
 
+            // Timer Interval
             workoutTimerInterval = setInterval(() => {
-                workoutSeconds = Math.floor((Date.now() - workoutStartTime) / 1000);
-                const mins = String(Math.floor(workoutSeconds / 60)).padStart(2, '0');
-                const secs = String(workoutSeconds % 60).padStart(2, '0');
-                document.getElementById('workout-timer').textContent = `${mins}:${secs}`;
+                if (!isPaused) {
+                    workoutSeconds = Math.floor((Date.now() - workoutStartTime) / 1000) + accumulatedSeconds;
+                    const mins = String(Math.floor(workoutSeconds / 60)).padStart(2, '0');
+                    const secs = String(workoutSeconds % 60).padStart(2, '0');
+                    document.getElementById('workout-timer').textContent = `${mins}:${secs}`;
+                    
+                    // Stationary caloric burn baseline if steps are 0
+                    if (steps === 0) {
+                        calories = workoutSeconds * 0.012; // Minimal resting rate
+                        updateWorkoutDisplay();
+                    }
+                }
             }, 1000);
 
-            initializeSensor();
-        }
+            // Register motion listener
+            window.addEventListener('devicemotion', handleDeviceMotion);
 
-        async function stopWorkout() {
-            if (!workoutActive) return;
-
-            workoutActive = false;
-            clearInterval(workoutTimerInterval);
-
-            if (isAutoSimulating) {
-                toggleAutoSim();
-            }
-
-            window.removeEventListener('devicemotion', handleDeviceMotion);
-
-            document.getElementById('workout-live-stats').classList.add('opacity-40');
-            document.getElementById('workout-live-stats').classList.remove('opacity-100');
-            document.getElementById('workout-sim-controls').classList.add('hidden');
-
-            const dot = document.getElementById('sensor-status-dot');
-            const statusText = document.getElementById('workout-sensor-status');
-            dot.className = "w-2 h-2 rounded-full bg-gray-500";
-            statusText.textContent = "Inactive";
-
-            const actionBtn = document.getElementById('btn-workout-action');
-            actionBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">play_arrow</span> Start Session`;
-            actionBtn.classList.add('bg-primary', 'text-on-primary');
-            actionBtn.classList.remove('bg-[#ffb4ab]', 'text-[#690005]');
-
-            if (steps > 0 || workoutSeconds > 5) {
-                actionBtn.disabled = true;
-                actionBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[16px]">sync</span> Saving...`;
-
-                try {
-                    const response = await fetch('/api/workouts', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            email: userEmail,
-                            duration: workoutSeconds,
-                            steps: steps,
-                            distance: distance,
-                            calories: Math.round(calories),
-                            date: new Date().toISOString()
-                        })
-                    });
-
-                    if (response.ok) {
-                        console.log("Workout session saved.");
-                        fetchStatsAndLogs(); // Reload data immediately to sync statistics & chart
-                    } else {
-                        console.error("Failed to save workout session.");
-                    }
-                } catch (err) {
-                    console.error("Save workout network error:", err);
+            // Desktop Unsupported Fallback check (fires after 3 seconds if no sensor inputs received)
+            setTimeout(() => {
+                if (workoutActive && !hasSensorData) {
+                    document.getElementById('debug-sensor-available').textContent = 'Unavailable (Desktop/Laptop)';
+                    const dot = document.getElementById('sensor-status-dot');
+                    const statusText = document.getElementById('workout-sensor-status');
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-yellow-500";
+                    statusText.textContent = "Manual / Sim Active";
+                    document.getElementById('unsupported-device-banner').classList.remove('hidden');
                 }
-
-                actionBtn.disabled = false;
-                actionBtn.innerHTML = `<span class="material-symbols-outlined text-[16px]">play_arrow</span> Start Session`;
-            }
-
-            document.getElementById('workout-timer').textContent = "00:00";
-        }
-
-        function initializeSensor() {
-            const dot = document.getElementById('sensor-status-dot');
-            const statusText = document.getElementById('workout-sensor-status');
-
-            if (typeof DeviceMotionEvent !== 'undefined') {
-                if (typeof DeviceMotionEvent.requestPermission === 'function') {
-                    DeviceMotionEvent.requestPermission()
-                        .then(permissionState => {
-                            if (permissionState === 'granted') {
-                                window.addEventListener('devicemotion', handleDeviceMotion);
-                                dot.className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
-                                statusText.textContent = "Sensor Active";
-                            } else {
-                                dot.className = "w-2 h-2 rounded-full bg-yellow-500";
-                                statusText.textContent = "Sim Active";
-                            }
-                        })
-                        .catch(err => {
-                            console.error("DeviceMotion error:", err);
-                            dot.className = "w-2 h-2 rounded-full bg-yellow-500";
-                            statusText.textContent = "Sim Active";
-                        });
-                } else {
-                    window.addEventListener('devicemotion', handleDeviceMotion);
-                    dot.className = "w-2 h-2 rounded-full bg-green-500 animate-pulse";
-                    statusText.textContent = "Sensor Active";
-                }
-            } else {
-                dot.className = "w-2 h-2 rounded-full bg-yellow-500";
-                statusText.textContent = "Sim Active";
-            }
+            }, 3000);
         }
 
         function handleDeviceMotion(event) {
             let acc = event.accelerationIncludingGravity || event.acceleration;
             if (!acc) return;
 
-            let x = acc.x || 0;
-            let y = acc.y || 0;
-            let z = acc.z || 0;
-            let magnitude = Math.sqrt(x * x + y * y + z * z);
+            let rx = acc.x;
+            let ry = acc.y;
+            let rz = acc.z;
 
-            movingAverage = movingAverage * 0.98 + magnitude * 0.02;
-            let delta = Math.abs(magnitude - movingAverage);
+            // Ensure we have active values
+            if (rx !== null || ry !== null || rz !== null) {
+                rx = rx || 0;
+                ry = ry || 0;
+                rz = rz || 0;
 
-            if (delta > ACCEL_THRESHOLD) {
-                let now = Date.now();
-                if (now - lastStepTime > STEP_COOLDOWN) {
-                    registerStep();
-                    lastStepTime = now;
+                if (!hasSensorData) {
+                    hasSensorData = true;
+                    document.getElementById('debug-sensor-available').textContent = 'Available';
+                    const dot = document.getElementById('sensor-status-dot');
+                    const statusText = document.getElementById('workout-sensor-status');
+                    dot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
+                    statusText.textContent = "Sensor Active";
+                    document.getElementById('unsupported-device-banner').classList.remove('hidden');
+                }
+
+                if (!isPaused) {
+                    processMotion(rx, ry, rz);
                 }
             }
         }
 
+        function processMotion(rx, ry, rz) {
+            // 1. Low pass filter to isolate gravity
+            gravity.x = alpha * gravity.x + (1 - alpha) * rx;
+            gravity.y = alpha * gravity.y + (1 - alpha) * ry;
+            gravity.z = alpha * gravity.z + (1 - alpha) * rz;
+
+            // 2. Subtract gravity components to find linear acceleration
+            let lx = rx - gravity.x;
+            let ly = ry - gravity.y;
+            let lz = rz - gravity.z;
+
+            // 3. Calculate 3D magnitude (independent of phone orientation)
+            let magnitude = Math.sqrt(lx * lx + ly * ly + lz * lz);
+
+            // 4. Smooth out sensor spikes using a moving average
+            magnitudeHistory.push(magnitude);
+            if (magnitudeHistory.length > SMOOTHING_WINDOW) {
+                magnitudeHistory.shift();
+            }
+            let smoothedMagnitude = magnitudeHistory.reduce((sum, val) => sum + val, 0) / magnitudeHistory.length;
+
+            // Track successive deltas for movement classification
+            if (window.prevSmoothed !== undefined) {
+                let delta = Math.abs(smoothedMagnitude - window.prevSmoothed);
+                recentDeltas.push(delta);
+                if (recentDeltas.length > CLASSIFY_WINDOW) recentDeltas.shift();
+            }
+            window.prevSmoothed = smoothedMagnitude;
+
+            // Update debug view
+            if (isDebugVisible) {
+                document.getElementById('debug-raw-accel').textContent = `${rx.toFixed(2)}, ${ry.toFixed(2)}, ${rz.toFixed(2)}`;
+                document.getElementById('debug-linear-accel').textContent = `${lx.toFixed(2)}, ${ly.toFixed(2)}, ${lz.toFixed(2)}`;
+                document.getElementById('debug-magnitude').textContent = magnitude.toFixed(2);
+                document.getElementById('debug-filtered').textContent = smoothedMagnitude.toFixed(2);
+            }
+
+            // 5. Step threshold cross validation
+            if (smoothedMagnitude > STEP_THRESHOLD && smoothedMagnitude < HIGH_ACCEL_FILTER) {
+                let now = Date.now();
+                if (now - lastStepTime > MIN_STEP_INTERVAL) {
+                    registerStep();
+                    lastStepTime = now;
+                    triggerWalkingState();
+                    if (isDebugVisible) {
+                        document.getElementById('debug-last-step').textContent = new Date(lastStepTime).toLocaleTimeString();
+                    }
+                }
+            } else if (lastMotionState !== 'WALKING') {
+                evaluateNonWalkingState();
+            }
+        }
+
+        function triggerWalkingState() {
+            updateMotionStateUI('WALKING');
+            if (walkingTimeout) clearTimeout(walkingTimeout);
+            walkingTimeout = setTimeout(() => {
+                evaluateNonWalkingState();
+            }, 2500);
+        }
+
+        function evaluateNonWalkingState() {
+            if (!workoutActive || isPaused) {
+                updateMotionStateUI('IDLE');
+                return;
+            }
+            let avgDelta = recentDeltas.length > 0 ? (recentDeltas.reduce((s, v) => s + v, 0) / recentDeltas.length) : 0;
+            if (avgDelta > 0.15) {
+                updateMotionStateUI('MOVING');
+            } else {
+                updateMotionStateUI('IDLE');
+            }
+        }
+
+        function updateMotionStateUI(state) {
+            lastMotionState = state;
+            const badgeText = document.getElementById('motion-state-text');
+            const badgeDot = document.getElementById('motion-state-dot');
+            if (!badgeText || !badgeDot) return;
+
+            badgeText.textContent = state;
+            if (state === 'WALKING') {
+                badgeDot.className = "w-1.5 h-1.5 rounded-full bg-green-500 animate-ping";
+            } else if (state === 'MOVING') {
+                badgeDot.className = "w-1.5 h-1.5 rounded-full bg-yellow-500";
+            } else {
+                badgeDot.className = "w-1.5 h-1.5 rounded-full bg-gray-500";
+            }
+        }
+
         function registerStep() {
-            if (!workoutActive) return;
+            if (!workoutActive || isPaused) return;
             steps++;
             distance = steps * strideLength;
             calories = steps * userWeight * 0.0007;
@@ -997,9 +1134,168 @@
             document.getElementById('live-calories').textContent = `${Math.round(calories)} kcal`;
         }
 
-        function simulateStep() {
+        function togglePauseResume() {
             if (!workoutActive) return;
+
+            if (!isPaused) {
+                // Pause
+                isPaused = true;
+                accumulatedSeconds += Math.floor((Date.now() - workoutStartTime) / 1000);
+                
+                const dot = document.getElementById('sensor-status-dot');
+                const statusText = document.getElementById('workout-sensor-status');
+                dot.className = "w-2.5 h-2.5 rounded-full bg-yellow-500";
+                statusText.textContent = "Paused";
+
+                updateMotionStateUI('IDLE');
+            } else {
+                // Resume
+                isPaused = false;
+                workoutStartTime = Date.now();
+
+                const dot = document.getElementById('sensor-status-dot');
+                const statusText = document.getElementById('workout-sensor-status');
+                dot.className = hasSensorData ? "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" : "w-2.5 h-2.5 rounded-full bg-yellow-500";
+                statusText.textContent = hasSensorData ? "Sensor Active" : "Manual / Sim Active";
+            }
+            updateControlsUI();
+        }
+
+        function endWorkoutSession() {
+            if (!workoutActive) return;
+
+            workoutActive = false;
+            clearInterval(workoutTimerInterval);
+            window.removeEventListener('devicemotion', handleDeviceMotion);
+
+            if (isAutoSimulating) {
+                toggleAutoSim();
+            }
+
+            // Populate summary details in modal
+            const mins = String(Math.floor(workoutSeconds / 60)).padStart(2, '0');
+            const secs = String(workoutSeconds % 60).padStart(2, '0');
+            document.getElementById('summary-duration').textContent = `${mins}:${secs}`;
+            document.getElementById('summary-steps').textContent = steps;
+            document.getElementById('summary-distance').textContent = `${(distance / 1000).toFixed(2)} km`;
+            document.getElementById('summary-calories').textContent = `${Math.round(calories)} kcal`;
+
+            // Open custom modal overlay
+            document.getElementById('workout-summary-modal').classList.remove('hidden');
+        }
+
+        function discardSummary() {
+            document.getElementById('workout-summary-modal').classList.add('hidden');
+            resetTrackerUI();
+        }
+
+        async function saveSummarySession() {
+            const saveBtn = document.querySelector('#workout-summary-modal button:last-child');
+            const discardBtn = document.querySelector('#workout-summary-modal button:first-child');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[12px] inline-block align-middle mr-1">sync</span> Saving...`;
+            }
+            if (discardBtn) discardBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/workouts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        duration: workoutSeconds,
+                        steps: steps,
+                        distance: distance,
+                        calories: Math.round(calories),
+                        date: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    console.log("Workout session saved.");
+                    fetchStatsAndLogs(); // Reload data immediately to sync statistics & chart
+                } else {
+                    console.error("Failed to save workout session.");
+                }
+            } catch (err) {
+                console.error("Save workout network error:", err);
+            }
+
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = "Save Session";
+            }
+            if (discardBtn) discardBtn.disabled = false;
+
+            document.getElementById('workout-summary-modal').classList.add('hidden');
+            resetTrackerUI();
+        }
+
+        function resetTrackerUI() {
+            workoutActive = false;
+            isPaused = false;
+            document.getElementById('workout-live-stats').classList.add('opacity-40');
+            document.getElementById('workout-live-stats').classList.remove('opacity-100');
+            document.getElementById('workout-sim-controls').classList.add('hidden');
+            document.getElementById('unsupported-device-banner').classList.add('hidden');
+
+            const dot = document.getElementById('sensor-status-dot');
+            const statusText = document.getElementById('workout-sensor-status');
+            dot.className = "w-2 h-2 rounded-full bg-gray-500";
+            statusText.textContent = "Inactive";
+
+            document.getElementById('workout-timer').textContent = "00:00";
+            document.getElementById('live-steps').textContent = "0";
+            document.getElementById('live-distance').textContent = "0.00 km";
+            document.getElementById('live-calories').textContent = "0 kcal";
+
+            updateControlsUI();
+            updateMotionStateUI('IDLE');
+        }
+
+        function updateControlsUI() {
+            const container = document.getElementById('workout-controls-container');
+            if (!container) return;
+
+            if (!workoutActive) {
+                container.innerHTML = `
+                    <button id="btn-workout-action" onclick="toggleWorkout()"
+                        class="w-full py-3 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">play_arrow</span>
+                        Start Session
+                    </button>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button id="btn-workout-pause" onclick="togglePauseResume()"
+                        class="flex-1 py-3 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs uppercase tracking-wider font-bold rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">${isPaused ? 'play_arrow' : 'pause'}</span>
+                        ${isPaused ? 'Resume' : 'Pause'}
+                    </button>
+                    <button id="btn-workout-end" onclick="endWorkoutSession()"
+                        class="flex-1 py-3 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/20 text-rose-300 text-xs uppercase tracking-wider font-bold rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined text-[16px]">stop</span>
+                        End Session
+                    </button>
+                `;
+            }
+        }
+
+        function toggleDebugBox() {
+            const box = document.getElementById('sensor-debug-box');
+            isDebugVisible = !isDebugVisible;
+            if (isDebugVisible) {
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        function simulateStep() {
+            if (!workoutActive || isPaused) return;
             registerStep();
+            triggerWalkingState();
         }
 
         function toggleAutoSim() {
@@ -1049,6 +1345,40 @@
             }
         }
     </script>
+    <!-- Active Tracker Session Summary Modal -->
+    <div id="workout-summary-modal" class="hidden fixed inset-0 z-50 bg-[#050505]/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-8 rounded-[2rem] border-white/10 space-y-6 text-center">
+            <div class="space-y-2">
+                <span class="text-emerald-400 font-bold text-[9px] uppercase tracking-widest block font-headline">Workout Complete</span>
+                <h3 class="font-headline text-2xl font-bold tracking-tight text-white uppercase leading-none">Session Summary</h3>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 py-2">
+                <div class="bg-white/5 p-4 rounded-2xl border border-glass-border">
+                    <p class="text-[9px] uppercase text-secondary/60 tracking-wider">Duration</p>
+                    <p id="summary-duration" class="font-headline text-lg font-bold text-white mt-1">00:00</p>
+                </div>
+                <div class="bg-white/5 p-4 rounded-2xl border border-glass-border">
+                    <p class="text-[9px] uppercase text-secondary/60 tracking-wider">Steps</p>
+                    <p id="summary-steps" class="font-headline text-lg font-bold text-white mt-1">0</p>
+                </div>
+                <div class="bg-white/5 p-4 rounded-2xl border border-glass-border">
+                    <p class="text-[9px] uppercase text-secondary/60 tracking-wider">Distance</p>
+                    <p id="summary-distance" class="font-headline text-lg font-bold text-white mt-1">0.00 km</p>
+                </div>
+                <div class="bg-white/5 p-4 rounded-2xl border border-glass-border">
+                    <p class="text-[9px] uppercase text-secondary/60 tracking-wider">Calories</p>
+                    <p id="summary-calories" class="font-headline text-lg font-bold text-white mt-1">0 kcal</p>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="discardSummary()" class="flex-1 py-3 border border-white/10 hover:bg-white/5 text-xs font-bold font-headline uppercase tracking-wider rounded-xl transition-all">Discard</button>
+                <button onclick="saveSummarySession()" class="flex-1 py-3 bg-primary text-on-primary hover:scale-[1.02] active:scale-[0.98] text-xs font-bold font-headline uppercase tracking-wider rounded-xl transition-all">Save Session</button>
+            </div>
+        </div>
+    </div>
+
     <script src="subscription-check.js"></script>
 </body>
 

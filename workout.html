@@ -273,15 +273,28 @@
 
             <!-- Workout Plans Carousel -->
             <section class="space-y-4">
-                <div>
-                    <h3 class="font-headline text-lg font-bold text-white uppercase tracking-tight">Structured Workout
-                        Plans</h3>
-                    <p class="text-[10px] text-secondary tracking-widest uppercase">Multi-Day Routine Presets</p>
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
+                    <div>
+                        <h3 class="font-headline text-lg font-bold text-white uppercase tracking-tight">Structured Workout
+                            Plans</h3>
+                        <p class="text-[10px] text-secondary tracking-widest uppercase">Multi-Day Routine Presets</p>
+                    </div>
+                    <!-- Mode Switcher Toggle -->
+                    <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 z-10 shrink-0">
+                        <button id="mode-btn-gym" onclick="changeWorkoutLocationMode('gym')" 
+                            class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer bg-white/10 text-white border-0 focus:outline-none">
+                            Standard Gym
+                        </button>
+                        <button id="mode-btn-home" onclick="changeWorkoutLocationMode('home')" 
+                            class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer text-secondary hover:text-white border-0 focus:outline-none">
+                            Home Workout
+                        </button>
+                    </div>
                 </div>
                 <div class="flex gap-4 overflow-x-auto pb-4 pt-1 w-full snap-x snap-mandatory scroll-smooth">
                     <!-- Preset Plans -->
                     <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
-                        onclick="selectPlan('Fat Loss')">
+                        data-plan-type="gym" onclick="selectPlan('Fat Loss')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-rose-400 text-3xl">local_fire_department</span>
                             <h4
@@ -297,7 +310,7 @@
                     </div>
 
                     <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
-                        onclick="selectPlan('Muscle Gain')">
+                        data-plan-type="gym" onclick="selectPlan('Muscle Gain')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-emerald-400 text-3xl">fitness_center</span>
                             <h4
@@ -313,7 +326,7 @@
                     </div>
 
                     <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
-                        onclick="selectPlan('Strength Training')">
+                        data-plan-type="gym" onclick="selectPlan('Strength Training')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-amber-400 text-3xl">weight</span>
                             <h4
@@ -329,7 +342,7 @@
                     </div>
 
                     <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
-                        onclick="selectPlan('Home Plan')">
+                        data-plan-type="home" onclick="selectPlan('Home Plan')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-sky-400 text-3xl">home_work</span>
                             <h4
@@ -345,7 +358,52 @@
                     </div>
 
                     <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
-                        onclick="selectPlan('Endurance')">
+                        data-plan-type="home" onclick="selectPlan('Home Fat Loss')">
+                        <div class="space-y-2">
+                            <span class="material-symbols-outlined text-rose-400 text-3xl">local_fire_department</span>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                FAT BURNER HOME</h4>
+                            <p class="text-xs text-secondary leading-relaxed">High intensity cardio/HIIT routines to accelerate metabolic rates at home.</p>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
+                            <span class="text-rose-400">HIIT Cardio</span>
+                            <span class="text-white/60">3 Days / Week</span>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        data-plan-type="home" onclick="selectPlan('Home Core')">
+                        <div class="space-y-2">
+                            <span class="material-symbols-outlined text-emerald-400 text-3xl">shield</span>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                CORE & BALANCE</h4>
+                            <p class="text-xs text-secondary leading-relaxed">Focused bodyweight training to reinforce structural core stabilizers.</p>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
+                            <span class="text-emerald-400">Core stability</span>
+                            <span class="text-white/60">3 Days / Week</span>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        data-plan-type="home" onclick="selectPlan('Home Yoga')">
+                        <div class="space-y-2">
+                            <span class="material-symbols-outlined text-purple-400 text-3xl">self_improvement</span>
+                            <h4
+                                class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
+                                YOGA FLOW</h4>
+                            <p class="text-xs text-secondary leading-relaxed">Flexibility, deep muscular stretching, and restorative breathing.</p>
+                        </div>
+                        <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
+                            <span class="text-purple-400">Flexibility</span>
+                            <span class="text-white/60">3 Days / Week</span>
+                        </div>
+                    </div>
+
+                    <div class="snap-start shrink-0 w-72 glass-panel p-6 rounded-[1.8rem] border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-6 cursor-pointer group"
+                        data-plan-type="gym" onclick="selectPlan('Endurance')">
                         <div class="space-y-2">
                             <span class="material-symbols-outlined text-purple-400 text-3xl">hourglass_empty</span>
                             <h4
@@ -371,60 +429,41 @@
                             class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-secondary/40 text-xl">search</span>
                         <input id="search-input" type="text"
                             placeholder="Search exercises (e.g. Bench Press, Squats, Plank)..."
-                            class="w-full bg-surface-card border border-glass-border rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-secondary/35 focus:outline-none focus:border-white/20 transition-colors" />
+                            class="w-full bg-[#121214] border border-white/10 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/20 transition-colors" />
                     </div>
-                    <div class="flex flex-wrap gap-3">
-                        <select id="filter-difficulty"
-                            class="bg-surface-card border border-glass-border text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-white/20">
-                            <option value="All">All Difficulties</option>
-                            <option value="Beginner">Beginner</option>
-                            <option value="Intermediate">Intermediate</option>
-                            <option value="Advanced">Advanced</option>
-                        </select>
-                        <select id="filter-equipment"
-                            class="bg-surface-card border border-glass-border text-white text-xs rounded-xl px-4 py-3 focus:outline-none focus:border-white/20">
-                            <option value="All">All Equipment</option>
-                            <option value="Bodyweight">Bodyweight Only</option>
-                            <option value="Dumbbell">Dumbbells</option>
-                            <option value="Gym Workout">Gym Machines / Barbell</option>
-                        </select>
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <!-- Difficulty Wrapper -->
+                        <div class="relative">
+                            <select id="filter-difficulty"
+                                class="appearance-none bg-[#121214] border border-white/10 text-white text-xs rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:border-white/20 cursor-pointer">
+                                <option value="All">All Difficulties</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary text-base">expand_more</span>
+                        </div>
+
+                        <!-- Equipment Wrapper -->
+                        <div id="filter-equipment-container" class="relative">
+                            <select id="filter-equipment"
+                                class="appearance-none bg-[#121214] border border-white/10 text-white text-xs rounded-xl pl-4 pr-10 py-3 focus:outline-none focus:border-white/20 cursor-pointer">
+                                <option value="All">All Equipment</option>
+                                <option value="Bodyweight">Bodyweight Only</option>
+                                <option value="Dumbbell">Dumbbells</option>
+                                <option value="Gym Workout">Gym Machines / Barbell</option>
+                            </select>
+                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary text-base">expand_more</span>
+                        </div>
+
                         <button id="btn-reset-filters"
-                            class="glass-button text-[10px] font-bold uppercase tracking-wider px-5 py-3 rounded-xl hover:scale-105 active:scale-95">Reset</button>
+                            class="glass-button text-[10px] font-bold uppercase tracking-wider px-5 py-3 rounded-xl hover:scale-105 active:scale-95 cursor-pointer">Reset</button>
                     </div>
                 </div>
 
                 <!-- Categories Horizontal Scroll -->
-                <div class="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory">
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
-                        onclick="filterCategory('All', this)">All Exercises</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Chest', this)">Chest</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Back', this)">Back</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Shoulders', this)">Shoulders</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Arms', this)">Arms</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Legs', this)">Legs</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Core', this)">Core</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Cardio', this)">Cardio</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('HIIT', this)">HIIT</button>
-                    <button
-                        class="category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer"
-                        onclick="filterCategory('Yoga', this)">Yoga</button>
+                <div id="categories-container" class="flex gap-2 overflow-x-auto pb-2 snap-x snap-mandatory">
+                    <!-- Rendered dynamically in JS -->
                 </div>
             </section>
 
@@ -499,6 +538,7 @@
                     Press</h3>
                 <p id="player-ex-muscle"
                     class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Chest, Shoulders</p>
+                <p id="player-ex-posture" class="text-[11px] text-emerald-400 font-medium max-w-xs mx-auto leading-relaxed mt-2 uppercase tracking-wide"></p>
 
                 <!-- Animation Visualizer box -->
                 <div id="player-vector-box"
@@ -616,6 +656,49 @@
                 </div>
             </div>
         </div>
+    <!-- WORKOUT COMPLETION MODAL OVERLAY -->
+    <div id="completion-modal" class="hidden fixed inset-0 z-[70] bg-[#050505]/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-panel p-8 rounded-[2.5rem] border-white/10 text-center space-y-6 relative overflow-hidden">
+            <!-- Glowing background -->
+            <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/10 blur-[50px] rounded-full pointer-events-none"></div>
+            
+            <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400">
+                <span class="material-symbols-outlined text-4xl animate-bounce">emoji_events</span>
+            </div>
+            
+            <div class="space-y-2">
+                <h3 class="font-headline text-2xl font-bold text-white uppercase tracking-tight">Workout Complete!</h3>
+                <p class="text-xs text-secondary">Incredible effort. Your session telemetry has been updated.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3 text-left">
+                <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Time Elapsed</span>
+                    <span id="complete-duration" class="text-lg font-bold text-white font-headline">0 mins</span>
+                </div>
+                <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Calories Burned</span>
+                    <span id="complete-calories" class="text-lg font-bold text-emerald-400 font-headline">0 kcal</span>
+                </div>
+                <div class="bg-white/5 border border-white/5 p-4 rounded-2xl col-span-2">
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Exercises Completed</span>
+                    <div id="complete-exercises-list" class="text-xs text-white/80 font-semibold space-y-1 mt-1 max-h-24 overflow-y-auto pr-1"></div>
+                </div>
+                <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Workout Mode</span>
+                    <span id="complete-type" class="text-xs font-bold text-white uppercase font-headline">Home</span>
+                </div>
+                <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Sets Completed</span>
+                    <span id="complete-sets" class="text-xs font-bold text-white uppercase font-headline">0 Sets</span>
+                </div>
+            </div>
+            
+            <button onclick="closeCompletionModal()"
+                class="w-full py-3 bg-primary text-on-primary rounded-full font-headline text-xs font-bold uppercase tracking-widest hover:scale-102 active:scale-98 transition-all cursor-pointer border-0">
+                Return to Dashboard
+            </button>
+        </div>
     </div>
 
     <!-- EXERCISE DETAILED VIEW DRAWER MODAL -->
@@ -629,11 +712,21 @@
                     <p id="detail-muscle"
                         class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Quadriceps,
                         Glutes</p>
+                    <p id="detail-posture" class="text-[11px] text-emerald-400 font-medium leading-relaxed mt-2 uppercase tracking-wide"></p>
                 </div>
                 <button onclick="closeDetailsDrawer()"
                     class="glass-button p-2 rounded-full text-secondary hover:text-white cursor-pointer border-0">
                     <span class="material-symbols-outlined">close</span>
                 </button>
+            </div>
+
+            <!-- Vector Animation Box -->
+            <div class="w-full h-44 rounded-[2rem] border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden shrink-0">
+                <div id="detail-vector-box" class="w-full h-full flex items-center justify-center"></div>
+                <div class="absolute bottom-3 right-4 flex items-center gap-1.5 bg-black/50 px-2.5 py-1 rounded-full border border-white/10">
+                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                    <span class="text-[8px] font-bold text-white uppercase tracking-widest font-headline">AI Form Agent</span>
+                </div>
             </div>
 
             <!-- Specs panel -->
@@ -723,81 +816,1399 @@
         <div class="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-primary/5 blur-[120px] rounded-full"></div>
         <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-white/5 blur-[100px] rounded-full"></div>
     </div>
-
     <script src="subscription-check.js"></script>
 
     <!-- EXERCISE DATABASE AND LOGIC SCRIPT -->
     <script>
-        // Real database of exercises with all properties requested
         const EXERCISES_DATABASE = [
-            // --- CHEST (5) ---
-            { id: "ex-benchpress", name: "Barbell Bench Press", category: "Chest", muscle: "Pectorals, Anterior Deltoids, Triceps", difficulty: "Intermediate", equipment: "Gym Workout", calories: 85, duration: "8 mins", sets: 4, reps: 10, rest: 60, imageType: "benchpress", instructions: ["Lower bar to mid-chest.", "Press bar up."], breathing: "Inhale down, exhale up.", mistakes: "Bouncing bar.", tips: "Keep feet flat.", safety: "Use a spotter.", alternatives: "Dumbbell Press, Chest Dips, Push-ups" },
-            { id: "ex-db-benchpress", name: "Dumbbell Chest Press", category: "Chest", muscle: "Pectorals, Anterior Deltoids, Triceps", difficulty: "Intermediate", equipment: "Dumbbell", calories: 75, duration: "7 mins", sets: 4, reps: 10, rest: 60, imageType: "benchpress", instructions: ["Press dumbbells straight up.", "Lower slowly to chest."], breathing: "Inhale down, exhale up.", mistakes: "Clashing weights.", tips: "Keep forearms vertical.", safety: "Lower safely.", alternatives: "Barbell Bench Press, Flat Dumbbell Flyes" },
-            { id: "ex-db-pullover", name: "Dumbbell Chest Pullover", category: "Chest", muscle: "Pectorals, Latissimus Dorsi, Serratus", difficulty: "Intermediate", equipment: "Dumbbell", calories: 70, duration: "6 mins", sets: 3, reps: 12, rest: 60, imageType: "benchpress", instructions: ["Hold dumbbell above chest.", "Lower back over head.", "Pull up back to start."], breathing: "Inhale down, exhale up.", mistakes: "Bending elbows.", tips: "Squeeze chest.", safety: "Secure grip.", alternatives: "Cable Crossovers, Dumbbell Flyes" },
-            { id: "ex-bw-pushup", name: "Standard Bodyweight Push-Up", category: "Chest", muscle: "Pectorals, Anterior Deltoids, Triceps, Core", difficulty: "Beginner", equipment: "Bodyweight", calories: 50, duration: "5 mins", sets: 3, reps: 15, rest: 45, imageType: "plank", instructions: ["Start in high plank.", "Lower chest to floor.", "Push back up."], breathing: "Inhale down, exhale up.", mistakes: "Sagging hips.", tips: "Keep core tight.", safety: "Keep wrists aligned.", alternatives: "Incline Push-ups, Dips" },
-            { id: "ex-gym-inclinepress", name: "Barbell Incline Bench Press", category: "Chest", muscle: "Upper Pectorals, Anterior Deltoids, Triceps", difficulty: "Intermediate", equipment: "Gym Workout", calories: 90, duration: "8 mins", sets: 4, reps: 8, rest: 90, imageType: "benchpress", instructions: ["Lie on incline bench.", "Lower barbell to upper chest.", "Drive bar straight up."], breathing: "Inhale down, exhale up.", mistakes: "Incline too high.", tips: "Scapula retracted.", safety: "Use safety pins.", alternatives: "Incline Dumbbell Press, Cable Flyes" },
+            // ==================== HOME EXERCISES ====================
+            // --- CHEST (Home) ---
+            {
+                id: "ex-bw-pushup",
+                name: "Standard Bodyweight Push-Up",
+                category: "Chest",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Pectorals, Anterior Deltoids, Triceps",
+                secondaryMuscles: "Core, Serratus Anterior",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 8,
+                description: "Classic compound upper body movement focusing on chest push force and trunk stabilization.",
+                postureDescription: "Maintain a flat, rigid plank line from head to heels with glutes fully engaged; do not let hips sag or elbows flare out.",
+                instructions: ["Place hands slightly wider than shoulder width.", "Lower chest toward the floor keeping body straight.", "Push through palms to return to starting position."],
+                commonMistakes: ["Sagging hips or lower back arching", "Flaring elbows excessively outward", "Incomplete range of motion at top or bottom"],
+                benefits: ["Increases upper body pushing power", "Promotes shoulder health and scapular stability", "Reinforces core and abdominal stability"],
+                duration: "5 mins",
+                reps: "12-15 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Pectorals, Anterior Deltoids, Triceps",
+                breathing: "Inhale lowering chest, exhale pushing back up.",
+                mistakes: "Sagging hips, flaring elbows.",
+                tips: "Keep glutes and core engaged throughout.",
+                safety: "Ensure hands are placed flat on floor, keep wrists aligned.",
+                alternatives: "Incline Push-ups, Diamond Push-ups",
+                rest: 45
+            },
+            {
+                id: "ex-home-widepushup",
+                name: "Wide-Grip Bodyweight Push-Up",
+                category: "Chest",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Pectorals (Outer), Anterior Deltoids",
+                secondaryMuscles: "Triceps, Core",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 9,
+                description: "Push-up variation targeting the outer chest and chest width.",
+                postureDescription: "Keep hands wider than shoulders, core tightly braced, and lower chest in a straight line without craning the neck.",
+                instructions: ["Place hands about 1.5 times shoulder width.", "Lower body in straight line until chest near floor.", "Press back up to lock out."],
+                commonMistakes: ["Shoulders shrugging up toward ears", "Dropping head forward", "Lack of core engagement"],
+                benefits: ["Targets outer pectoral fibers", "Improves wide-grip pressing mechanics", "Strengthens shoulder girdle stabilizers"],
+                duration: "6 mins",
+                reps: "10-12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Outer Pectorals, Anterior Deltoids",
+                breathing: "Inhale down, exhale up.",
+                mistakes: "Sagging hips, head drop.",
+                tips: "Spread fingers wide on floor for stability.",
+                safety: "Keep wrist alignment clean.",
+                alternatives: "Standard Push-up",
+                rest: 60
+            },
+            {
+                id: "ex-bw-diamondpushup",
+                name: "Bodyweight Diamond Push-Up",
+                category: "Chest",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Triceps Brachii, Pectorals (Inner)",
+                secondaryMuscles: "Anterior Deltoids, Core",
+                difficulty: "Advanced",
+                equipment: "No Equipment",
+                calories: 10,
+                description: "Close grip chest press variation placing extreme emphasis on the triceps and inner chest fibers.",
+                postureDescription: "Form a diamond with thumbs and index fingers under the chest, tucking elbows close to ribs to protect shoulders.",
+                instructions: ["Form a diamond shape with thumbs and index fingers under chest.", "Lower chest to hands keeping elbows close to ribs.", "Push back up to lockout."],
+                commonMistakes: ["Elbows flaring away from body", "Hips lifting or drop", "Incomplete range of motion"],
+                benefits: ["Isolates triceps brachii", "Develops inner chest definition", "Builds high core stiffness"],
+                duration: "6 mins",
+                reps: "8-10 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Triceps Brachii, Inner Pectorals",
+                breathing: "Inhale on descent, exhale on press up.",
+                mistakes: "Flaring elbows, hip collapse.",
+                tips: "Tuck elbows tight against ribs.",
+                safety: "Stop if wrist discomfort occurs.",
+                alternatives: "Standard Pushups, Bench Dips",
+                rest: 60
+            },
+            {
+                id: "ex-home-inclinepushup",
+                name: "Incline Push-Up",
+                category: "Chest",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Pectorals (Lower), Triceps",
+                secondaryMuscles: "Anterior Deltoids, Core",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 6,
+                description: "Leverage-relieved pushup using an elevated surface, perfect for beginners and chest conditioning.",
+                postureDescription: "Elevate hands on a secure platform, keeping a straight spine and bracing the core as you touch chest to the edge.",
+                instructions: ["Place hands on stable elevated platform.", "Lower chest to touch edge of platform.", "Push up to starting position."],
+                commonMistakes: ["Surface slipping or moving", "Shoulders shrugging", "Arching lower back"],
+                benefits: ["Targets lower chest fibers", "Reduces bodyweight load for beginners", "Less stress on shoulders"],
+                duration: "5 mins",
+                reps: "12-15 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Lower Pectorals, Triceps",
+                breathing: "Inhale down, exhale push.",
+                mistakes: "Using unstable platform.",
+                tips: "Keep table or chair secure against wall.",
+                safety: "Ensure platform is fully stable.",
+                alternatives: "Standard Push-up",
+                rest: 45
+            },
+            {
+                id: "ex-bw-declinepushup",
+                name: "Decline Bodyweight Push-Up",
+                category: "Chest",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Pectorals (Upper), Anterior Deltoids",
+                secondaryMuscles: "Triceps, Core",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 9,
+                description: "Advanced pushup variation elevating the feet to shift load to upper pectorals and shoulders.",
+                postureDescription: "Keep feet elevated and body straight, placing hands flat on floor and lowering chest without letting the lower back arch.",
+                instructions: ["Elevate feet on bench/platform, hands on floor.", "Lower chest to floor keeping straight line.", "Push up to lockout."],
+                commonMistakes: ["Sagging core/lower back", "Flaring elbows", "Looking upward straining neck"],
+                benefits: ["Packs upper pectoral thickness", "Increases overhead shoulder loading capacity", "Challenges core stability further"],
+                duration: "6 mins",
+                reps: "10-12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Upper Pectorals, Anterior Deltoids",
+                breathing: "Inhale down, exhale up.",
+                mistakes: "Sagging lower back, flaring elbows.",
+                tips: "Keep feet securely anchored on platform.",
+                safety: "Ensure platform is completely stable.",
+                alternatives: "Pike Pushups, Standard Pushups",
+                rest: 60
+            },
+            
+            // --- BACK (Home) ---
+            {
+                id: "ex-bw-superman",
+                name: "Bodyweight Superman Hold",
+                category: "Back",
+                type: "stretch",
+                workoutType: "both",
+                targetMuscles: "Erector Spinae, Glutes",
+                secondaryMuscles: "Hamstrings, Upper Back",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 5,
+                description: "Prone back extension focusing on lower back endurance, posture correction, and posterior chain activation.",
+                postureDescription: "Lie face down, fully extend limbs, and raise chest and legs off the floor using lower back muscle tension, not neck force.",
+                instructions: ["Lie face down on floor, extend arms forward.", "Lift arms, chest, and legs off floor.", "Hold contracting back muscles."],
+                commonMistakes: ["Hyperextending neck upward", "Bending knees", "Holding breath"],
+                benefits: ["Reinforces spine posture muscles", "Activates glute/back coordination", "Alleviates seated lower back fatigue"],
+                duration: "5 mins",
+                reps: "30s Hold",
+                sets: 3,
+                restTime: 30,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Lower Back (Erectors), Glutes",
+                breathing: "Keep slow steady breaths during hold.",
+                mistakes: "Craning neck up.",
+                tips: "Keep gaze down at floor.",
+                safety: "Do not hold if sharp pinching felt.",
+                alternatives: "Bird-Dog, Cobra Pose",
+                rest: 30
+            },
+            {
+                id: "ex-home-reversefly",
+                name: "Prone Bodyweight Rear Delt Raise",
+                category: "Back",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Rear Deltoids, Rhomboids",
+                secondaryMuscles: "Middle Trapezius",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 4,
+                description: "Laying postural fly mimicking weights to improve rhomboid and rear shoulder tone.",
+                postureDescription: "Lie prone, face down, and raise arms to the sides by retracting shoulder blades; avoid craning the head or neck.",
+                instructions: ["Lie face down, extend arms out to sides.", "Squeeze shoulder blades, raise arms off floor.", "Lower arms under control."],
+                commonMistakes: ["Using neck muscles instead of back", "Rushing speed", "Failing to retract shoulder blades"],
+                benefits: ["Corrects rounded shoulders", "Strengthens upper back without weights", "Improves posture"],
+                duration: "5 mins",
+                reps: "15 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Rear Deltoids, Rhomboids",
+                breathing: "Exhale up, inhale down.",
+                mistakes: "Shrugging neck, incomplete lift.",
+                tips: "Keep thumbs pointing up.",
+                safety: "Avoid neck tension.",
+                alternatives: "Cobra stretch",
+                rest: 45
+            },
+            
+            // --- SHOULDERS (Home) ---
+            {
+                id: "ex-bw-pikepushup",
+                name: "Pike Push-Up",
+                category: "Shoulders",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Anterior Deltoids, Triceps",
+                secondaryMuscles: "Upper Chest, Core",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 8,
+                description: "Hinged push-up targeting the vertical push force of the shoulders.",
+                postureDescription: "Form a high V-shape with hips raised, lower the top of the head towards hands, keeping the core engaged and elbows tucked.",
+                instructions: ["Hips high in V-shape, hands wider than shoulder width.", "Lower top of head toward hands.", "Press floor away to starting position."],
+                commonMistakes: ["Elbows flaring side to side", "Bending spine", "Lack of shoulder shrug at top"],
+                benefits: ["Develops overhead pressing power", "Strengthens anterior shoulder muscles", "Aids handstand progress"],
+                duration: "6 mins",
+                reps: "10 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Anterior Deltoids, Triceps",
+                breathing: "Inhale down, exhale push.",
+                mistakes: "Flaring elbows, landing on neck.",
+                tips: "Look back at feet to keep head aligned.",
+                safety: "Place hands on non-slip surface.",
+                alternatives: "Push-ups",
+                rest: 60
+            },
+            {
+                id: "ex-bw-armcircles",
+                name: "Bodyweight Arm Circles",
+                category: "Shoulders",
+                type: "stretch",
+                workoutType: "both",
+                targetMuscles: "Lateral Deltoids, Rotator Cuff",
+                secondaryMuscles: "Upper Trapezius",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 3,
+                description: "Endurance-focused shoulder circles that mobilize the rotator cuffs.",
+                postureDescription: "Stand tall with feet shoulder-width apart, arms raised straight to the sides parallel to the floor, rotating under control.",
+                instructions: ["Extend arms straight to sides parallel to floor.", "Make small circular rotations.", "Switch directions halfway."],
+                commonMistakes: ["Arms dropping below parallel", "Moving torso", "Circles too large"],
+                benefits: ["Warms up shoulder joints", "Improves muscular endurance", "Increases rotator cuff stability"],
+                duration: "4 mins",
+                reps: "60s Work",
+                sets: 3,
+                restTime: 15,
+                animationType: "yoga",
+                demoData: {},
+                muscle: "Lateral Deltoids, Rotator Cuff",
+                breathing: "Slow steady breathing.",
+                mistakes: "Shrugging shoulders, dropping arms.",
+                tips: "Relax neck while rotating.",
+                safety: "Ensure rotators do not pinch.",
+                alternatives: "Cobra stretch",
+                rest: 15
+            },
+            
+            // --- ARMS (Home) ---
+            {
+                id: "ex-bw-tricepdips",
+                name: "Bodyweight Bench Dips",
+                category: "Arms",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Triceps Brachii",
+                secondaryMuscles: "Anterior Deltoids, Chest",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 6,
+                description: "Tricep dip using a chair/bed to load the arms using bodyweight mechanics.",
+                postureDescription: "Keep hips close to the bench or chair, shoulders down and chest proud, lowering body by bending elbows straight back.",
+                instructions: ["Hands on secure edge behind you, legs out.", "Lower hips by bending elbows to 90 degrees.", "Push through palms to lockout."],
+                commonMistakes: ["Sagging shoulders", "Hips moving too far forward", "Flaring elbows"],
+                benefits: ["Isolates triceps brachii", "Builds wrist flexibility", "Strengthens anterior shoulders"],
+                duration: "5 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "curl",
+                demoData: {},
+                muscle: "Triceps Brachii",
+                breathing: "Inhale down, exhale up.",
+                mistakes: "Too far from edge, shoulder strain.",
+                tips: "Keep hips close to bench.",
+                safety: "Chair must be braced.",
+                alternatives: "Diamond Push-ups",
+                rest: 45
+            },
+            
+            // --- LEGS (Home) ---
+            {
+                id: "ex-home-squat",
+                name: "Bodyweight Air Squat",
+                category: "Legs",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Quadriceps, Gluteus Maximus",
+                secondaryMuscles: "Hamstrings, Core",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 7,
+                description: "Fundamental lower body movement to build quadriceps strength and hip mobility.",
+                postureDescription: "Keep chest upright and feet flat, hips dropping backward and down below knee height while pushing knees outward.",
+                instructions: ["Feet shoulder width, toes pointing out.", "Lower hips back and down below parallel.", "Drive through heels to stand."],
+                commonMistakes: ["Knees caving inwards", "Heels lifting off floor", "Rounding lower back"],
+                benefits: ["Strengthens legs and glutes", "Improves ankle/hip flexibility", "Good functional baseline"],
+                duration: "5 mins",
+                reps: "15 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps, Glutes",
+                breathing: "Inhale down, exhale up.",
+                mistakes: "Knees caving, flat back arch.",
+                tips: "Push knees outward during descent.",
+                safety: "Ensure weight is centered on heels.",
+                alternatives: "Lunges, Jump Squat",
+                rest: 45
+            },
+            {
+                id: "ex-bw-jumpsquat",
+                name: "Bodyweight Jump Squats",
+                category: "Legs",
+                type: "hiit",
+                workoutType: "both",
+                targetMuscles: "Quadriceps, Glutes, Calves",
+                secondaryMuscles: "Cardio, Hamstrings",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 12,
+                description: "Plyometric extension squat to build lower body power and boost heart rates.",
+                postureDescription: "Squat back with chest upright, explode upward off heels, and land softly on the balls of your feet absorbing the impact.",
+                instructions: ["Descend into squat.", "Explode upward off ground jumping high.", "Land softly, immediately drop to next squat."],
+                commonMistakes: ["Landing hard/flat-footed", "Knees caving on landing", "Forward torso drop"],
+                benefits: ["Increases dynamic explosive jump power", "Stimulates cardio vascular output", "Strengthens ankle stabilizers"],
+                duration: "6 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps, Glutes, Calves",
+                breathing: "Inhale down, exhale jump.",
+                mistakes: "Landing hard, locking knees.",
+                tips: "Land on balls of feet, absorb impact.",
+                safety: "Skip if knee/joint issues present.",
+                alternatives: "Air Squat",
+                rest: 60
+            },
+            {
+                id: "ex-bw-lunges",
+                name: "Bodyweight Walking Lunges",
+                category: "Legs",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Quadriceps, Glutes, Hamstrings",
+                secondaryMuscles: "Calves, Core",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 8,
+                description: "Alternating stepping lunges to load legs unilaterally and check balance.",
+                postureDescription: "Keep chest tall and step forward, lowering the hips until both knees form 90-degree angles; keep front knee behind toes.",
+                instructions: ["Step forward single foot.", "Lower rear knee toward floor.", "Push forward through front heel to step next."],
+                commonMistakes: ["Torso leaning too far", "Front knee crossing toes", "Striking rear knee on floor"],
+                benefits: ["Builds single-leg strength", "Tests hip and ankle balance", "Increases hamstring flexibility"],
+                duration: "6 mins",
+                reps: "20 steps",
+                sets: 3,
+                restTime: 45,
+                animationType: "lunge",
+                demoData: {},
+                muscle: "Quadriceps, Glutes, Hamstrings",
+                breathing: "Inhale down, exhale step.",
+                mistakes: "Leaning torso, knee strike.",
+                tips: "Keep chest proud.",
+                safety: "Ensure knee alignment is straight.",
+                alternatives: "Reverse Lunges, Bulgarian Squat",
+                rest: 45
+            },
+            {
+                id: "ex-home-reverselunge",
+                name: "Bodyweight Reverse Lunges",
+                category: "Legs",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Hamstrings, Glutes, Quadriceps",
+                secondaryMuscles: "Core",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 7,
+                description: "Backward-stepping lunge putting less shear force on the knees while targeting the glutes.",
+                postureDescription: "Stand upright, step backward, and lower hips until front thigh is parallel to floor; keep torso straight.",
+                instructions: ["Stand straight, step one leg backward.", "Lower hips until back knee is near floor.", "Push forward returning to stand."],
+                commonMistakes: ["Loss of balance", "Forward knee caving", "Incorrect step depth"],
+                benefits: ["Safer for knee joints", "Isolates glutes and hamstrings", "Develops stance hip stability"],
+                duration: "6 mins",
+                reps: "10 reps/leg",
+                sets: 3,
+                restTime: 45,
+                animationType: "lunge",
+                demoData: {},
+                muscle: "Hamstrings, Glutes",
+                breathing: "Inhale back, exhale stand.",
+                mistakes: "Knee cave, shallow step.",
+                tips: "Drive movement through front heel.",
+                safety: "Keep core stable to balance.",
+                alternatives: "Walking Lunges",
+                rest: 45
+            },
+            {
+                id: "ex-home-splitquat",
+                name: "Bodyweight Bulgarian Split Squat",
+                category: "Legs",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Quadriceps, Glute Medius",
+                secondaryMuscles: "Hamstrings, Core",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 10,
+                description: "Single-leg squat placing the rear foot elevated on a stable couch/chair.",
+                postureDescription: "Place rear foot on couch/chair, keep chest upright, and lower hips vertically; keep front knee aligned with front foot.",
+                instructions: ["Elevate rear foot on secure platform.", "Lower hips until back knee is near floor.", "Drive up through front heel."],
+                commonMistakes: ["Unstable front knee", "Bench elevation too high", "Leaning too forward"],
+                benefits: ["Deep unilateral lower body overload", "Resolves leg strength gaps", "Strengthens lateral hip balance"],
+                duration: "7 mins",
+                reps: "10 reps/leg",
+                sets: 3,
+                restTime: 60,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps, Glutes",
+                breathing: "Inhale down, exhale drive up.",
+                mistakes: "Unstable foot placement, knee shear.",
+                tips: "Place front foot far enough forward.",
+                safety: "Elevated platform must be fully braced.",
+                alternatives: "Reverse Lunges",
+                rest: 60
+            },
+            {
+                id: "ex-bw-glutebridge",
+                name: "Bodyweight Glute Bridge",
+                category: "Legs",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Gluteus Maximus, Hamstrings",
+                secondaryMuscles: "Lower Back, Core",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 5,
+                description: "Floor glute bridge loading hip extension, safe for back.",
+                postureDescription: "Lie flat, bend knees, and press hips upward by squeezing glutes; drive strictly through heels and avoid arching lower spine.",
+                instructions: ["Lie on back, knees bent, feet flat.", "Drive hips up squeezing glutes at peak.", "Lower hips back down."],
+                commonMistakes: ["Arching lower back instead of hip drive", "Pushing from toes", "Fast tempo"],
+                benefits: ["Isolates glutes", "Relieves lower back strain", "Improves pelvic alignment"],
+                duration: "5 mins",
+                reps: "15 reps",
+                sets: 3,
+                restTime: 30,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Gluteus Maximus, Hamstrings",
+                breathing: "Exhale up, inhale down.",
+                mistakes: "Hyperextending spine, lifting toes.",
+                tips: "Drive force strictly through heels.",
+                safety: "Avoid rounding upper back.",
+                alternatives: "Single-Leg Bridge",
+                rest: 30
+            },
+            {
+                id: "ex-home-singlelegbridge",
+                name: "Single-Leg Glute Bridge",
+                category: "Legs",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Gluteus Maximus, Hamstrings",
+                secondaryMuscles: "Core",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 6,
+                description: "Single-leg floor bridge putting double loading on the stance glute.",
+                postureDescription: "Lie on back with one leg raised straight; drive hips up by squeezing the stance glute, keeping pelvis square.",
+                instructions: ["Laying, lift one leg straight in air.", "Drive hips up pressing through ground heel.", "Lower hips slowly."],
+                commonMistakes: ["Hips tilting sideways", "Arching lower back", "Rushing"],
+                benefits: ["Unilateral hip extension force", "Corrects glute strength gaps", "Strengthens hamstring stability"],
+                duration: "6 mins",
+                reps: "10 reps/leg",
+                sets: 3,
+                restTime: 45,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Gluteus Maximus, Hamstrings",
+                breathing: "Exhale up, inhale down.",
+                mistakes: "Spinal arching, hip tilt.",
+                tips: "Keep hips level and square.",
+                safety: "Ensure non-slip floor.",
+                alternatives: "Glute Bridge",
+                rest: 45
+            },
+            {
+                id: "ex-home-wallsit",
+                name: "Bodyweight Wall Sit",
+                category: "Legs",
+                type: "strength",
+                workoutType: "home",
+                targetMuscles: "Quadriceps, Hamstrings",
+                secondaryMuscles: "Glutes",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 6,
+                description: "Isometric knee extension holds against a wall.",
+                postureDescription: "Press back flat against the wall, slide hips down to knee level with thighs parallel to floor, and hold hands at sides.",
+                instructions: ["Lean back against wall.", "Slide down until thighs are parallel to floor.", "Hold position keeping back flat."],
+                commonMistakes: ["Knees passing toes", "Sliding down too low", "Pushing hands on knees"],
+                benefits: ["Tones quad endurance", "Easy on joints", "Strengthens kneecap tendon force"],
+                duration: "5 mins",
+                reps: "45s Hold",
+                sets: 3,
+                restTime: 45,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps, Hamstrings",
+                breathing: "Deep steady breaths.",
+                mistakes: "Hands resting on thighs.",
+                tips: "Keep hands by sides or folded.",
+                safety: "Wear non-slip shoes.",
+                alternatives: "Air Squat",
+                rest: 45
+            },
+            
+            // --- CORE (Home) ---
+            {
+                id: "ex-plank",
+                name: "Forearm Core Plank",
+                category: "Core",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Rectus Abdominis, Transverse Abdominis, Obliques",
+                secondaryMuscles: "Serratus, Glutes, Shoulders",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 6,
+                description: "Symmetrical core bridge that develops deep abdominal endurance.",
+                postureDescription: "Support body on forearms and toes in a straight line, squeezing abdominals, glutes, and quadriceps; keep neck neutral.",
+                instructions: ["Support body on forearms and toes.", "Squeeze abs, glutes, and thighs.", "Hold straight body line."],
+                commonMistakes: ["Sagging hips/lower back", "Raising hips too high", "Resting neck down"],
+                benefits: ["Builds deep abs support", "Improves spine health", "Good isometric conditioning"],
+                duration: "5 mins",
+                reps: "60s Hold",
+                sets: 3,
+                restTime: 30,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Rectus Abdominis, Transverse Abdominis",
+                breathing: "Slow shallow breathing.",
+                mistakes: "Sagging lower back, raised hips.",
+                tips: "Pull elbows toward toes to engage abs.",
+                safety: "Ensure shoulders align over elbows.",
+                alternatives: "Deadbug, Side Plank",
+                rest: 30
+            },
+            {
+                id: "ex-bw-bicyclecrunch",
+                name: "Bicycle Crunches",
+                category: "Core",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Rectus Abdominis, Obliques",
+                secondaryMuscles: "Hip Flexors",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 6,
+                description: "Dynamic twisting floor crunch targeting front and side abdominal walls.",
+                postureDescription: "Lie on back, press spine flat to floor, and alternate elbow-to-knee twists using abdominal contraction, not neck pulling.",
+                instructions: ["Lie, lift shoulders and legs off floor.", "Twist opposite elbow to knee.", "Alternate sides rhythmically."],
+                commonMistakes: ["Yanking neck with hands", "Rushing speed", "Lower back lifting off floor"],
+                benefits: ["Coordinates diagonal obliques", "High rectus abs activation", "Boosts core agility"],
+                duration: "5 mins",
+                reps: "20 reps",
+                sets: 3,
+                restTime: 30,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Rectus Abdominis, Obliques",
+                breathing: "Exhale on twists, inhale center.",
+                mistakes: "Pulling neck, fast tempo.",
+                tips: "Keep lower back flat against floor.",
+                safety: "Do not pull ears/neck.",
+                alternatives: "Russian Twists",
+                rest: 30
+            },
+            {
+                id: "ex-bw-deadbug",
+                name: "Bodyweight Deadbug Core Hold",
+                category: "Core",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Transverse Abdominis, Deep Core",
+                secondaryMuscles: "Coordination, Hip Flexors",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 5,
+                description: "Anti-extension core exercise targeting deep abdominal control and limb coordination.",
+                postureDescription: "Lie on back, press spine flat to floor, and extend opposite arm/leg slowly without letting the lower back arch or lift.",
+                instructions: ["Lie on back, lift arms up, knees at 90 degrees.", "Extend opposite arm and leg away.", "Return to center and switch sides."],
+                commonMistakes: ["Spine arching off floor", "Losing limb coordination", "Fast movement"],
+                benefits: ["Reinforces transverse abdominis stability", "Teaches deep spine stabilization", "Reduces lower back loading"],
+                duration: "5 mins",
+                reps: "10 reps/side",
+                sets: 3,
+                restTime: 30,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Transverse Abdominis, Deep Core",
+                breathing: "Exhale on extension, inhale return.",
+                mistakes: "Lower back arching.",
+                tips: "Forcefully glue spine to floor.",
+                safety: "Ensure slow controlled tempo.",
+                alternatives: "Forearm Plank",
+                rest: 30
+            },
+            
+            // --- CARDIO & HIIT (Home) ---
+            {
+                id: "ex-bw-mountainclimber",
+                name: "Mountain Climbers",
+                category: "HIIT",
+                type: "hiit",
+                workoutType: "both",
+                targetMuscles: "Core, Shoulders, Hip Flexors",
+                secondaryMuscles: "Cardio, Quadriceps",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 10,
+                description: "High-tempo plank variant mimicking running to challenge core stability and cardiorespiratory endurance.",
+                postureDescription: "Keep hands directly under shoulders in high plank, running knees to chest rapidly while keeping hips level and core braced.",
+                instructions: ["High plank position.", "Drive knees to chest rapidly.", "Keep hips level and abs braced."],
+                commonMistakes: ["Hips bouncing in air", "Rounding lower spine", "Shrugging shoulders"],
+                benefits: ["Stimulates high heart rate", "Coordinates abdominal speed", "Builds shoulder endurance"],
+                duration: "6 mins",
+                reps: "45s Work",
+                sets: 3,
+                restTime: 30,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Core, Shoulders, Cardio",
+                breathing: "Maintain continuous even breathing.",
+                mistakes: "Hips too high, bouncing.",
+                tips: "Run with knees under chest.",
+                safety: "Keep shoulders stacked directly over wrists.",
+                alternatives: "Jumping Jacks, Plank",
+                rest: 30
+            },
+            {
+                id: "ex-bw-burpees",
+                name: "Standard Bodyweight Burpees",
+                category: "HIIT",
+                type: "hiit",
+                workoutType: "both",
+                targetMuscles: "Full Body, Cardio",
+                secondaryMuscles: "Chest, Legs, Shoulders",
+                difficulty: "Advanced",
+                equipment: "No Equipment",
+                calories: 15,
+                description: "Full-body explosive exercise that challenges strength, plyometrics, and cardio.",
+                postureDescription: "Drop to squat, jump to plank in a straight line, perform pushup, snap feet forward flat, and explode up landing softly.",
+                instructions: ["Drop to squat, jump feet back to plank.", "Perform push-up, jump feet forward.", "Jump up explosively with arms raised."],
+                commonMistakes: ["Sagging lower back in plank", "Hard flat landings", "Rushing without control"],
+                benefits: ["Incredible conditioning output", "Builds dynamic full body force", "High caloric burn rate"],
+                duration: "8 mins",
+                reps: "10 reps",
+                sets: 4,
+                restTime: 60,
+                animationType: "cardio",
+                demoData: {},
+                muscle: "Full Body, Cardio",
+                breathing: "Exhale on jump, inhale lowering.",
+                mistakes: "Sagging hips in pushup, heavy landing.",
+                tips: "Pace yourself, do not exhaust in first set.",
+                safety: "Avoid if wrists or knee joints are sensitive.",
+                alternatives: "Squat Jacks, High Knees",
+                rest: 60
+            },
+            {
+                id: "ex-bw-highknees",
+                name: "High Knee Cardio Sprint",
+                category: "Cardio",
+                type: "cardio",
+                workoutType: "both",
+                targetMuscles: "Cardio, Abdominals, Hip Flexors",
+                secondaryMuscles: "Calves, Quads",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 11,
+                description: "Running in place with high knee drive to target calves and build cardio threshold.",
+                postureDescription: "Stand upright, run in place driving knees to hip height, pumping arms in coordination, landing softly on front of feet.",
+                instructions: ["Run in place raising knees to hip level.", "Pump arms in rhythm.", "Land on balls of feet."],
+                commonMistakes: ["Leaning backward", "Low knee height", "Heavy flat landing"],
+                benefits: ["Raises VO2 max threshold", "Coordinates speed", "Tones lower legs"],
+                duration: "6 mins",
+                reps: "45s Work",
+                sets: 3,
+                restTime: 30,
+                animationType: "cardio",
+                demoData: {},
+                muscle: "Cardio, Abdominals",
+                breathing: "Quick regular breathing.",
+                mistakes: "Leaning back.",
+                tips: "Focus on landing on front of feet.",
+                safety: "Ensure supportive shoes or soft rug.",
+                alternatives: "Jumping Jacks",
+                rest: 30
+            },
+            {
+                id: "ex-bw-jumpingjacks",
+                name: "Jumping Jacks",
+                category: "Cardio",
+                type: "cardio",
+                workoutType: "both",
+                targetMuscles: "Cardio, Full Body",
+                secondaryMuscles: "Calves, Lateral Deltoids",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 8,
+                description: "Classic jumping jack coordinates body and raises heart rate.",
+                postureDescription: "Jump feet wide while raising arms overhead, landing with slightly bent knees to absorb impact; return in rhythm.",
+                instructions: ["Jump feet out while raising hands overhead.", "Jump feet together while lowering hands.", "Repeat rhythmically."],
+                commonMistakes: ["Stiff landing", "Arms not reaching overhead", "Knees locking"],
+                benefits: ["Improves body coordination", "Good warm-up cardio", "Strengthens calves"],
+                duration: "5 mins",
+                reps: "60s Work",
+                sets: 3,
+                restTime: 30,
+                animationType: "cardio",
+                demoData: {},
+                muscle: "Cardio, Full Body",
+                breathing: "Calm steady breaths.",
+                mistakes: "Flat landing, stiff knees.",
+                tips: "Keep knees slightly bent.",
+                safety: "Avoid if joint pain occurs.",
+                alternatives: "High Knees",
+                rest: 30
+            },
+            {
+                id: "ex-bw-inchworm",
+                name: "Inchworm to Push-up",
+                category: "Arms",
+                type: "strength",
+                workoutType: "both",
+                targetMuscles: "Hamstrings, Shoulders, Chest",
+                secondaryMuscles: "Triceps, Core",
+                difficulty: "Intermediate",
+                equipment: "No Equipment",
+                calories: 9,
+                description: "Hinging walking movements stretching back and overloading chest.",
+                postureDescription: "Hinge at hips, walk hands forward to high plank, perform a pushup, and walk feet back in while keeping knees as straight as possible.",
+                instructions: ["Hinge at hips, place hands on floor.", "Walk hands forward to high plank.", "Do push-up, walk feet in."],
+                commonMistakes: ["Rounding spine excessively", "Bending knees too much", "Sagging core in plank"],
+                benefits: ["Hamstring flexibility", "Shoulder mobility", "Active core coordination"],
+                duration: "7 mins",
+                reps: "8 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "pushup",
+                demoData: {},
+                muscle: "Hamstrings, Chest, Core",
+                breathing: "Inhale forward, exhale push.",
+                mistakes: "Bending knees, core sag.",
+                tips: "Focus on stretching hamstrings.",
+                safety: "Ensure wrists are healthy.",
+                alternatives: "Standard Push-ups",
+                rest: 60
+            },
+            
+            // --- YOGA (Home) ---
+            {
+                id: "ex-stretch-cobra",
+                name: "Cobra Yoga Stretch",
+                category: "Yoga",
+                type: "stretch",
+                workoutType: "both",
+                targetMuscles: "Abdominals, Lower Back",
+                secondaryMuscles: "Shoulders, Chest",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 4,
+                description: "Prone abdominal back extension targeting spine flexibility.",
+                postureDescription: "Lie prone, hands under shoulders, and press chest up to extend spine; pull shoulders down away from ears.",
+                instructions: ["Lie prone, hands under shoulders.", "Press chest up extending arms.", "Squeeze shoulders down away from ears."],
+                commonMistakes: ["Shrugging shoulders", "Pinching lower back", "Holding breath"],
+                benefits: ["Increases spinal flexibility", "Stretches front abdominal wall", "Relieves chest stiffness"],
+                duration: "4 mins",
+                reps: "30s Hold",
+                sets: 3,
+                restTime: 15,
+                animationType: "yoga",
+                demoData: {},
+                muscle: "Abdominals, Lower Back",
+                breathing: "Inhale up, exhale sink.",
+                mistakes: "Shrugging neck, lower spine compression.",
+                tips: "Keep glutes active to stabilize pelvis.",
+                safety: "Only lift as high as comfortable.",
+                alternatives: "Child's Pose",
+                rest: 15
+            },
+            {
+                id: "ex-bw-downwarddog",
+                name: "Downward-Facing Dog Pose",
+                category: "Yoga",
+                type: "stretch",
+                workoutType: "both",
+                targetMuscles: "Hamstrings, Calves, Shoulders",
+                secondaryMuscles: "Spine, Hands",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 4,
+                description: "Inverted V-shape pose stretching hamstrings, calves, and back.",
+                postureDescription: "Press palms flat, lift hips high to form an inverted V, and push heels toward floor while relaxing neck and flattening back.",
+                instructions: ["Start on hands and knees.", "Lift hips up, push heels back.", "Flatten spine, look at toes."],
+                commonMistakes: ["Rounding spine", "Heels lifting too high", "Shoulders tense"],
+                benefits: ["Stretches entire rear chain", "Builds hand/wrist support strength", "Decompresses back bones"],
+                duration: "4 mins",
+                reps: "45s Hold",
+                sets: 3,
+                restTime: 15,
+                animationType: "yoga",
+                demoData: {},
+                muscle: "Hamstrings, Calves, Shoulders",
+                breathing: "Deep belly breaths.",
+                mistakes: "Rounding back, locking knees.",
+                tips: "Bend knees slightly if hamstring tight.",
+                safety: "Distribute hand pressure evenly.",
+                alternatives: "Cobra stretch",
+                rest: 15
+            },
+            {
+                id: "ex-bw-childspose",
+                name: "Child's Pose (Balasana)",
+                category: "Yoga",
+                type: "stretch",
+                workoutType: "both",
+                targetMuscles: "Lower Back, Glutes, Shoulders",
+                secondaryMuscles: "Spine, Hips",
+                difficulty: "Beginner",
+                equipment: "No Equipment",
+                calories: 3,
+                description: "Resting stretch pose decompressing lower back and opening shoulders.",
+                postureDescription: "Sit hips back onto heels, fold torso forward over thighs, and extend arms fully to decompress the lower spine.",
+                instructions: ["Kneel on floor, sit on heels.", "Fold torso forward over thighs.", "Extend arms forward, rest forehead on ground."],
+                commonMistakes: ["Forcing forehead to ground", "Neck tensing", "Holding breath"],
+                benefits: ["Decompresses spinal column", "Calms nervous system", "Opens lateral shoulder lats"],
+                duration: "4 mins",
+                reps: "60s Hold",
+                sets: 3,
+                restTime: 15,
+                animationType: "yoga",
+                demoData: {},
+                muscle: "Lower Back, Glutes, Shoulders",
+                breathing: "Deep rhythmic belly breaths.",
+                mistakes: "Stiff shoulders.",
+                tips: "Push hips back toward heels.",
+                safety: "Skip if knee pain.",
+                alternatives: "Downward Dog",
+                rest: 15
+            },
 
-            // --- BACK (5) ---
-            { id: "ex-deadlift", name: "Conventional Barbell Deadlift", category: "Back", muscle: "Erectors, Gluteus, Hamstrings, Traps", difficulty: "Advanced", equipment: "Gym Workout", calories: 140, duration: "10 mins", sets: 4, reps: 5, rest: 90, imageType: "deadlift", instructions: ["Hinge hips, grip bar.", "Flatten spine, engage lats.", "Stand and drive hips."], breathing: "Brace at bottom, exhale up.", mistakes: "Rounding lower spine.", tips: "Keep bar close.", safety: "Stop if back rounds.", alternatives: "Romanian Deadlift, KB Swings" },
-            { id: "ex-db-row", name: "Single-Arm Dumbbell Row", category: "Back", muscle: "Latissimus Dorsi, Rhomboids, Biceps", difficulty: "Beginner", equipment: "Dumbbell", calories: 65, duration: "6 mins", sets: 3, reps: 12, rest: 45, imageType: "deadlift", instructions: ["Knee and hand on bench.", "Pull dumbbell to hip.", "Extend arm fully down."], breathing: "Exhale up, inhale down.", mistakes: "Twisting torso.", tips: "Lead with elbow.", safety: "Keep spine neutral.", alternatives: "Lat Pulldown, Cable Row" },
-            { id: "ex-bw-pullups", name: "Wide-Grip Bodyweight Pull-up", category: "Back", muscle: "Latissimus Dorsi, Rhomboids, Biceps", difficulty: "Advanced", equipment: "Bodyweight", calories: 82, duration: "8 mins", sets: 4, reps: 8, rest: 75, imageType: "deadlift", instructions: ["Hang from pull-up bar.", "Pull chest to bar.", "Lower slowly."], breathing: "Exhale up, inhale down.", mistakes: "Kicking legs.", tips: "Engage scapula.", safety: "Control descent.", alternatives: "Lat Pulldown, Inversed Row" },
-            { id: "ex-db-inclinerow", name: "Incline Bench Dumbbell Row", category: "Back", muscle: "Upper Back, Lats, Rhomboids", difficulty: "Intermediate", equipment: "Dumbbell", calories: 70, duration: "7 mins", sets: 3, reps: 10, rest: 60, imageType: "deadlift", instructions: ["Lie chest-down on incline bench.", "Row weights to hips.", "Extend arms down."], breathing: "Exhale up, inhale down.", mistakes: "Lifting chest off bench.", tips: "Keeps stress off lower back.", safety: "Feet planted.", alternatives: "Single-Arm Row, Cable Row" },
-            { id: "ex-gym-bbrow", name: "Barbell Bent-Over Row", category: "Back", muscle: "Lats, Rhomboids, Lower Back", difficulty: "Advanced", equipment: "Gym Workout", calories: 95, duration: "8 mins", sets: 4, reps: 8, rest: 90, imageType: "deadlift", instructions: ["Hold bar, hinge lean torso.", "Row bar to lower sternum.", "Extend arms under control."], breathing: "Exhale up, inhale down.", mistakes: "Standing too upright.", tips: "Keep core tight.", safety: "Flat back posture.", alternatives: "Dumbbell Row, T-Bar Row" },
-
-            // --- SHOULDERS (5) ---
-            { id: "ex-dumb-press", name: "Seated Dumbbell Shoulder Press", category: "Shoulders", muscle: "Deltoids, Triceps, Trapezius", difficulty: "Intermediate", equipment: "Dumbbell", calories: 70, duration: "6 mins", sets: 3, reps: 12, rest: 60, imageType: "benchpress", instructions: ["Hold weights at shoulders.", "Press straight up.", "Lower to chin level."], breathing: "Exhale up, inhale down.", mistakes: "Arching lower back.", tips: "Tuck elbows slightly.", safety: "Keep spine straight.", alternatives: "Overhead Barbell Press, Lateral Raises" },
-            { id: "ex-bw-pikepushup", name: "Pike Push-up", category: "Shoulders", muscle: "Anterior Deltoids, Triceps, Core", difficulty: "Intermediate", equipment: "Bodyweight", calories: 60, duration: "6 mins", sets: 3, reps: 10, rest: 45, imageType: "plank", instructions: ["Pike position, hips high in V.", "Lower head toward hands.", "Push back up."], breathing: "Inhale down, exhale up.", mistakes: "Flaring elbows.", tips: "Look at your feet.", safety: "Control downward phase.", alternatives: "Handstand Hold, DB Press" },
-            { id: "ex-db-lateralraise", name: "Dumbbell Lateral Raises", category: "Shoulders", muscle: "Lateral Deltoids", difficulty: "Beginner", equipment: "Dumbbell", calories: 45, duration: "5 mins", sets: 3, reps: 15, rest: 45, imageType: "benchpress", instructions: ["Hold weights at sides.", "Raise arms to parallel to floor.", "Lower slowly."], breathing: "Exhale up, inhale down.", mistakes: "Using momentum.", tips: "Lead with elbows.", safety: "Keep weights light.", alternatives: "Cable Lateral Raises, OHP" },
-            { id: "ex-gym-ohp", name: "Standing Barbell Overhead Press", category: "Shoulders", muscle: "Anterior Deltoids, Core, Triceps", difficulty: "Advanced", equipment: "Gym Workout", calories: 90, duration: "8 mins", sets: 4, reps: 6, rest: 90, imageType: "benchpress", instructions: ["Rack bar on upper chest.", "Squeeze glutes and press up.", "Lockout arms overhead."], breathing: "Brace chest, exhale press.", mistakes: "Arching back.", tips: "Squeeze glutes tight.", safety: "Use safety bars.", alternatives: "Dumbbell Press, Arnold Press" },
-            { id: "ex-bw-handstand", name: "Bodyweight Handstand Hold", category: "Shoulders", muscle: "Shoulder Girdle, Core, Triceps", difficulty: "Advanced", equipment: "Bodyweight", calories: 50, duration: "5 mins", sets: 3, reps: "30s Hold", rest: 60, imageType: "plank", instructions: ["Kick up against wall.", "Push floor away, lock arms.", "Hold body tight."], breathing: "Maintain shallow breathes.", mistakes: "Bending elbows.", tips: "Tuck chin slightly.", safety: "Ensure clear landing area.", alternatives: "Pike Pushups, OHP" },
-
-            // --- LEGS (5) ---
-            { id: "ex-squat", name: "Barbell Back Squat", category: "Legs", muscle: "Quadriceps, Glutes, Adductors, Core", difficulty: "Intermediate", equipment: "Gym Workout", calories: 120, duration: "9 mins", sets: 4, reps: 8, rest: 90, imageType: "squat", instructions: ["Barbell on traps, stance wide.", "Lower hips until parallel.", "Push to stand."], breathing: "Inhale down, exhale up.", mistakes: "Knees caving; heels lift.", tips: "Push knees out.", safety: "Use safety pins.", alternatives: "Leg Press, Goblet Squat" },
-            { id: "ex-bw-jumpsquat", name: "Bodyweight Jump Squats", category: "Legs", muscle: "Quads, Glutes, Calves", difficulty: "Intermediate", equipment: "Bodyweight", calories: 85, duration: "6 mins", sets: 3, reps: 15, rest: 60, imageType: "squat", instructions: ["Descend into squat.", "Explode upward off ground.", "Land softly in squat."], breathing: "Inhale down, exhale jump.", mistakes: "Landing flat-footed.", tips: "Absorb shock through knees.", safety: "Avoid if knee pain.", alternatives: "Bodyweight Squat, Lunges" },
-            { id: "ex-db-splitquat", name: "Dumbbell Bulgarian Split Squat", category: "Legs", muscle: "Quadriceps, Glute Medius", difficulty: "Intermediate", equipment: "Dumbbell", calories: 90, duration: "8 mins", sets: 3, reps: 10, rest: 60, imageType: "squat", instructions: ["Rear foot on bench behind.", "Lower hips, back knee down.", "Push through front heel."], breathing: "Inhale down, exhale up.", mistakes: "Knee cave in front.", tips: "Improves balance.", safety: "Bench must be secure.", alternatives: "Lunges, Leg Press" },
-            { id: "ex-gym-legpress", name: "Leg Press Machine", category: "Legs", muscle: "Quadriceps, Glutes, Hamstrings", difficulty: "Intermediate", equipment: "Gym Workout", calories: 100, duration: "8 mins", sets: 4, reps: 10, rest: 75, imageType: "squat", instructions: ["Sit in seat, feet on platform.", "Lower platform by bending knees.", "Extend legs to start."], breathing: "Inhale down, exhale push.", mistakes: "Locking knees.", tips: "Keep hips flat in seat.", safety: "Saves lower back.", alternatives: "Barbell Squats, Split Squats" },
-            { id: "ex-bw-lunges", name: "Bodyweight Walking Lunges", category: "Legs", muscle: "Quads, Glutes, Hamstrings", difficulty: "Beginner", equipment: "Bodyweight", calories: 60, duration: "6 mins", sets: 3, reps: 20, rest: 45, imageType: "squat", instructions: ["Step forward into lunge.", "Lower rear knee to floor.", "Push forward to next step."], breathing: "Inhale down, exhale step.", mistakes: "Torso leaning too far.", tips: "Keep chest proud.", safety: "Do not strike knee.", alternatives: "Jump Squats, Bulgarian Squat" },
-
-            // --- CORE (5) ---
-            { id: "ex-plank", name: "Forearm Core Plank", category: "Core", muscle: "Rectus Abdominis, Obliques, Transverse", difficulty: "Beginner", equipment: "Bodyweight", calories: 45, duration: "5 mins", sets: 3, reps: "60s Hold", rest: 30, imageType: "plank", instructions: ["Support body on forearms/toes.", "Squeeze core and glutes.", "Hold body line straight."], breathing: "Slow diaphragmatic breathes.", mistakes: "Sagging lower back.", tips: "Pull elbows to toes.", safety: "Stack shoulders over elbows.", alternatives: "Deadbugs, Ab Rollouts" },
-            { id: "ex-bw-bicyclecrunch", name: "Bicycle Crunches", category: "Core", muscle: "Rectus Abdominis, Obliques", difficulty: "Beginner", equipment: "Bodyweight", calories: 40, duration: "5 mins", sets: 3, reps: 20, rest: 30, imageType: "plank", instructions: ["Lie, lift shoulders and legs.", "Rotate opposite elbow to knee.", "Alternate sides."], breathing: "Exhale on twist, inhale back.", mistakes: "Yanking neck with hands.", tips: "Focus on chest twist.", safety: "Keep lower back flat.", alternatives: "Russian Twists, Plank" },
-            { id: "ex-db-russiantwist", name: "Dumbbell Russian Twists", category: "Core", muscle: "Obliques, Transverse Abdominis", difficulty: "Beginner", equipment: "Dumbbell", calories: 50, duration: "6 mins", sets: 3, reps: 20, rest: 45, imageType: "plank", instructions: ["Sit, lean back 45 degrees.", "Hold weight, twist left to right.", "Touch floor gently."], breathing: "Exhale twist, inhale center.", mistakes: "Slouching back.", tips: "Keep spine neutral.", safety: "Keep feet down if back hurts.", alternatives: "Bicycle Crunches, Plank" },
-            { id: "ex-gym-abwheel", name: "Ab Wheel Rollouts", category: "Core", muscle: "Rectus Abdominis, Lats, Arms", difficulty: "Advanced", equipment: "Gym Workout", calories: 60, duration: "6 mins", sets: 3, reps: 8, rest: 60, imageType: "plank", instructions: ["Kneel, hold wheel on floor.", "Roll forward keeping core tight.", "Roll back pulling wheel back."], breathing: "Inhale forward, exhale back.", mistakes: "Sagging lower back.", tips: "Do not roll too far.", safety: "Use knee pad.", alternatives: "Plank, Hanging Knee Raises" },
-            { id: "ex-bw-hangingknee", name: "Hanging Knee Raises", category: "Core", muscle: "Lower Abs, Obliques, Hip Flexors", difficulty: "Intermediate", equipment: "Bodyweight", calories: 50, duration: "6 mins", sets: 3, reps: 12, rest: 45, imageType: "deadlift", instructions: ["Hang from pull-up bar straight.", "Raise knees to chest level.", "Lower legs slowly."], breathing: "Exhale up, inhale down.", mistakes: "Swinging body.", tips: "Avoid using momentum.", safety: "Verify bar grip.", alternatives: "Bicycle Crunches, Plank" },
-
-            // --- HIIT (5) ---
-            { id: "ex-kb-swing", name: "Kettlebell Hinge Swing", category: "HIIT", muscle: "Hamstrings, Glutes, Core", difficulty: "Intermediate", equipment: "Dumbbell", calories: 105, duration: "7 mins", sets: 4, reps: 15, rest: 45, imageType: "swing", instructions: ["Hinge at hips, hold kettlebell.", "Snap hips, swing bell to chest.", "Guide bell back down."], breathing: "Exhale up, inhale down.", mistakes: "Squatting instead of hinging.", tips: "Drive with your glutes.", safety: "Keep back flat.", alternatives: "Clean, DB Snatch" },
-            { id: "ex-bw-burpees", name: "Standard Bodyweight Burpees", category: "HIIT", muscle: "Full Body, Cardio", difficulty: "Advanced", equipment: "Bodyweight", calories: 110, duration: "8 mins", sets: 4, reps: 10, rest: 60, imageType: "squat", instructions: ["Drop to squat, jump to plank.", "Do push-up, jump feet under.", "Jump up with hands up."], breathing: "Exhale on jump, inhale down.", mistakes: "Sagging lower back.", tips: "Keep a steady rhythm.", safety: "Land flat-footed.", alternatives: "Jump Squats, Jacks" },
-            { id: "ex-db-thruster", name: "Dumbbell Thrusters", category: "HIIT", muscle: "Quads, Deltoids, Glutes, Triceps", difficulty: "Advanced", equipment: "Dumbbell", calories: 95, duration: "8 mins", sets: 4, reps: 12, rest: 60, imageType: "squat", instructions: ["Hold weights at shoulders.", "Squat low, then stand up.", "Press weights overhead in extension."], breathing: "Inhale down, exhale press.", mistakes: "Segmenting squat and press.", tips: "Use hip drive to press.", safety: "Check overhead clearance.", alternatives: "KB Swings, Sled Push" },
-            { id: "ex-gym-sledpush", name: "Weighted Sled Push", category: "HIIT", muscle: "Quads, Glutes, Calves, Core", difficulty: "Intermediate", equipment: "Gym Workout", calories: 120, duration: "9 mins", sets: 4, reps: "30m Push", rest: 60, imageType: "deadlift", instructions: ["Lean into sled, solid grip.", "Drive legs with high knees.", "Push forward on turf."], breathing: "Rapid rhythmic breath.", mistakes: "Rounding shoulders.", tips: "Stay low to ground.", safety: "Ensure dry turf.", alternatives: "Treadmill Sprints, Burpees" },
-            { id: "ex-bw-mountainclimber", name: "Mountain Climbers", category: "HIIT", muscle: "Core, Shoulders, Cardio", difficulty: "Beginner", equipment: "Bodyweight", calories: 70, duration: "6 mins", sets: 3, reps: "45s Work", rest: 30, imageType: "plank", instructions: ["High plank position.", "Drive knees to chest rapidly.", "Keep hips level."], breathing: "Breathe continuously.", mistakes: "Hips too high in air.", tips: "Run with knees.", safety: "Keep shoulders over wrists.", alternatives: "Plank, High Knees" },
-
-            // --- CARDIO (5) ---
-            { id: "ex-bw-highknees", name: "High Knee Cardio Sprint", category: "Cardio", muscle: "Cardio, Abdominals, Hip Flexors", difficulty: "Beginner", equipment: "Bodyweight", calories: 75, duration: "6 mins", sets: 3, reps: "45s Work", rest: 30, imageType: "plank", instructions: ["Run in place lifting knees high.", "Pump arms in coordination.", "Maintain quick pace."], breathing: "Fast rhythmic breaths.", mistakes: "Leaning back.", tips: "Land on balls of feet.", safety: "Wear supportive shoes.", alternatives: "Jumping Jacks, Mountain Climbers" },
-            { id: "ex-db-shadowbox", name: "Light Dumbbell Shadow Boxing", category: "Cardio", muscle: "Deltoids, Upper Back, Cardio", difficulty: "Intermediate", equipment: "Dumbbell", calories: 60, duration: "6 mins", sets: 3, reps: "60s Work", rest: 30, imageType: "benchpress", instructions: ["Hold light weights in guard.", "Throw punches under control.", "Keep feet moving constant."], breathing: "Exhale on punches.", mistakes: "Hyperextending elbows.", tips: "Punch at eye level.", safety: "Use light weights (1-3 lbs).", alternatives: "High Knees, Burpees" },
-            { id: "ex-gym-rowmachine", name: "Rowing Machine Intervals", category: "Cardio", muscle: "Lats, Quadriceps, Core, Cardio", difficulty: "Intermediate", equipment: "Gym Workout", calories: 110, duration: "10 mins", sets: 3, reps: "500m Row", rest: 90, imageType: "deadlift", instructions: ["Push with legs first.", "Lean back, pull bar to chest.", "Slide forward under control."], breathing: "Exhale on drive, inhale slide.", mistakes: "Pulling early with arms.", tips: "Drive with legs.", safety: "Secure heels in straps.", alternatives: "Treadmill, Sled Push" },
-            { id: "ex-bw-jumpingjacks", name: "Jumping Jacks", category: "Cardio", muscle: "Cardio, Full Body", difficulty: "Beginner", equipment: "Bodyweight", calories: 45, duration: "5 mins", sets: 3, reps: "60s Work", rest: 30, imageType: "plank", instructions: ["Jump feet out, raise hands.", "Jump feet together, lower hands.", "Repeat dynamically."], breathing: "Steady breathing.", mistakes: "Stiff knees.", tips: "Soft knees on landing.", safety: "Maintain soft surfaces.", alternatives: "High Knees, Mountain Climbers" },
-            { id: "ex-db-stepups", name: "Dumbbell Weighted Step-ups", category: "Cardio", muscle: "Quads, Glutes, Cardio", difficulty: "Beginner", equipment: "Dumbbell", calories: 70, duration: "8 mins", sets: 3, reps: 10, rest: 45, imageType: "squat", instructions: ["Hold weights at sides.", "Step single foot onto box.", "Drive up, stand tall, step down."], breathing: "Exhale up, inhale down.", mistakes: "Pushing off rear foot.", tips: "Drive through front heel.", safety: "Ensure box is stable.", alternatives: "Bodyweight Lunges, High Knees" },
-
-            // --- YOGA (5) ---
-            { id: "ex-stretch-cobra", name: "Cobra Yoga Stretch", category: "Yoga", muscle: "Abdominals, Lower Back", difficulty: "Beginner", equipment: "Bodyweight", calories: 25, duration: "4 mins", sets: 3, reps: "30s Hold", rest: 15, imageType: "plank", instructions: ["Lie prone, hands under shoulders.", "Press chest up extending arms.", "Draw shoulders down."], breathing: "Inhale up, exhale sink.", mistakes: "Shrugging shoulders.", tips: "Keep glutes active but relaxed.", safety: "Avoid pinching lower back.", alternatives: "Child's Pose, Upward Dog" },
-            { id: "ex-bw-downwarddog", name: "Downward-Facing Dog Pose", category: "Yoga", muscle: "Hamstrings, Calves, Shoulders", difficulty: "Beginner", equipment: "Bodyweight", calories: 20, duration: "4 mins", sets: 3, reps: "45s Hold", rest: 15, imageType: "plank", instructions: ["Start on hands/knees.", "Lift hips up, heels back.", "Make inverted V-shape."], breathing: "Deep rhythmic breaths.", mistakes: "Rounding spine.", tips: "Bend knees if hamstrings tight.", safety: "Keep wrists pointing straight.", alternatives: "Cobra, Child's Pose" },
-            { id: "ex-bw-warrior3", name: "Warrior III Pose (Virabhadrasana III)", category: "Yoga", muscle: "Hamstrings, Gluteus, Core", difficulty: "Advanced", equipment: "Bodyweight", calories: 25, duration: "5 mins", sets: 3, reps: "30s Hold/Leg", rest: 15, imageType: "plank", instructions: ["Stand, extend arms forward.", "Hinge at hips, raise back leg.", "Keep body parallel to floor."], breathing: "Slow steady breathing.", mistakes: "Collapsing chest.", tips: "Keep hips square to floor.", safety: "Focus gaze on single point.", alternatives: "Downward Dog, Cobra Stretch" },
-            { id: "ex-bw-childspose", name: "Child's Pose (Balasana)", category: "Yoga", muscle: "Lower Back, Glutes, Shoulders", difficulty: "Beginner", equipment: "Bodyweight", calories: 15, duration: "4 mins", sets: 3, reps: "60s Hold", rest: 15, imageType: "plank", instructions: ["Kneel on floor, sit on heels.", "Fold torso forward over thighs.", "Extend arms forward, hands flat."], breathing: "Deep rhythmic breathing.", mistakes: "Forcing forehead to floor.", tips: "Rest forehead on hands if tight.", safety: "Avoid if knee pain occurs.", alternatives: "Cobra Yoga Stretch, Downward Dog" },
-            { id: "ex-bw-treepose", name: "Tree Pose Balance", category: "Yoga", muscle: "Ankle Stabilizers, Core, Adductors", difficulty: "Beginner", equipment: "Bodyweight", calories: 15, duration: "4 mins", sets: 3, reps: "45s Hold/Leg", rest: 15, imageType: "plank", instructions: ["Stand on single leg.", "Place sole of foot against inner thigh.", "Bring palms to chest."], breathing: "Slow deep breathing.", mistakes: "Placing foot on knee joint.", tips: "Squeeze standing glute.", safety: "Fingertips to wall if losing balance.", alternatives: "Warrior III, Cobra" },
-
-            // --- ARMS (5) ---
-            { id: "ex-bw-tricepdips", name: "Bodyweight Bench Dips", category: "Arms", muscle: "Triceps, Chest, Shoulders", difficulty: "Beginner", equipment: "Bodyweight", calories: 50, duration: "5 mins", sets: 3, reps: 12, rest: 45, imageType: "plank", instructions: ["Hands on bench behind, feet out.", "Lower hips by bending elbows.", "Push up to lockout."], breathing: "Inhale down, exhale up.", mistakes: "Hips too far from bench.", tips: "Keep elbows tucked.", safety: "Shoulder check.", alternatives: "Pushups, Cable Curls" },
-            { id: "ex-db-hammercurls", name: "Standing Dumbbell Hammer Curls", category: "Arms", muscle: "Biceps, Brachialis", difficulty: "Beginner", equipment: "Dumbbell", calories: 45, duration: "5 mins", sets: 3, reps: 12, rest: 45, imageType: "benchpress", instructions: ["Stand, hold dumbbells.", "Curl weights palms facing neutral.", "Lower slowly."], breathing: "Exhale up, inhale down.", mistakes: "Swinging elbows.", tips: "Glue upper arms to sides.", safety: "Keep spine neutral.", alternatives: "Cable Curls, Bench Dips" },
-            { id: "ex-gym-cablecurls", name: "Cable Bicep Curls", category: "Arms", muscle: "Biceps", difficulty: "Beginner", equipment: "Gym Workout", calories: 55, duration: "5 mins", sets: 3, reps: 12, rest: 45, imageType: "benchpress", instructions: ["Hold cable, palms facing up.", "Curl handle to chest level.", "Lower to starting position."], breathing: "Exhale up, inhale down.", mistakes: "Elbows shifting forward.", tips: "Continuous biceps tension.", safety: "Correct pulley height.", alternatives: "Hammer Curls, Bench Dips" },
-            { id: "ex-bw-diamondpushup", name: "Bodyweight Diamond Push-Up", category: "Arms", muscle: "Triceps, Chest, Shoulders", difficulty: "Advanced", equipment: "Bodyweight", calories: 60, duration: "6 mins", sets: 3, reps: 10, rest: 60, imageType: "plank", instructions: ["Hands close together, index/thumb touch.", "Lower chest to hands.", "Push back up."], breathing: "Inhale down, exhale up.", mistakes: "Flaring elbows.", tips: "Brace core tight.", safety: "Check wrist comfort.", alternatives: "Bench Dips, Tricep Pressdown" },
-            { id: "ex-db-overheadtricep", name: "Dumbbell Overhead Tricep Extension", category: "Arms", muscle: "Triceps", difficulty: "Intermediate", equipment: "Dumbbell", calories: 50, duration: "6 mins", sets: 3, reps: 12, rest: 45, imageType: "benchpress", instructions: ["Sit, hold dumbbell overhead with both hands.", "Lower weight behind head.", "Extend arms upward."], breathing: "Inhale down, exhale press.", mistakes: "Flaring elbows out.", tips: "Keep elbows close to ears.", safety: "Secure weight grip.", alternatives: "Tricep Dips, Pressdown" }
+            // ==================== GYM EXERCISES ====================
+            // --- CHEST (Gym) ---
+            {
+                id: "ex-gym-benchpress",
+                name: "Barbell Bench Press",
+                category: "Chest",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Pectorals, Anterior Deltoids, Triceps",
+                secondaryMuscles: "Lats, Core",
+                difficulty: "Intermediate",
+                equipment: "Barbell",
+                calories: 12,
+                description: "Heavy barbell flat chest press targeting compound upper push force.",
+                postureDescription: "Lie flat with shoulder blades retracted and feet planted; lower barbell to mid-chest, pressing straight up to lockout.",
+                instructions: ["Lie flat on bench, grip bar slightly wider than shoulders.", "Lower barbell slowly to mid-chest.", "Press bar straight up powerfully."],
+                commonMistakes: ["Bouncing bar off sternum", "Lifting hips/butt off bench", "Locking wrists back"],
+                benefits: ["Packs chest mass and strength", "Increases shoulder push threshold", "Develops triceps size"],
+                duration: "8 mins",
+                reps: "8-10 reps",
+                sets: 4,
+                restTime: 90,
+                animationType: "benchpress",
+                demoData: {},
+                muscle: "Pectorals, Anterior Deltoids, Triceps",
+                breathing: "Inhale down, exhale press up.",
+                mistakes: "Bouncing bar, hip lift.",
+                tips: "Retract shoulder blades, plant feet flat.",
+                safety: "Ensure safeties or use a spotter.",
+                alternatives: "Dumbbell Bench Press, Chest Press Machine",
+                rest: 90
+            },
+            {
+                id: "ex-gym-dbbenchpress",
+                name: "Dumbbell Bench Press",
+                category: "Chest",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Pectorals, Anterior Deltoids, Triceps",
+                secondaryMuscles: "Stabilizer Muscles",
+                difficulty: "Intermediate",
+                equipment: "Dumbbell",
+                calories: 11,
+                description: "Flat chest press using dumbbells for deep range and shoulder safety.",
+                postureDescription: "Lie flat, dumbbells over chest; lower weights to sides of chest with vertical forearms, pressing up in a slight arc.",
+                instructions: ["Sit on bench holding weights, lie flat.", "Lower dumbbells to sides of chest.", "Press weights straight up in convergence."],
+                commonMistakes: ["Clashing weights at top", "Dipping elbows too low", "Wrists collapsing"],
+                benefits: ["Allows neutral joint path", "Solves left/right strength gaps", "Increases chest stretch range"],
+                duration: "8 mins",
+                reps: "10 reps",
+                sets: 4,
+                restTime: 60,
+                animationType: "benchpress",
+                demoData: {},
+                muscle: "Pectorals, Anterior Deltoids, Triceps",
+                breathing: "Inhale down, exhale press.",
+                mistakes: "Weights clashing, unstable path.",
+                tips: "Keep forearms perfectly vertical.",
+                safety: "Control weights down.",
+                alternatives: "Barbell Bench Press",
+                rest: 60
+            },
+            {
+                id: "ex-gym-cablefly",
+                name: "Cable Crossover Flyes",
+                category: "Chest",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Pectorals (Lower/Inner)",
+                secondaryMuscles: "Anterior Deltoids",
+                difficulty: "Intermediate",
+                equipment: "Cable",
+                calories: 9,
+                description: "Cable flies focusing on high chest isolation and outer fibers contraction.",
+                postureDescription: "Stand with cables, step forward in split stance, and sweep hands forward in a wide circle; keep elbows slightly bent.",
+                instructions: ["Set pulleys high, grasp handles, step forward.", "Bring hands together in wide circle arc.", "Return handles under control."],
+                commonMistakes: ["Bending elbows too much", "Using body momentum", "Weights slamming"],
+                benefits: ["Continuous chest muscle loading", "Isolates pectorals", "Safe shoulder traction"],
+                duration: "7 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "benchpress",
+                demoData: {},
+                muscle: "Pectorals (Inner/Lower)",
+                breathing: "Exhale together, inhale return.",
+                mistakes: "Elbow press instead of fly, trunk swing.",
+                tips: "Squeeze chest at front convergence.",
+                safety: "Do not exceed shoulder comfort.",
+                alternatives: "Pec Deck, Dumbbell Flyes",
+                rest: 60
+            },
+            {
+                id: "ex-gym-pecdeck",
+                name: "Pec Deck Machine",
+                category: "Chest",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Pectorals, Anterior Deltoids",
+                secondaryMuscles: "Coracobrachialis",
+                difficulty: "Beginner",
+                equipment: "Machine",
+                calories: 9,
+                description: "Machine flyes ensuring locked paths, perfect for chest isolation.",
+                postureDescription: "Sit tall against backrest, align seat height so hands are chest-level, and squeeze handles together using chest force.",
+                instructions: ["Sit in machine, arms resting on pads/handles.", "Squeeze handles together in front.", "Return slowly to stretch."],
+                commonMistakes: ["Elbows dropping", "Hips sliding forward", "Rushing speed"],
+                benefits: ["Locked track minimizes injury", "Intense inner chest squeeze", "Great finisher workout"],
+                duration: "6 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "benchpress",
+                demoData: {},
+                muscle: "Pectorals, Anterior Deltoids",
+                breathing: "Exhale squeeze, inhale open.",
+                mistakes: "Shrugging neck, fast eccentric.",
+                tips: "Keep chest proud against pad.",
+                safety: "Align seat height correctly.",
+                alternatives: "Cable Crossover",
+                rest: 60
+            },
+            
+            // --- BACK (Gym) ---
+            {
+                id: "ex-gym-latpulldown",
+                name: "Wide-Grip Lat Pulldown Machine",
+                category: "Back",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Latissimus Dorsi, Rhomboids, Biceps",
+                secondaryMuscles: "Forearms, Rear Delts",
+                difficulty: "Beginner",
+                equipment: "Machine",
+                calories: 10,
+                description: "Pulldown targeting back width and lat muscle activation.",
+                postureDescription: "Sit secure under thigh pads, lean back slightly, and pull bar to upper chest by driving elbows down and retracting scapula.",
+                instructions: ["Grip bar wide, sit and secure thighs.", "Pull bar down to upper chest level.", "Extend arms slowly back to stretch."],
+                commonMistakes: ["Leaning too far back", "Pulling bar behind neck", "Using momentum/jerking"],
+                benefits: ["Builds back width", "Increases pull-up strength", "Safe spine decompression"],
+                duration: "8 mins",
+                reps: "10 reps",
+                sets: 4,
+                restTime: 60,
+                animationType: "deadlift",
+                demoData: {},
+                muscle: "Latissimus Dorsi, Rhomboids, Biceps",
+                breathing: "Exhale pull down, inhale return.",
+                mistakes: "Leaning back, pulling behind head.",
+                tips: "Drive downwards with elbows.",
+                safety: "Keep bar path clear of face.",
+                alternatives: "Pull-ups, Seated Cable Row",
+                rest: 60
+            },
+            {
+                id: "ex-gym-seatedrow",
+                name: "Seated Cable Row",
+                category: "Back",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Rhomboids, Lats, Trapezius, Biceps",
+                secondaryMuscles: "Lower Back, Forearms",
+                difficulty: "Beginner",
+                equipment: "Cable",
+                calories: 10,
+                description: "Horizontal pull target thickness of the middle back.",
+                postureDescription: "Sit tall, feet braced, pull handle to lower chest while keeping spine straight and squeezing shoulder blades together.",
+                instructions: ["Sit at cable row, grip handle, feet flat.", "Pull handle to lower sternum, squeeze back.", "Extend arms forward slowly."],
+                commonMistakes: ["Rounding spine", "Shrugging shoulders", "Leaning too back"],
+                benefits: ["Thickens mid-back", "Improves posture", "Safer lower back overload"],
+                duration: "7 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "deadlift",
+                demoData: {},
+                muscle: "Rhomboids, Lats, Trapezius",
+                breathing: "Exhale pull, inhale extend.",
+                mistakes: "Rounding back, using chest momentum.",
+                tips: "Squeeze shoulder blades together.",
+                safety: "Keep chest proud, spine straight.",
+                alternatives: "Barbell Row, Dumbbell Row",
+                rest: 60
+            },
+            {
+                id: "ex-deadlift",
+                name: "Conventional Barbell Deadlift",
+                category: "Back",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Erector Spinae, Glutes, Hamstrings, Trapezius",
+                secondaryMuscles: "Core, Forearms, Quads",
+                difficulty: "Advanced",
+                equipment: "Barbell",
+                calories: 18,
+                description: "King of compound pulling lifts loading the entire posterior chain.",
+                postureDescription: "Stand with feet under bar, hinge hips with flat back, grip bar, and stand up by driving hips forward; keep bar close to shins.",
+                instructions: ["Hinge at hips, grip bar close to shins.", "Flatten spine, pull shoulders down.", "Drive hips forward to stand tall."],
+                commonMistakes: ["Rounding lower back", "Bar shifting forward", "Jerking bar off floor"],
+                benefits: ["Massive posterior chain size", "High core loading capacity", "Increases raw pull force"],
+                duration: "10 mins",
+                reps: "5 reps",
+                sets: 4,
+                restTime: 90,
+                animationType: "deadlift",
+                demoData: {},
+                muscle: "Lower Back, Glutes, Hamstrings, Traps",
+                breathing: "Brace at bottom, exhale lift, inhale down.",
+                mistakes: "Rounding spine, hip lift early.",
+                tips: "Keep bar touching shins throughout.",
+                safety: "Drop bar if form breaks.",
+                alternatives: "Romanian Deadlift",
+                rest: 90
+            },
+            
+            // --- SHOULDERS (Gym) ---
+            {
+                id: "ex-gym-ohp",
+                name: "Standing Barbell Overhead Press",
+                category: "Shoulders",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Anterior Deltoids, Core, Triceps",
+                secondaryMuscles: "Upper Chest, Traps",
+                difficulty: "Advanced",
+                equipment: "Barbell",
+                calories: 13,
+                description: "Vertical overhead push for shoulder thickness and core balance.",
+                postureDescription: "Rack barbell on chest, squeeze glutes and core, and press bar straight up overhead, pulling head forward at lockout.",
+                instructions: ["Rack bar on chest, grip tight.", "Squeeze glutes, press bar straight up overhead.", "Lockout arms, pull head slightly forward."],
+                commonMistakes: ["Arching lower back", "Unstable wrists", "Flaring elbows"],
+                benefits: ["Vertical press force", "Core and shoulder balance", "Massive deltoid load"],
+                duration: "8 mins",
+                reps: "6-8 reps",
+                sets: 4,
+                restTime: 90,
+                animationType: "benchpress",
+                demoData: {},
+                muscle: "Anterior Deltoids, Core, Triceps",
+                breathing: "Brace core, exhale press.",
+                mistakes: "Arching lower back, head hit.",
+                tips: "Squeeze glutes throughout the press.",
+                safety: "Ensure stable ground footing.",
+                alternatives: "Dumbbell Shoulder Press",
+                rest: 90
+            },
+            {
+                id: "ex-gym-dbshoulderpress",
+                name: "Dumbbell Shoulder Press",
+                category: "Shoulders",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Deltoids, Triceps, Trapezius",
+                secondaryMuscles: "Rotator Cuff",
+                difficulty: "Intermediate",
+                equipment: "Dumbbell",
+                calories: 10,
+                description: "Seated overhead dumbbell press.",
+                postureDescription: "Sit tall against backrest, weights at ears; press dumbbells straight up in a convergence arch, keeping elbows slightly in.",
+                instructions: ["Sit on bench, hold weights at ears.", "Press weights straight up in arch.", "Lower slowly to chin level."],
+                commonMistakes: ["Arching spine away from seat", "Clashing dumbbells", "Too heavy weight"],
+                benefits: ["Unilateral shoulder press", "Neutral elbow paths", "Tones triceps"],
+                duration: "6 mins",
+                reps: "10 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "benchpress",
+                demoData: {},
+                muscle: "Deltoids, Triceps",
+                breathing: "Exhale up, inhale down.",
+                mistakes: "Arching spine, clashing weights.",
+                tips: "Keep elbows slightly tucked.",
+                safety: "Sit firmly against backrest.",
+                alternatives: "Standing Barbell OHP",
+                rest: 60
+            },
+            
+            // --- ARMS (Gym) ---
+            {
+                id: "ex-gym-cablecurls",
+                name: "Cable Bicep Curls",
+                category: "Arms",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Biceps Brachii",
+                secondaryMuscles: "Brachialis, Forearms",
+                difficulty: "Beginner",
+                equipment: "Cable",
+                calories: 8,
+                description: "Continuous tension bicep curls using cable attachments.",
+                postureDescription: "Stand tall, elbows glued to ribs; curl cable handle up using bicep force, maintaining stable shoulder and torso position.",
+                instructions: ["Hold cable bar palms facing up, stand straight.", "Curl hands to shoulders.", "Lower bar under control."],
+                commonMistakes: ["Elbows moving forward", "Torso swing", "Rushing speed"],
+                benefits: ["Continuous cable pull tension", "Isolates biceps peaks", "Improves grip strength"],
+                duration: "5 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "curl",
+                demoData: {},
+                muscle: "Biceps Brachii",
+                breathing: "Exhale up, inhale down.",
+                mistakes: "Elbow drag, trunk swing.",
+                tips: "Glue upper arms to sides.",
+                safety: "Ensure cable handle is secure.",
+                alternatives: "Dumbbell Curls, Preacher Curls",
+                rest: 45
+            },
+            {
+                id: "ex-gym-triceppushdown",
+                name: "Tricep Rope Pressdown",
+                category: "Arms",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Triceps Brachii (Lateral/Medial)",
+                secondaryMuscles: "Anterior Deltoids",
+                difficulty: "Beginner",
+                equipment: "Cable",
+                calories: 8,
+                description: "Cable rope pressdown targeting the triceps thickness.",
+                postureDescription: "Hold rope attachment, elbows tucked at sides; press rope down and flare ends outward, isolating triceps.",
+                instructions: ["Hold rope, elbows tucked at sides.", "Press down fully, flare rope ends.", "Return slowly to chest level."],
+                commonMistakes: ["Flaring elbows out", "Leaning chest forward over rope", "Locked wrists"],
+                benefits: ["Continuous triceps loading", "Builds outer arm thickness", "Safe joint loading"],
+                duration: "6 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "curl",
+                demoData: {},
+                muscle: "Triceps Brachii",
+                breathing: "Exhale down, inhale up.",
+                mistakes: "Elbow drift, shrugging.",
+                tips: "Keep elbows glued to ribs.",
+                safety: "Keep face clear of cable hook.",
+                alternatives: "Bench Dips, Tricep extensions",
+                rest: 45
+            },
+            
+            // --- LEGS (Gym) ---
+            {
+                id: "ex-gym-squat",
+                name: "Barbell Back Squat",
+                category: "Legs",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Quadriceps, Gluteus Maximus, Adductors",
+                secondaryMuscles: "Lower Back, Core, Hamstrings",
+                difficulty: "Intermediate",
+                equipment: "Barbell",
+                calories: 16,
+                description: "King of lower body mass builders, loading quads and hips.",
+                postureDescription: "Place bar on upper traps, stand feet shoulder-width; squat back and down below parallel with chest upright and knees pushed out.",
+                instructions: ["Barbell on traps, stand shoulder width.", "Lower hips back and down below knee level.", "Push floor away to stand."],
+                commonMistakes: ["Knees caving in (valgus)", "Heels lifting off ground", "Rounding spine (butt wink)"],
+                benefits: ["Increases overall leg power", "Boosts core strength", "Increases quad thickness"],
+                duration: "9 mins",
+                reps: "8 reps",
+                sets: 4,
+                restTime: 90,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps, Glutes, Hamstrings",
+                breathing: "Inhale down, exhale drive up.",
+                mistakes: "Knees caving, heels lifting.",
+                tips: "Push knees out, squat deeply.",
+                safety: "Use safety racks/pins.",
+                alternatives: "Leg Press, Hack Squat",
+                rest: 90
+            },
+            {
+                id: "ex-gym-legpress",
+                name: "Leg Press Machine",
+                category: "Legs",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Quadriceps, Glutes, Hamstrings",
+                secondaryMuscles: "Calves",
+                difficulty: "Beginner",
+                equipment: "Machine",
+                calories: 13,
+                description: "Sled push targeting quads while sparing the lower back.",
+                postureDescription: "Sit secure in machine, feet wide on sled; lower platform until knees reach 90 degrees, pushing up without locking knees.",
+                instructions: ["Sit in sled, place feet wide on platform.", "Lower platform by bending knees to 90 degrees.", "Push sled up (do not lock knees)."],
+                commonMistakes: ["Locking out knees completely", "Hips lifting off seat pad", "Knees caving"],
+                benefits: ["High quad isolation loading", "Protects lower spine", "Adjustable feet stance focus"],
+                duration: "8 mins",
+                reps: "10 reps",
+                sets: 4,
+                restTime: 75,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps, Glutes, Hamstrings",
+                breathing: "Inhale down, exhale push.",
+                mistakes: "Locking knees, lifting hips.",
+                tips: "Keep glutes glued to backrest.",
+                safety: "Always verify safety locks.",
+                alternatives: "Barbell Squats",
+                rest: 75
+            },
+            {
+                id: "ex-gym-legextensions",
+                name: "Leg Extension Machine",
+                category: "Legs",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Quadriceps (Anterior)",
+                secondaryMuscles: "Knee Joint",
+                difficulty: "Beginner",
+                equipment: "Machine",
+                calories: 9,
+                description: "Single joint knee extension machine isolating the quads.",
+                postureDescription: "Sit tall, align knee joint with machine pivot; extend knees fully to horizontal lock, lowering weight slowly.",
+                instructions: ["Sit in pad, place roller on ankles.", "Extend legs straight up horizontally.", "Lower weight under control."],
+                commonMistakes: ["Swinging weight fast", "Knee joint misaligned with machine pivot", "Lifting hips"],
+                benefits: ["Isolates rectus femoris quad", "Teaches quad locking", "Builds quad definition"],
+                duration: "6 mins",
+                reps: "12 reps",
+                sets: 3,
+                restTime: 60,
+                animationType: "squat",
+                demoData: {},
+                muscle: "Quadriceps",
+                breathing: "Exhale up, inhale down.",
+                mistakes: "Swinging weight, high speed.",
+                tips: "Hold grip handles to lock hips down.",
+                safety: "Ensure knee joint aligns with pivot.",
+                alternatives: "Squats",
+                rest: 60
+            },
+            
+            // --- CORE (Gym) ---
+            {
+                id: "ex-gym-cablecrunch",
+                name: "Cable Kneeling Crunch",
+                category: "Core",
+                type: "strength",
+                workoutType: "gym",
+                targetMuscles: "Rectus Abdominis, Obliques",
+                secondaryMuscles: "Serratus",
+                difficulty: "Intermediate",
+                equipment: "Cable",
+                calories: 8,
+                description: "Weighted crunch using high pulley handles for abdominal overload.",
+                postureDescription: "Kneel facing pulley, hold rope by ears; crunch down by flexing spine towards pelvis, keeping hips locked in place.",
+                instructions: ["Kneel at pulley, hold rope by ears.", "Flex spine, pull elbows to knees.", "Return slowly to extension."],
+                commonMistakes: ["Pulling rope with arms", "Hinging hips instead of spine", "Hyperextending neck"],
+                benefits: ["Weighted abdominal overload", "Continuous cable tension", "Tones upper abs"],
+                duration: "6 mins",
+                reps: "15 reps",
+                sets: 3,
+                restTime: 45,
+                animationType: "plank",
+                demoData: {},
+                muscle: "Rectus Abdominis, Obliques",
+                breathing: "Exhale down, inhale return.",
+                mistakes: "Using hip flexors, arm pulling.",
+                tips: "Focus on bringing rib cage to pelvis.",
+                safety: "Do not load lower back.",
+                alternatives: "Crunches, Ab Machine",
+                rest: 45
+            },
+            
+            // --- CARDIO (Gym) ---
+            {
+                id: "ex-gym-rowmachine",
+                name: "Rowing Machine Intervals",
+                category: "Cardio",
+                type: "cardio",
+                workoutType: "gym",
+                targetMuscles: "Cardio, Lats, Legs, Core",
+                secondaryMuscles: "Rhomboids, Forearms",
+                difficulty: "Intermediate",
+                equipment: "Cardio Machine",
+                calories: 14,
+                description: "Full-body sliding cardiorespiratory trainer intervals.",
+                postureDescription: "Sit tall, feet secure; push with legs first, lean back slightly, and pull handle to chest, returning forward in sequence.",
+                instructions: ["Push with legs first.", "Lean back, pull handle to lower chest.", "Slide forward under control."],
+                commonMistakes: ["Pulling early with arms", "Rounding back", "Fast slide speed"],
+                benefits: ["Incredible cardio output", "Full body pulling force", "Zero joint impact"],
+                duration: "10 mins",
+                reps: "500m Row",
+                sets: 3,
+                restTime: 90,
+                animationType: "deadlift",
+                demoData: {},
+                muscle: "Cardio, Lats, Legs",
+                breathing: "Exhale on pull drive, inhale forward.",
+                mistakes: "Pulling early, spinal rounding.",
+                tips: "Legs are 60% of the rowing power.",
+                safety: "Secure feet in straps.",
+                alternatives: "Treadmill, Sprints",
+                rest: 90
+            }
         ];
 
         // Global state managers
         let currentFilterCategory = "All";
         let favorites = JSON.parse(localStorage.getItem('fav_workouts_' + localStorage.getItem('userEmail')) || '[]');
         let userEmail = localStorage.getItem('userEmail');
+        let preferredLocation = 'gym';
 
         // Live Timer State
         let sessionTimerInterval = null;
@@ -809,6 +2220,164 @@
 
         let restInterval = null;
         let restSecsLeft = 0;
+
+        async function loadUserProtocolAndApplyFilters() {
+            if (!userEmail) return;
+
+            let cachedProto = {};
+            try {
+                cachedProto = JSON.parse(localStorage.getItem('userProtocol') || '{}');
+            } catch (e) {
+                console.error("Error parsing userProtocol from localStorage:", e);
+            }
+
+            if (cachedProto && cachedProto.location) {
+                preferredLocation = cachedProto.location.toLowerCase();
+            }
+
+            applyLocationFilters(preferredLocation);
+
+            try {
+                const response = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.protocol && data.protocol.location) {
+                        localStorage.setItem('userProtocol', JSON.stringify(data.protocol));
+                        preferredLocation = data.protocol.location.toLowerCase();
+                        applyLocationFilters(preferredLocation);
+                    }
+                }
+            } catch (err) {
+                console.error("Error retrieving user protocol baseline:", err);
+            }
+        }
+
+        function changeWorkoutLocationMode(mode) {
+            preferredLocation = mode;
+            
+            // Save to localStorage
+            let cachedProto = {};
+            try {
+                cachedProto = JSON.parse(localStorage.getItem('userProtocol') || '{}');
+            } catch (e) {
+                console.error("Error parsing userProtocol:", e);
+            }
+            cachedProto.location = mode;
+            localStorage.setItem('userProtocol', JSON.stringify(cachedProto));
+
+            // Sync with backend API
+            if (userEmail) {
+                fetch('/api/user/protocol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, location: mode })
+                }).catch(err => console.error("Error updating location baseline:", err));
+            }
+
+            applyLocationFilters(preferredLocation);
+        }
+
+        function updateModeButtonsUI() {
+            const btnGym = document.getElementById('mode-btn-gym');
+            const btnHome = document.getElementById('mode-btn-home');
+            if (btnGym && btnHome) {
+                if (preferredLocation === 'home') {
+                    btnHome.classList.add('bg-white/10', 'text-white');
+                    btnHome.classList.remove('text-secondary', 'hover:text-white');
+                    
+                    btnGym.classList.remove('bg-white/10', 'text-white');
+                    btnGym.classList.add('text-secondary', 'hover:text-white');
+                } else {
+                    btnGym.classList.add('bg-white/10', 'text-white');
+                    btnGym.classList.remove('text-secondary', 'hover:text-white');
+                    
+                    btnHome.classList.remove('bg-white/10', 'text-white');
+                    btnHome.classList.add('text-secondary', 'hover:text-white');
+                }
+            }
+        }
+
+        function renderCategoryButtons() {
+            const container = document.getElementById('categories-container');
+            if (!container) return;
+
+            let categories = [];
+            if (preferredLocation === 'home') {
+                categories = ['All', 'Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Cardio', 'HIIT', 'Yoga'];
+            } else {
+                categories = ['All', 'Chest', 'Back', 'Shoulders', 'Arms', 'Legs', 'Core', 'Cardio'];
+            }
+
+            container.innerHTML = categories.map(cat => {
+                const isAll = cat === 'All';
+                const label = isAll ? 'All Exercises' : cat;
+                const isActive = currentFilterCategory === cat;
+                
+                const activeClass = "bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer";
+                const inactiveClass = "bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer";
+                
+                return `
+                    <button class="category-btn snap-start shrink-0 px-5 py-2.5 ${isActive ? activeClass : inactiveClass}" 
+                        onclick="filterCategory('${cat}')">
+                        ${label}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function applyLocationFilters(location) {
+            preferredLocation = location ? location.toLowerCase() : 'gym';
+            currentFilterCategory = 'All';
+
+            // Filter Structured Workout Plans Carousel
+            const planCards = document.querySelectorAll('[data-plan-type]');
+            planCards.forEach(card => {
+                const planType = card.getAttribute('data-plan-type');
+                if (preferredLocation === 'home') {
+                    if (planType === 'home') {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                } else {
+                    if (planType === 'gym') {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+
+            // Dynamically populate options in equipment dropdown based on preferredLocation
+            const filterEquipSelect = document.getElementById('filter-equipment');
+            if (filterEquipSelect) {
+                const prevVal = filterEquipSelect.value;
+                if (preferredLocation === 'gym') {
+                    filterEquipSelect.innerHTML = `
+                        <option value="All">All Equipment</option>
+                        <option value="Barbell">Barbell</option>
+                        <option value="Dumbbell">Dumbbell</option>
+                        <option value="Cable">Cable</option>
+                        <option value="Machine">Machine</option>
+                        <option value="No Equipment">No Equipment</option>
+                    `;
+                } else {
+                    filterEquipSelect.innerHTML = `
+                        <option value="All">No Equipment Only</option>
+                    `;
+                }
+                // Try to restore previous value, fallback to 'All'
+                if ([...filterEquipSelect.options].some(o => o.value === prevVal)) {
+                    filterEquipSelect.value = prevVal;
+                } else {
+                    filterEquipSelect.value = 'All';
+                }
+            }
+
+            renderCategoryButtons();
+            updateModeButtonsUI();
+            applyFiltersAndRender();
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!userEmail) {
@@ -835,7 +2404,7 @@
 
             // Fetch and render everything
             fetchStatsAndLogs();
-            applyFiltersAndRender();
+            loadUserProtocolAndApplyFilters();
             updateFavoritesBadge();
         });
 
@@ -981,6 +2550,13 @@
             const equipment = document.getElementById('filter-equipment').value;
 
             let filtered = EXERCISES_DATABASE.filter(ex => {
+                // Strict Location filtering
+                if (preferredLocation === 'home') {
+                    if (ex.workoutType !== 'home' && ex.workoutType !== 'both') return false;
+                } else {
+                    if (ex.workoutType !== 'gym' && ex.workoutType !== 'both') return false;
+                }
+
                 // Category Filter
                 if (currentFilterCategory !== 'All' && ex.category !== currentFilterCategory) return false;
 
@@ -989,15 +2565,13 @@
 
                 // Equipment Filter
                 if (equipment !== 'All') {
-                    if (equipment === 'Bodyweight' && ex.equipment !== 'Bodyweight') return false;
-                    if (equipment === 'Dumbbell' && ex.equipment !== 'Dumbbell') return false;
-                    if (equipment === 'Gym Workout' && ex.equipment !== 'Gym Workout') return false;
+                    if (ex.equipment !== equipment) return false;
                 }
 
                 // Query Search
                 if (query) {
                     const matchName = ex.name.toLowerCase().includes(query);
-                    const matchMuscle = ex.muscle.toLowerCase().includes(query);
+                    const matchMuscle = (ex.targetMuscles || ex.muscle || '').toLowerCase().includes(query);
                     const matchEquip = ex.equipment.toLowerCase().includes(query);
                     if (!matchName && !matchMuscle && !matchEquip) return false;
                 }
@@ -1010,12 +2584,14 @@
             const gridDesc = document.getElementById('grid-header-desc');
             const countLabel = document.getElementById('exercise-count-label');
 
-            countLabel.textContent = `${filtered.length} Exercises Found`;
+            const typeLabel = preferredLocation === 'home' ? 'HOME' : 'GYM';
+            countLabel.textContent = `${filtered.length} ${typeLabel} EXERCISES FOUND`;
+
             if (currentFilterCategory !== 'All') {
                 gridTitle.textContent = `${currentFilterCategory} Exercises`;
                 gridDesc.textContent = `Filtered category`;
             } else {
-                gridTitle.textContent = "Available Exercises";
+                gridTitle.textContent = preferredLocation === 'home' ? "Available Home Exercises" : "Available Gym Exercises";
                 gridDesc.textContent = "Browse database";
             }
 
@@ -1023,16 +2599,9 @@
         }
 
         // Filter categories toggle button styling
-        function filterCategory(cat, btn) {
+        function filterCategory(cat) {
             currentFilterCategory = cat;
-
-            // Adjust active styles
-            const buttons = document.querySelectorAll('.category-btn');
-            buttons.forEach(b => {
-                b.className = "category-btn snap-start shrink-0 px-5 py-2.5 bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer";
-            });
-            btn.className = "category-btn snap-start shrink-0 px-5 py-2.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer";
-
+            renderCategoryButtons();
             applyFiltersAndRender();
         }
 
@@ -1152,9 +2721,17 @@
 
         function renderFavoritesList() {
             const container = document.getElementById('favorites-list');
-            const favItems = EXERCISES_DATABASE.filter(ex => favorites.includes(ex.id));
+            const favItems = EXERCISES_DATABASE.filter(ex => {
+                const matchesFav = favorites.includes(ex.id);
+                if (!matchesFav) return false;
+                if (preferredLocation === 'home') {
+                    return ex.workoutType === 'home' || ex.workoutType === 'both';
+                } else {
+                    return ex.workoutType === 'gym' || ex.workoutType === 'both';
+                }
+            });
             if (favItems.length === 0) {
-                container.innerHTML = `<p class="text-xs text-secondary/40 text-center py-12">No starred exercises yet. Click the star icon on any exercise card to save it here.</p>`;
+                container.innerHTML = `<p class="text-xs text-secondary/40 text-center py-12">No starred exercises yet for this mode. Click the star icon on any exercise card to save it here.</p>`;
                 return;
             }
 
@@ -1179,13 +2756,34 @@
             const ex = EXERCISES_DATABASE.find(item => item.id === id);
             if (!ex) return;
 
+            const vectorBox = document.getElementById('detail-vector-box');
+            if (vectorBox) {
+                vectorBox.innerHTML = getLiveAnimationSvg(ex.name);
+            }
+
             document.getElementById('detail-title').textContent = ex.name;
-            document.getElementById('detail-muscle').textContent = `Target: ${ex.muscle}`;
+            document.getElementById('detail-muscle').textContent = `Target: ${ex.muscle || ex.targetMuscles}`;
+            document.getElementById('detail-posture').textContent = ex.postureDescription || "";
             document.getElementById('detail-difficulty').textContent = ex.difficulty;
             document.getElementById('detail-equipment').textContent = ex.equipment;
             document.getElementById('detail-breathing').textContent = ex.breathing;
-            document.getElementById('detail-mistakes').textContent = ex.mistakes;
-            document.getElementById('detail-tips').textContent = ex.tips;
+            
+            // Common mistakes
+            const mistakesEl = document.getElementById('detail-mistakes');
+            if (Array.isArray(ex.commonMistakes)) {
+                mistakesEl.innerHTML = `<ul class="list-disc pl-4 space-y-1.5">${ex.commonMistakes.map(m => `<li>${m}</li>`).join('')}</ul>`;
+            } else {
+                mistakesEl.textContent = ex.mistakes || "None.";
+            }
+
+            // Benefits / Tips
+            const tipsEl = document.getElementById('detail-tips');
+            if (Array.isArray(ex.benefits)) {
+                tipsEl.innerHTML = `<ul class="list-disc pl-4 space-y-1.5">${ex.benefits.map(b => `<li>${b}</li>`).join('')}</ul>`;
+            } else {
+                tipsEl.textContent = ex.tips || "Helps build strength and stability.";
+            }
+            
             document.getElementById('detail-alternatives').textContent = ex.alternatives;
 
             // Instructions list
@@ -1217,15 +2815,23 @@
             // Generates a mock multi-exercise plan list based on selection and launches player
             let chosen = [];
             if (planName === 'Fat Loss') {
-                chosen = ['ex-kb-swing', 'ex-squat', 'ex-plank'];
+                chosen = ['ex-gym-rowmachine', 'ex-gym-squat', 'ex-plank'];
             } else if (planName === 'Muscle Gain') {
-                chosen = ['ex-benchpress', 'ex-squat', 'ex-db-row'];
+                chosen = ['ex-gym-benchpress', 'ex-gym-squat', 'ex-gym-seatedrow'];
             } else if (planName === 'Strength Training') {
-                chosen = ['ex-deadlift', 'ex-benchpress', 'ex-squat'];
+                chosen = ['ex-deadlift', 'ex-gym-benchpress', 'ex-gym-squat'];
+            } else if (planName === 'Endurance') {
+                chosen = ['ex-gym-rowmachine', 'ex-gym-legextensions', 'ex-gym-triceppushdown'];
             } else if (planName === 'Home Plan') {
-                chosen = ['ex-plank', 'ex-stretch-cobra'];
+                chosen = ['ex-bw-pushup', 'ex-home-squat', 'ex-plank'];
+            } else if (planName === 'Home Fat Loss') {
+                chosen = ['ex-bw-burpees', 'ex-bw-mountainclimber', 'ex-bw-jumpingjacks'];
+            } else if (planName === 'Home Core') {
+                chosen = ['ex-plank', 'ex-bw-bicyclecrunch', 'ex-bw-deadbug'];
+            } else if (planName === 'Home Yoga') {
+                chosen = ['ex-stretch-cobra', 'ex-bw-downwarddog', 'ex-bw-childspose'];
             } else {
-                chosen = ['ex-benchpress', 'ex-plank', 'ex-db-row'];
+                chosen = ['ex-bw-pushup', 'ex-plank', 'ex-bw-jumpingjacks'];
             }
 
             currentDayWorkouts = EXERCISES_DATABASE.filter(ex => chosen.includes(ex.id));
@@ -1284,6 +2890,7 @@
 
             document.getElementById('player-ex-name').textContent = ex.name;
             document.getElementById('player-ex-muscle').textContent = `Target: ${ex.muscle}`;
+            document.getElementById('player-ex-posture').textContent = ex.postureDescription || "";
             document.getElementById('player-target-sets').textContent = `${ex.sets} Sets`;
             document.getElementById('player-target-reps').textContent = `${ex.reps} Reps`;
             document.getElementById('player-completed-sets').textContent = currentSetCount;
@@ -1318,64 +2925,119 @@
         // Single live modal vector representations
         let tempoInterval = null;
         function getLiveAnimationSvg(name) {
-            const n = name.toLowerCase();
-            if (n.includes('bench press') || n.includes('shoulder press')) {
+            const ex = EXERCISES_DATABASE.find(e => e.id === name || e.name.toLowerCase() === name.toLowerCase());
+            const animType = ex ? ex.animationType : '';
+            
+            if (animType === 'pushup') {
                 return `
-                    <svg class="w-32 h-32 text-primary" viewBox="0 0 100 100">
-                        <line x1="20" y1="75" x2="80" y2="75" stroke="rgba(255,255,255,0.15)" stroke-width="4"/>
-                        <line x1="30" y1="75" x2="30" y2="90" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-                        <line x1="70" y1="75" x2="70" y2="90" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
-                        <g class="animate-benchpress">
-                            <line x1="15" y1="42" x2="85" y2="42" stroke="#fff" stroke-width="3.5"/>
-                            <circle cx="15" cy="42" r="6" fill="#fff"/>
-                            <circle cx="85" cy="42" r="6" fill="#fff"/>
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                        <g class="animate-pushup" style="transform-origin: 25px 78px;">
+                            <line x1="25" y1="78" x2="75" y2="65" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <circle cx="80" cy="62" r="5.5" fill="#10b981" />
+                            <line x1="72" y1="66" x2="72" y2="80" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
                         </g>
                     </svg>
                 `;
-            } else if (n.includes('squat')) {
+            } else if (animType === 'squat') {
                 return `
-                    <svg class="w-32 h-32 text-primary" viewBox="0 0 100 100">
-                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
-                        <g class="animate-squat">
-                            <circle cx="50" cy="32" r="7" fill="currentColor"/>
-                            <line x1="50" y1="39" x2="50" y2="58" stroke="currentColor" stroke-width="4.5"/>
-                            <line x1="50" y1="58" x2="42" y2="72" stroke="currentColor" stroke-width="4"/>
-                            <line x1="42" y1="72" x2="52" y2="88" stroke="currentColor" stroke-width="4"/>
-                            <line x1="25" y1="39" x2="75" y2="39" stroke="#fff" stroke-width="3"/>
-                            <circle cx="25" cy="39" r="5" fill="#fff"/>
-                            <circle cx="75" cy="39" r="5" fill="#fff"/>
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
+                        <g class="animate-squat" style="transform-origin: 50px 90px;">
+                            <circle cx="50" cy="30" r="6" fill="#10b981"/>
+                            <line x1="50" y1="36" x2="50" y2="58" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <line x1="50" y1="58" x2="42" y2="72" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line x1="42" y1="72" x2="50" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line x1="25" y1="38" x2="75" y2="38" stroke="#fff" stroke-width="3" />
+                            <circle cx="25" cy="38" r="5" fill="#fff"/>
+                            <circle cx="75" cy="38" r="5" fill="#fff"/>
                         </g>
                     </svg>
                 `;
-            } else if (n.includes('deadlift') || n.includes('row')) {
+            } else if (animType === 'deadlift') {
                 return `
-                    <svg class="w-32 h-32 text-primary" viewBox="0 0 100 100">
-                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
-                        <g class="animate-deadlift">
-                            <line x1="20" y1="85" x2="80" y2="85" stroke="#fff" stroke-width="3.5"/>
-                            <circle cx="20" cy="85" r="7" fill="#fff"/>
-                            <circle cx="80" cy="85" r="7" fill="#fff"/>
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                        <g class="animate-deadlift-hinge" style="transform-origin: 40px 75px;">
+                            <line x1="40" y1="75" x2="45" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line x1="40" y1="75" x2="40" y2="40" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <circle cx="40" cy="33" r="5.5" fill="#10b981" />
+                            <line x1="40" y1="45" x2="48" y2="65" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                            <line x1="28" y1="65" x2="68" y2="65" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+                            <circle cx="28" cy="65" r="5" fill="#fff" />
+                            <circle cx="68" cy="65" r="5" fill="#fff" />
                         </g>
                     </svg>
                 `;
-            } else if (n.includes('swing')) {
+            } else if (animType === 'curl') {
                 return `
-                    <svg class="w-32 h-32 text-primary" viewBox="0 0 100 100">
-                        <circle cx="50" cy="20" r="3" fill="rgba(255,255,255,0.1)"/>
-                        <g class="animate-swing" style="transform-origin: 50% 20%;">
-                            <line x1="50" y1="20" x2="50" y2="68" stroke="currentColor" stroke-width="3"/>
-                            <circle cx="50" cy="68" r="8" fill="currentColor"/>
-                            <circle cx="50" cy="68" r="4" fill="#050505"/>
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <circle cx="50" cy="25" r="5.5" fill="#10b981" />
+                        <line x1="50" y1="30" x2="50" y2="60" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                        <line x1="50" y1="60" x2="45" y2="85" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
+                        <line x1="50" y1="60" x2="55" y2="85" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
+                        <g class="animate-curl" style="transform-origin: 50px 35px;">
+                            <line x1="50" y1="35" x2="58" y2="52" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                            <circle cx="58" cy="52" r="4" fill="#fff" />
+                        </g>
+                    </svg>
+                `;
+            } else if (animType === 'plank') {
+                return `
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                        <g class="animate-plank">
+                            <line x1="20" y1="78" x2="80" y2="70" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <circle cx="83" cy="65" r="5.5" fill="#10b981" />
+                            <line x1="75" y1="71" x2="78" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+                            <line x1="78" y1="80" x2="85" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+                            <line x1="20" y1="78" x2="18" y2="80" stroke="#fff" stroke-width="2.5" />
+                            <circle cx="50" cy="74" r="7" fill="rgba(16,185,129,0.4)" class="animate-pulse" />
+                        </g>
+                    </svg>
+                `;
+            } else if (animType === 'lunge') {
+                return `
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
+                        <g class="animate-lunge" style="transform-origin: 50px 90px;">
+                            <circle cx="50" cy="30" r="6" fill="#10b981"/>
+                            <line x1="50" y1="36" x2="50" y2="58" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <line x1="50" y1="58" x2="62" y2="72" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line x1="62" y1="72" x2="62" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line x1="50" y1="58" x2="35" y2="72" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                            <line x1="35" y1="72" x2="28" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
+                        </g>
+                    </svg>
+                `;
+            } else if (animType === 'yoga') {
+                return `
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
+                        <g class="animate-yoga">
+                            <path d="M 20 78 Q 35 78 50 72 T 70 50" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <circle cx="73" cy="43" r="5.5" fill="#10b981" />
+                            <line x1="55" y1="65" x2="55" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+                            <line x1="60" y1="65" x2="60" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
+                            <circle cx="55" cy="58" r="8" fill="rgba(16,185,129,0.25)" class="animate-pulse" />
                         </g>
                     </svg>
                 `;
             } else {
                 return `
-                    <svg class="w-32 h-32 text-primary" viewBox="0 0 100 100">
-                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="3"/>
-                        <g class="animate-plank" style="transform-origin: 20% 70%;">
-                            <line x1="20" y1="60" x2="80" y2="70" stroke="#fff" stroke-width="4.5"/>
-                            <circle cx="83" cy="66" r="6" fill="currentColor"/>
+                    <svg class="w-36 h-36" viewBox="0 0 100 100">
+                        <line x1="15" y1="80" x2="85" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="3" />
+                        <g class="animate-cardio-jump" style="transform-origin: 50px 80px;">
+                            <circle cx="50" cy="25" r="5.5" fill="#10b981" />
+                            <line x1="50" y1="30" x2="50" y2="55" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
+                            <g class="animate-cardio-arms" style="transform-origin: 50px 35px;">
+                                <line x1="50" y1="35" x2="30" y2="22" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                                <line x1="50" y1="35" x2="70" y2="22" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
+                            </g>
+                            <g class="animate-cardio-legs" style="transform-origin: 50px 55px;">
+                                <line x1="50" y1="55" x2="35" y2="78" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
+                                <line x1="50" y1="55" x2="65" y2="78" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
+                            </g>
                         </g>
                     </svg>
                 `;
@@ -1468,9 +3130,20 @@
             if (tempoInterval) clearInterval(tempoInterval);
             if (restInterval) clearInterval(restInterval);
 
-            // Compute total calories based on aggregated exercises
+            // Compute total calories and sets based on aggregated exercises
             let totalCals = 0;
-            currentDayWorkouts.forEach(ex => totalCals += ex.calories);
+            let totalSets = 0;
+            currentDayWorkouts.forEach(ex => {
+                totalCals += ex.calories;
+                totalSets += ex.sets;
+            });
+
+            // Populate Completion Modal elements
+            document.getElementById('complete-duration').textContent = `${Math.floor(sessionSeconds / 60)} mins`;
+            document.getElementById('complete-calories').textContent = `${totalCals} kcal`;
+            document.getElementById('complete-type').textContent = preferredLocation === 'home' ? 'Home Workout' : 'Standard Gym';
+            document.getElementById('complete-sets').textContent = `${totalSets} Sets`;
+            document.getElementById('complete-exercises-list').innerHTML = currentDayWorkouts.map(ex => `<div class="py-0.5">• ${ex.name}</div>`).join('');
 
             // Send POST request
             try {
@@ -1489,17 +3162,23 @@
                 });
 
                 if (response.ok) {
-                    alert(`Workout session logged successfully!\n\nDuration: ${Math.floor(sessionSeconds / 60)} mins\nCalories: ${totalCals} Kcal`);
-                    closeLivePlayer();
-                    fetchStatsAndLogs();
+                    // Show custom completion modal overlay!
+                    document.getElementById('completion-modal').classList.remove('hidden');
                 } else {
-                    alert("Error saving workout to database.");
+                    alert("Error saving workout to database. Displaying stats locally.");
+                    document.getElementById('completion-modal').classList.remove('hidden');
                 }
             } catch (err) {
                 console.error("Save log error:", err);
-                alert("Connection error. Workout logged locally only.");
-                closeLivePlayer();
+                alert("Connection error. Displaying stats locally.");
+                document.getElementById('completion-modal').classList.remove('hidden');
             }
+        }
+
+        function closeCompletionModal() {
+            document.getElementById('completion-modal').classList.add('hidden');
+            closeLivePlayer();
+            fetchStatsAndLogs();
         }
 
         function closeLivePlayer() {
@@ -1601,6 +3280,94 @@
 
         .animate-plank {
             animation: plank 3s infinite ease-in-out;
+        }
+
+        /* Stick figure dummy animation keyframes */
+        @keyframes pushup {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-18deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .animate-pushup {
+            animation: pushup 3s infinite ease-in-out;
+        }
+
+        @keyframes deadliftHinge {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(40deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .animate-deadlift-hinge {
+            animation: deadliftHinge 4.5s infinite ease-in-out;
+        }
+
+        @keyframes curl {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-65deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .animate-curl {
+            animation: curl 2.5s infinite ease-in-out;
+        }
+
+        @keyframes cardioJump {
+            0% { transform: translateY(12px) scaleY(0.95); }
+            50% { transform: translateY(-8px) scaleY(1.05); }
+            100% { transform: translateY(12px) scaleY(0.95); }
+        }
+        .animate-cardio-jump {
+            animation: cardioJump 0.9s infinite ease-in-out;
+        }
+
+        @keyframes cardioArms {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(35deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .animate-cardio-arms {
+            animation: cardioArms 0.9s infinite ease-in-out;
+        }
+
+        @keyframes cardioLegs {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-25deg); }
+            100% { transform: rotate(0deg); }
+        }
+        @keyframes lunge {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(18px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-lunge {
+            animation: lunge 3s infinite ease-in-out;
+        }
+
+        @keyframes yogaBreathe {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+        .animate-yoga {
+            animation: yogaBreathe 4s infinite ease-in-out;
+        }
+
+        /* Ensure select and input text/background colors are white on dark backgrounds */
+        select, input[type="text"] {
+            background-color: #121214 !important;
+            color: #ffffff !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.4) !important;
+        }
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        select option {
+            background-color: #121214 !important;
+            color: #ffffff !important;
         }
     </style>
 </body>

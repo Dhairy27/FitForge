@@ -2,6 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
+function cleanAndParseJson(rawText) {
+  if (typeof rawText !== 'string') return rawText;
+  let str = rawText.trim();
+  str = str.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const matchObj = str.match(/\{[\s\S]*\}/);
+  if (matchObj && matchObj[0]) {
+    try {
+      return JSON.parse(matchObj[0]);
+    } catch (e) {}
+  }
+  const matchArr = str.match(/\[[\s\S]*\]/);
+  if (matchArr && matchArr[0]) {
+    try {
+      return JSON.parse(matchArr[0]);
+    } catch (e) {}
+  }
+  return JSON.parse(str);
+}
+
 let useMockDb = false;
 
 const mockDb = {
@@ -157,6 +176,15 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/fitfor
 // Middleware
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Express JSON parsing error handler
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Invalid JSON body in request:', err.message);
+    return res.status(400).json({ error: 'Malformed JSON in request body.' });
+  }
+  next();
+});
 
 // Database Connection
 const dns = require('dns');
@@ -2235,6 +2263,93 @@ function getCalorieDetails(name, weightGrams) {
   };
 }
 
+function resolveNutritionForMeal(items) {
+  let calculatedItems = [];
+  let totalCalories = 0;
+  let totalProtein = 0;
+  let totalCarbs = 0;
+  let totalFat = 0;
+  let totalFiber = 0;
+  let totalSugar = 0;
+  let totalSodium = 0;
+  let totalCholesterol = 0;
+  let totalPotassium = 0;
+
+  for (let item of items) {
+    const name = item.name || "Unknown item";
+    const norm = (item.normalizedName || name).toLowerCase().trim();
+    const grams = Number(item.estimatedGrams || 100);
+
+    // Initial base values per 100g from the AI
+    let basePer100 = {
+      calories: Number(item.caloriesPer100g !== undefined ? item.caloriesPer100g : (item.calories / (grams/100) || 150)),
+      protein: Number(item.proteinPer100g !== undefined ? item.proteinPer100g : (item.protein / (grams/100) || 5)),
+      carbs: Number(item.carbsPer100g !== undefined ? item.carbsPer100g : (item.carbs / (grams/100) || 20)),
+      fat: Number(item.fatPer100g !== undefined ? item.fatPer100g : (item.fat / (grams/100) || 5)),
+      fiber: Number(item.fiberPer100g !== undefined ? item.fiberPer100g : (item.fiber / (grams/100) || 1)),
+      sugar: Number(item.sugarPer100g !== undefined ? item.sugarPer100g : (item.sugar / (grams/100) || 1)),
+      sodium: Number(item.sodiumPer100g !== undefined ? item.sodiumPer100g : (item.sodium / (grams/100) || 100)),
+      cholesterol: Number(item.cholesterolPer100g !== undefined ? item.cholesterolPer100g : (item.cholesterol / (grams/100) || 0)),
+      potassium: Number(item.potassiumPer100g !== undefined ? item.potassiumPer100g : (item.potassium / (grams/100) || 100))
+    };
+
+    // Override with local database if match exists
+    let matchKey = Object.keys(FOOD_DATABASE).find(k => norm.includes(k) || k.includes(norm));
+    if (matchKey) {
+      const dbBase = FOOD_DATABASE[matchKey];
+      basePer100.calories = dbBase.calories;
+      basePer100.protein = dbBase.protein;
+      basePer100.carbs = dbBase.carbs;
+      basePer100.fat = dbBase.fat;
+      if (dbBase.fiber !== undefined) basePer100.fiber = dbBase.fiber;
+      if (dbBase.sugar !== undefined) basePer100.sugar = dbBase.sugar;
+      if (dbBase.sodium !== undefined) basePer100.sodium = dbBase.sodium;
+      if (dbBase.cholesterol !== undefined) basePer100.cholesterol = dbBase.cholesterol;
+      if (dbBase.potassium !== undefined) basePer100.potassium = dbBase.potassium;
+    }
+
+    const factor = grams / 100;
+    const calcItem = {
+      name: matchKey ? FOOD_DATABASE[matchKey].name : name,
+      portion: item.portion || `${grams}g`,
+      calories: Math.round(basePer100.calories * factor),
+      protein: Math.round(basePer100.protein * factor),
+      carbs: Math.round(basePer100.carbs * factor),
+      fat: Math.round(basePer100.fat * factor),
+      fiber: Math.round(basePer100.fiber * factor),
+      sugar: Math.round(basePer100.sugar * factor),
+      sodium: Math.round(basePer100.sodium * factor),
+      cholesterol: Math.round(basePer100.cholesterol * factor),
+      potassium: Math.round(basePer100.potassium * factor)
+    };
+
+    calculatedItems.push(calcItem);
+
+    totalCalories += calcItem.calories;
+    totalProtein += calcItem.protein;
+    totalCarbs += calcItem.carbs;
+    totalFat += calcItem.fat;
+    totalFiber += calcItem.fiber;
+    totalSugar += calcItem.sugar;
+    totalSodium += calcItem.sodium;
+    totalCholesterol += calcItem.cholesterol;
+    totalPotassium += calcItem.potassium;
+  }
+
+  return {
+    items: calculatedItems,
+    totalCalories,
+    protein: totalProtein,
+    carbs: totalCarbs,
+    fat: totalFat,
+    fiber: totalFiber,
+    sugar: totalSugar,
+    sodium: totalSodium,
+    cholesterol: totalCholesterol,
+    potassium: totalPotassium
+  };
+}
+
 // Mock Vision Analysis helper function
 function getMockVisionAnalysis(fileName) {
   const name = (fileName || '').toLowerCase().trim();
@@ -2841,18 +2956,69 @@ app.post('/api/scan-food', async (req, res) => {
           throw new Error("No response text from Gemini API.");
         }
 
-        const data = JSON.parse(responseText);
+        const data = cleanAndParseJson(responseText);
+        if (data.items && data.items.length > 0) {
+          const resolved = resolveNutritionForMeal(data.items);
+          data.items = resolved.items;
+          data.totalCalories = resolved.totalCalories;
+          data.protein = resolved.protein;
+          data.carbs = resolved.carbs;
+          data.fat = resolved.fat;
+          data.fiber = resolved.fiber;
+          data.sugar = resolved.sugar;
+          data.sodium = resolved.sodium;
+          data.cholesterol = resolved.cholesterol;
+          data.potassium = resolved.potassium;
+        }
         return res.status(200).json(data);
       } catch (geminiError) {
         console.error("Gemini AI failed, using fallback mock analyzer:", geminiError);
         const mockData = getMockVisionAnalysis(name);
         mockData.simulated = true;
         mockData.warning = "Gemini API key call failed. Showing simulated analysis.";
+        if (mockData.items && mockData.items.length > 0) {
+          mockData.items.forEach(item => {
+            if (!item.estimatedGrams) {
+              const matchGrams = (item.portion || '').match(/(\d+)g/);
+              item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 100;
+            }
+          });
+          const resolved = resolveNutritionForMeal(mockData.items);
+          mockData.items = resolved.items;
+          mockData.totalCalories = resolved.totalCalories;
+          mockData.protein = resolved.protein;
+          mockData.carbs = resolved.carbs;
+          mockData.fat = resolved.fat;
+          mockData.fiber = resolved.fiber;
+          mockData.sugar = resolved.sugar;
+          mockData.sodium = resolved.sodium;
+          mockData.cholesterol = resolved.cholesterol;
+          mockData.potassium = resolved.potassium;
+        }
         return res.status(200).json(mockData);
       }
     } else {
       const mockData = getMockVisionAnalysis(name);
       mockData.simulated = true;
+      if (mockData.items && mockData.items.length > 0) {
+        mockData.items.forEach(item => {
+          if (!item.estimatedGrams) {
+            const matchGrams = (item.portion || '').match(/(\d+)g/);
+            item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 100;
+          }
+        });
+        const resolved = resolveNutritionForMeal(mockData.items);
+        mockData.items = resolved.items;
+        mockData.totalCalories = resolved.totalCalories;
+        mockData.protein = resolved.protein;
+        mockData.carbs = resolved.carbs;
+        mockData.fat = resolved.fat;
+        mockData.fiber = resolved.fiber;
+        mockData.sugar = resolved.sugar;
+        mockData.sodium = resolved.sodium;
+        mockData.cholesterol = resolved.cholesterol;
+        mockData.potassium = resolved.potassium;
+      }
       return res.status(200).json(mockData);
     }
   } catch (error) {
@@ -2932,7 +3098,20 @@ app.post('/api/analyze-text-food', async (req, res) => {
           const resultJson = await response.json();
           const responseText = resultJson.candidates?.[0]?.content?.parts?.[0]?.text;
           if (responseText) {
-            const data = JSON.parse(responseText);
+            const data = cleanAndParseJson(responseText);
+            if (data.items && data.items.length > 0) {
+              const resolved = resolveNutritionForMeal(data.items);
+              data.items = resolved.items;
+              data.totalCalories = resolved.totalCalories;
+              data.protein = resolved.protein;
+              data.carbs = resolved.carbs;
+              data.fat = resolved.fat;
+              data.fiber = resolved.fiber;
+              data.sugar = resolved.sugar;
+              data.sodium = resolved.sodium;
+              data.cholesterol = resolved.cholesterol;
+              data.potassium = resolved.potassium;
+            }
             return res.status(200).json(data);
           }
         }
@@ -2998,25 +3177,50 @@ app.post('/api/analyze-text-food', async (req, res) => {
       }
     }
 
-    let totalCalories = 0;
-    let protein = 0;
-    let carbs = 0;
-    let fat = 0;
     items.forEach(item => {
-      totalCalories += item.calories;
-      protein += item.protein;
-      carbs += item.carbs;
-      fat += item.fat;
+      if (!item.estimatedGrams) {
+        const matchGrams = (item.portion || '').match(/(\d+)g/);
+        item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 150;
+      }
     });
+
+    const resolved = resolveNutritionForMeal(items);
 
     const payload = {
       foodName: dominantMealName,
       confidence: 100,
-      totalCalories,
-      protein,
-      carbs,
-      fat,
-      items,
+      totalCalories: resolved.totalCalories,
+      protein: resolved.protein,
+      carbs: resolved.carbs,
+      fat: resolved.fat,
+      fiber: resolved.fiber,
+      sugar: resolved.sugar,
+      sodium: resolved.sodium,
+      cholesterol: resolved.cholesterol,
+      potassium: resolved.potassium,
+      items: resolved.items,
+      healthAnalysis: {
+        isHealthy: resolved.totalCalories < 600 && resolved.fat < 20,
+        suitableWeightLoss: resolved.totalCalories < 500,
+        suitableMuscleGain: resolved.protein > 20,
+        suitableDiabetic: resolved.sugar < 10,
+        suitableHeartHealth: resolved.cholesterol < 20 && resolved.sodium < 400,
+        highProtein: resolved.protein > 25,
+        highFat: resolved.fat > 20,
+        highSugar: resolved.sugar > 15,
+        highSodium: resolved.sodium > 500,
+        isBalanced: resolved.protein > 10 && resolved.carbs > 20,
+        healthScore: Math.max(20, Math.min(100, 100 - (resolved.fat * 1.5) - (resolved.sugar * 2) + (resolved.protein * 0.5))),
+        explanation: `Computed analysis based on portion weights: ${dominantMealName}.`
+      },
+      recommendations: {
+        bestTimeToEat: "Lunch or Post-workout",
+        alternatives: ["Switch to complex carbs", "Increase protein toppings"],
+        portionAdvice: `Keep serving weight around ${items.reduce((sum, i)=>sum+(i.estimatedGrams||150),0)}g`,
+        waterRecommendation: "Drink 250ml water",
+        workoutRecommendation: `Burn ${resolved.totalCalories} kcal through active movement`,
+        foodsToPairWith: ["Leafy salad greens", "Water with lemon slice"]
+      },
       simulated: true
     };
     return res.status(200).json(payload);
@@ -3189,7 +3393,7 @@ app.post('/api/ai/generate-plan', async (req, res) => {
           const resData = await response.json();
           const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (txt) {
-            const parsed = JSON.parse(txt);
+            const parsed = cleanAndParseJson(txt);
             return res.status(200).json(parsed);
           }
         }
@@ -3467,7 +3671,7 @@ app.post('/api/ai/verify-meal-photo', async (req, res) => {
           const resData = await response.json();
           const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (txt) {
-            const parsed = JSON.parse(txt);
+            const parsed = cleanAndParseJson(txt);
             detectedMealName = parsed.foodName || detectedMealName;
             detectedCalories = parsed.totalCalories || detectedCalories;
             detectedProtein = parsed.protein || detectedProtein;
