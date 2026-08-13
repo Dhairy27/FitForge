@@ -26,7 +26,8 @@ let useMockDb = false;
 const mockDb = {
   users: [],
   workouts: [],
-  nutritionlogs: []
+  nutritionlogs: [],
+  bodyscans: []
 };
 
 function makeChainable(arr) {
@@ -315,6 +316,25 @@ const nutritionLogSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const NutritionLog = mongoose.model('NutritionLog', nutritionLogSchema);
+
+const bodyScanSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  height: { type: Number },
+  weight: { type: Number },
+  bmi: { type: Number },
+  fitnessScore: { type: Number },
+  posture: { type: String },
+  shoulderAlignment: { type: String },
+  bodySymmetry: { type: Number },
+  goal: { type: String },
+  measurements: { type: Object },
+  recommendations: { type: Object },
+  frontScanImage: { type: String },
+  sideScanImage: { type: String },
+  date: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const BodyScan = mongoose.model('BodyScan', bodyScanSchema);
 
 async function findUserOrMock(email) {
   if (!email) return null;
@@ -3848,6 +3868,76 @@ app.delete('/api/user/account', async (req, res) => {
   } catch (error) {
     console.error("Delete user account error:", error);
     res.status(500).json({ error: "Failed to delete user account." });
+  }
+});
+
+// 5. Body Scan Routes
+app.post('/api/bodyscan', async (req, res) => {
+  try {
+    const { email, height, weight, bmi, fitnessScore, posture, shoulderAlignment, bodySymmetry, goal, measurements, recommendations, frontScanImage, sideScanImage } = req.body;
+    const userEmail = (email || 'guest@fitforge.ai').toLowerCase().trim();
+
+    const scanRecord = new BodyScan({
+      email: userEmail,
+      height: Number(height) || 175,
+      weight: Number(weight) || 70,
+      bmi: Number(bmi) || 22.9,
+      fitnessScore: Number(fitnessScore) || 78,
+      posture: posture || 'Good',
+      shoulderAlignment: shoulderAlignment || 'Aligned',
+      bodySymmetry: Number(bodySymmetry) || 86,
+      goal: goal || 'Muscle Gain',
+      measurements: measurements || {},
+      recommendations: recommendations || {},
+      frontScanImage: frontScanImage || null,
+      sideScanImage: sideScanImage || null,
+      date: new Date()
+    });
+
+    try {
+      await scanRecord.save();
+    } catch (err) {
+      useMockDb = true;
+      await scanRecord.save();
+    }
+
+    res.status(201).json({ success: true, scan: scanRecord });
+  } catch (error) {
+    console.error('Body scan save error:', error);
+    res.status(500).json({ error: error.message || 'Failed to save body scan' });
+  }
+});
+
+app.get('/api/bodyscan', async (req, res) => {
+  try {
+    const email = (req.query.email || 'guest@fitforge.ai').toLowerCase().trim();
+    let scans;
+    try {
+      scans = await BodyScan.find({ email }).sort({ date: -1 });
+    } catch (err) {
+      useMockDb = true;
+      scans = await BodyScan.find({ email }).sort({ date: -1 });
+    }
+    res.json({ success: true, scans: scans || [] });
+  } catch (error) {
+    console.error('Get body scans error:', error);
+    res.status(500).json({ error: error.message || 'Failed to retrieve body scans' });
+  }
+});
+
+app.delete('/api/bodyscan', async (req, res) => {
+  try {
+    const email = (req.query.email || req.body.email || 'guest@fitforge.ai').toLowerCase().trim();
+    try {
+      await BodyScan.deleteMany({ email });
+    } catch (err) {
+      useMockDb = true;
+      await BodyScan.deleteMany({ email });
+    }
+    res.json({ success: true, message: 'All body scan data deleted successfully.' });
+  } catch (error) {
+    console.error('Delete body scans error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete body scans' });
   }
 });
 

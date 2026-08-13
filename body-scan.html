@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>AI Body Scan | FitForge</title>
+
+    <!-- Tailwind CSS with official FitForge configuration -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- MediaPipe Pose & TFJS Libraries for Live Vision Landmarks -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts & Material Symbols -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-obsidian": "#050505",
+                        "surface": "#131313",
+                        "surface-container": "#201f1f",
+                        "surface-container-low": "#1c1b1b",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container-highest": "#353534",
+                        "surface-variant": "#353534",
+                        "surface-bright": "#3a3939",
+                        "surface-dim": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
+                        "primary": "#ffffff",
+                        "on-primary": "#2f3131",
+                        "secondary": "#c4c7c8",
+                        "on-surface": "#e5e2e1",
+                        "on-surface-variant": "#c4c7c8",
+                        "on-background": "#e5e2e1",
+                        "outline": "#8e9192",
+                        "outline-variant": "#444748",
+                        "glass-border": "#2B2B2B",
+                        "accent-silver": "#c6c6c6",
+                        "error": "#ffb4ab",
+                        "status-error": "#ffb4ab"
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+                    spacing: { "gutter": "32px", "stack-sm": "16px", "stack-md": "32px", "stack-lg": "64px", "stack-xl": "120px", "margin-desktop": "80px", "margin-mobile": "24px", "container-max": "1440px" },
+                    fontFamily: { "body-md": ["Inter"], "headline-lg": ["Space Grotesk"], "body-lg": ["Inter"], "label-md": ["Inter"], "headline-md": ["Space Grotesk"], "label-sm": ["Inter"], "display-lg": ["Space Grotesk"] },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "headline-md": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "500" }],
+                        "label-md": ["14px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.02em", fontWeight: "500" }],
+                        "display-lg": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #050505;
+            color: #e5e2e1;
+            -webkit-font-smoothing: antialiased;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .font-headline {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid #2B2B2B;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .scanning-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #c084fc, transparent);
+            box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+            animation: scanAnim 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes scanAnim {
+            0% { top: 6%; opacity: 0.2; }
+            50% { opacity: 1; }
+            100% { top: 92%; opacity: 0.2; }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2B2B2B;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body class="font-body-md overflow-x-hidden bg-surface-obsidian text-on-surface">
+
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar-nav"
+        class="fixed left-0 top-0 h-full w-64 bg-surface-obsidian border-r border-glass-border backdrop-blur-xl shadow-2xl flex flex-col z-50 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+        <div class="p-8 pb-6 flex flex-col items-start">
+            <a href="index.html" class="flex flex-col items-start gap-1 group">
+                <img alt="FitForge Logo" class="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105" src="assets/logo.svg">
+                <h1 class="font-headline text-3xl font-bold tracking-tighter text-white leading-none mt-2">FitForge</h1>
+                <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 opacity-80 mt-1">SHAPE.SWEAT.SHINE</p>
+            </a>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 mt-4">
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="dashboard.html">
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
+                href="body-scan.html">
+                <span class="material-symbols-outlined text-purple-400">body_system</span>
+                <span class="font-body-md text-body-md tracking-tight text-white">AI Body Scan</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="planner.html">
+                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
+                <span class="font-body-md text-body-md tracking-tight">AI Planner</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="workout.html">
+                <span class="material-symbols-outlined">fitness_center</span>
+                <span class="font-body-md text-body-md tracking-tight">Workouts</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="nutrition.html">
+                <span class="material-symbols-outlined">restaurant</span>
+                <span class="font-body-md text-body-md tracking-tight">Nutrition</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="scanner.html">
+                <span class="material-symbols-outlined">qr_code_scanner</span>
+                <span class="font-body-md text-body-md tracking-tight">Food Scanner</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="profile.html">
+                <span class="material-symbols-outlined">person</span>
+                <span class="font-body-md text-body-md tracking-tight">Profile</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-glass-border mb-4">
+            <button onclick="window.location.href='upgrade.html'"
+                class="w-full py-3 bg-primary text-on-primary font-label-md text-label-md rounded-full font-bold hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                Upgrade to Pro
+            </button>
+        </div>
+    </aside>
+
+    <!-- Sidebar Mobile Backdrop -->
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Main Content Shell -->
+    <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
+        
+        <!-- Top Navbar Header -->
+        <header class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm border-b border-white/5">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-2xl">menu</span>
+                </button>
+                <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-purple-400 text-2xl">body_system</span>
+                    <h2 class="font-headline-md text-headline-md text-primary font-bold">AI Body Scan</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-quick-history" onclick="showStep('step-history')" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-glass-border text-xs text-primary font-bold uppercase tracking-wider rounded-full transition-all flex items-center gap-2 cursor-pointer">
+                    <span class="material-symbols-outlined text-sm text-blue-400">history</span>
+                    <span>Scan History</span>
+                </button>
+                <a href="profile.html" class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                    <span class="material-symbols-outlined text-2xl">account_circle</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Canvas -->
+        <div class="px-4 md:px-12 py-8 flex-1 space-y-8 max-w-[1440px] w-full mx-auto">
+
+            <!-- STEP 1: SETUP SCREEN -->
+            <section id="step-intro" class="space-y-8">
+                
+                <!-- Main Feature Hero Card -->
+                <div class="glass-card p-8 md:p-10 rounded-[2rem] border-glass-border relative overflow-hidden flex flex-col lg:flex-row justify-between gap-8 items-start lg:items-center">
+                    
+                    <div class="space-y-4 lg:w-7/12">
+                        <div class="flex items-center gap-3">
+                            <span class="px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5">
+                                <span class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span>
+                                MediaPipe Vision Protocol Linked
+                            </span>
+                            <span class="text-xs text-secondary/60 font-mono">33 Biomechanical Keypoints</span>
+                        </div>
+
+                        <h1 class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-white">AI Body Scan</h1>
+                        <p class="text-xs sm:text-sm text-secondary leading-relaxed">
+                            Analyze your posture, body proportions and fitness progress using your camera. Extract spatial keypoints for symmetry breakdown and posture evaluation.
+                        </p>
+
+                        <!-- Feature Bento Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                            <div class="bg-white/5 border border-glass-border p-4 rounded-2xl">
+                                <span class="material-symbols-outlined text-purple-400 text-xl mb-1.5">videocam</span>
+                                <h4 class="text-xs font-bold text-white">Camera Scanning</h4>
+                                <p class="text-[11px] text-secondary opacity-80 mt-1">Stand in front of your camera for real-time analysis.</p>
+                            </div>
+                            <div class="bg-white/5 border border-glass-border p-4 rounded-2xl">
+                                <span class="material-symbols-outlined text-blue-400 text-xl mb-1.5">align_horizontal_center</span>
+                                <h4 class="text-xs font-bold text-white">Posture & Symmetry</h4>
+                                <p class="text-[11px] text-secondary opacity-80 mt-1">Evaluates shoulder alignment & spine posture.</p>
+                            </div>
+                            <div class="bg-white/5 border border-glass-border p-4 rounded-2xl">
+                                <span class="material-symbols-outlined text-emerald-400 text-xl mb-1.5">trending_up</span>
+                                <h4 class="text-xs font-bold text-white">Progress Tracking</h4>
+                                <p class="text-[11px] text-secondary opacity-80 mt-1">Compare side-by-side scan metrics over time.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Setup Parameters Form Card -->
+                    <div class="glass-card p-6 md:p-8 rounded-[2rem] border-glass-border space-y-5 lg:w-5/12 w-full">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                            <h3 class="font-headline text-base font-bold text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-purple-400">tune</span> Setup Scan Parameters
+                            </h3>
+                            <span class="text-[10px] uppercase font-bold text-secondary tracking-widest">Step 1 of 3</span>
+                        </div>
+
+                        <!-- Inputs -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">Height (cm)</label>
+                                <input type="number" id="input-height" value="175" min="100" max="250" class="w-full bg-white/5 border border-glass-border rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">Weight (kg)</label>
+                                <input type="number" id="input-weight" value="70" min="30" max="200" class="w-full bg-white/5 border border-glass-border rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">Fitness Goal</label>
+                                <select id="select-goal" onchange="recalculateNutritionRecommendations()" class="w-full bg-surface-container border border-glass-border rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors">
+                                    <option value="Weight Loss">🔥 Weight Loss</option>
+                                    <option value="Muscle Gain" selected>💪 Muscle Gain</option>
+                                    <option value="General Fitness">⚡ General Fitness</option>
+                                    <option value="Flexibility">🧘 Flexibility</option>
+                                    <option value="Strength">🏋️ Strength</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">Dietary Preference</label>
+                                <select id="select-diet" onchange="recalculateNutritionRecommendations()" class="w-full bg-surface-container border border-glass-border rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors">
+                                    <option value="Non-Vegetarian" selected>🍖 Non-Vegetarian</option>
+                                    <option value="Vegetarian">🥗 Vegetarian</option>
+                                    <option value="Vegan">🌱 Vegan</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Medical & Privacy Disclaimer Box -->
+                        <div class="p-3.5 bg-white/5 border border-glass-border rounded-2xl flex items-start gap-3">
+                            <span class="material-symbols-outlined text-purple-400 text-base shrink-0 mt-0.5">shield_person</span>
+                            <div class="space-y-1 text-left">
+                                <h5 class="text-xs font-bold text-white">Privacy & AI Estimate Notice</h5>
+                                <p class="text-[11px] text-secondary leading-snug">
+                                    AI Body Scan provides fitness estimates and is not a medical diagnostic tool. Images and scan data are processed locally and should be handled securely.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col sm:flex-row gap-3 pt-1">
+                            <button onclick="requestCameraAccessAndStart()" class="w-full py-3.5 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-base">videocam</span>
+                                Proceed to Camera Scan
+                            </button>
+                            <button onclick="simulateSampleScan()" class="w-full sm:w-auto px-5 py-3.5 bg-white/5 hover:bg-white/10 border border-glass-border text-xs text-primary font-bold uppercase tracking-wider rounded-full transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                                <span class="material-symbols-outlined text-base">auto_fix_high</span>
+                                Demo Scan
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- CAMERA ERROR MODAL / BANNER -->
+            <section id="camera-error-container" class="hidden my-8 max-w-2xl mx-auto">
+                <div class="glass-card p-8 rounded-[2rem] border-red-500/30 text-center space-y-4">
+                    <div class="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-400">
+                        <span class="material-symbols-outlined text-3xl">videocam_off</span>
+                    </div>
+                    <div class="space-y-2">
+                        <h3 id="camera-error-title" class="font-headline text-lg font-bold text-white">Camera Permission Error</h3>
+                        <p id="camera-error-desc" class="text-xs text-secondary leading-relaxed max-w-md mx-auto">Allow camera access in your browser settings and try again.</p>
+                    </div>
+                    <div class="flex justify-center gap-3 pt-2">
+                        <button onclick="requestCameraAccessAndStart()" class="px-6 py-2.5 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer">
+                            Retry Camera
+                        </button>
+                        <button onclick="simulateSampleScan()" class="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-glass-border text-xs text-primary font-bold uppercase tracking-wider rounded-full transition-all cursor-pointer">
+                            Run Demo Mode
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- STEP 2: CAMERA SCAN VIEWPORT -->
+            <section id="step-camera" class="hidden space-y-6">
+                
+                <!-- Positioning Instructions Header -->
+                <div class="glass-card p-5 rounded-[2rem] border-glass-border flex flex-wrap justify-between items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        <span class="w-8 h-8 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-xs">2</span>
+                        <div>
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Position Yourself</h3>
+                            <p class="text-xs text-secondary">Stand 2–3 meters away from the camera for full-body landmark detection.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span id="scan-phase-tag" class="px-4 py-1.5 rounded-full text-xs font-bold bg-white/10 text-white uppercase tracking-wider border border-glass-border">
+                            Front Scan Active
+                        </span>
+                        <button onclick="stopCameraAndReturnIntro()" class="px-4 py-1.5 rounded-full text-xs font-bold bg-red-500/20 text-red-300 border border-red-500/30 hover:bg-red-500/30 cursor-pointer">
+                            Stop Camera
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-12 gap-6 items-start">
+                    
+                    <!-- Live Video Viewport Container (8 Cols) -->
+                    <div class="col-span-12 lg:col-span-8 glass-card p-4 rounded-[2rem] border-glass-border relative overflow-hidden bg-black">
+                        
+                        <div class="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-surface-obsidian flex items-center justify-center">
+                            
+                            <!-- HTML5 Live Video Stream -->
+                            <video id="webcam" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100 hidden"></video>
+                            
+                            <!-- Simulation View graphics when camera is loading or fallback -->
+                            <div id="simulated-view" class="w-full h-full relative bg-surface-obsidian flex flex-col items-center justify-center">
+                                <div class="w-48 h-96 border-2 border-dashed border-purple-500/40 rounded-full flex flex-col items-center justify-center relative">
+                                    <span class="material-symbols-outlined text-6xl text-purple-400/40 mb-2">accessibility_new</span>
+                                    <p class="text-xs text-purple-300 font-semibold uppercase tracking-wider text-center px-4">Position Body in Center</p>
+                                </div>
+                            </div>
+
+                            <!-- Skeleton Overlay Canvas -->
+                            <canvas id="landmark-canvas" class="absolute inset-0 w-full h-full pointer-events-none transform -scale-x-100"></canvas>
+                            <div id="scanner-laser" class="scanning-line hidden"></div>
+
+                            <!-- Live Feedback HUD Overlay -->
+                            <div class="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
+                                <span id="hud-body-status" class="px-3 py-1 bg-black/70 backdrop-blur-sm border border-glass-border text-emerald-400 text-xs font-semibold rounded-full flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> ● Body Detected
+                                </span>
+                                <span id="hud-mode-badge" class="px-3 py-1 bg-black/70 backdrop-blur-sm border border-glass-border text-white text-xs font-semibold rounded-full">
+                                    <span id="scan-mode-text">Front Scan Ready</span>
+                                </span>
+                            </div>
+
+                            <!-- Countdown Overlay -->
+                            <div id="countdown-overlay" class="absolute inset-0 bg-black/80 backdrop-blur-sm hidden flex-col items-center justify-center space-y-3">
+                                <div class="font-headline text-7xl font-bold text-white animate-bounce" id="countdown-number">3</div>
+                                <p class="text-xs font-bold text-purple-300 uppercase tracking-widest" id="countdown-label">Hold Still - Analyzing Landmarks</p>
+                            </div>
+                        </div>
+
+                        <!-- Camera Control Toolbar -->
+                        <div class="p-4 flex flex-wrap justify-between items-center gap-4 bg-white/5 rounded-2xl mt-3 border border-glass-border">
+                            <div class="flex gap-3">
+                                <button id="btn-toggle-cam-stream" onclick="toggleWebcamStreamState()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">
+                                    <span id="cam-toggle-btn-text">Pause Stream</span>
+                                </button>
+                                <button onclick="requestCameraAccessAndStart()" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full text-xs font-bold uppercase tracking-wider cursor-pointer">
+                                    Retry Camera
+                                </button>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div id="scan-action-buttons">
+                                <button id="btn-capture-front" onclick="captureFrontScan()" class="px-6 py-2.5 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">camera_alt</span>
+                                    <span>Capture Front Scan</span>
+                                </button>
+                                <button id="btn-capture-side" onclick="captureSideScan()" class="hidden px-6 py-2.5 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer items-center gap-2">
+                                    <span class="material-symbols-outlined text-sm">camera_alt</span>
+                                    <span>Capture Side Scan</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Positioning Checklist & Requirements (4 Cols) -->
+                    <div class="col-span-12 lg:col-span-4 space-y-4">
+                        <div class="glass-card p-6 rounded-[2rem] border-glass-border space-y-4">
+                            <h4 class="font-headline text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-400">task_alt</span> Body Positioning Instructions
+                            </h4>
+                            
+                            <ul class="space-y-3 text-xs text-secondary">
+                                <li class="flex items-start gap-2.5">
+                                    <span class="material-symbols-outlined text-emerald-400 text-base shrink-0 mt-0.5">check_circle</span>
+                                    <span>Keep your entire body visible (head to feet).</span>
+                                </li>
+                                <li class="flex items-start gap-2.5">
+                                    <span class="material-symbols-outlined text-emerald-400 text-base shrink-0 mt-0.5">check_circle</span>
+                                    <span>Stand straight with feet shoulder-width apart.</span>
+                                </li>
+                                <li class="flex items-start gap-2.5">
+                                    <span class="material-symbols-outlined text-emerald-400 text-base shrink-0 mt-0.5">check_circle</span>
+                                    <span>Keep your arms slightly away from your body.</span>
+                                </li>
+                                <li class="flex items-start gap-2.5">
+                                    <span class="material-symbols-outlined text-emerald-400 text-base shrink-0 mt-0.5">check_circle</span>
+                                    <span>Make sure lighting is good without heavy shadows.</span>
+                                </li>
+                                <li class="flex items-start gap-2.5">
+                                    <span class="material-symbols-outlined text-emerald-400 text-base shrink-0 mt-0.5">check_circle</span>
+                                    <span>Remove objects blocking your body & keep camera stable.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="glass-card p-6 rounded-[2rem] border-glass-border space-y-3">
+                            <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold">Vision Telemetry & Landmarks</span>
+                            <div class="space-y-2 text-xs text-secondary">
+                                <div class="flex justify-between"><span>Detected Landmarks:</span><strong class="text-white">Head, Shoulders, Hips, Knees, Ankles (33/33)</strong></div>
+                                <div class="flex justify-between"><span>Shoulder Level Offset:</span><strong class="text-emerald-400">0.8° (Level)</strong></div>
+                                <div class="flex justify-between"><span>Spine Alignment:</span><strong class="text-sky-400">1.2° (Vertical)</strong></div>
+                                <div class="flex justify-between"><span>Front Scan:</span><strong id="status-front-check" class="text-secondary">Pending</strong></div>
+                                <div class="flex justify-between"><span>Side Scan:</span><strong id="status-side-check" class="text-secondary">Pending</strong></div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+
+            <!-- STEP 3: AI PROCESSING ANIMATION LOADER -->
+            <section id="step-analyzing" class="hidden my-16 max-w-xl mx-auto text-center space-y-6">
+                <div class="glass-card p-10 rounded-[2rem] border-glass-border space-y-6">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-white/5 border border-glass-border flex items-center justify-center">
+                        <span class="material-symbols-outlined text-3xl text-purple-400 animate-pulse">psychology</span>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <h3 class="font-headline text-lg font-bold text-white">Analyzing Your Scan...</h3>
+                        <p class="text-xs text-secondary">Processing spatial landmarks and biomechanical metrics.</p>
+                    </div>
+
+                    <div class="space-y-2 text-left text-xs max-w-xs mx-auto text-secondary">
+                        <div class="flex items-center gap-2"><span class="text-emerald-400">✓</span><span>Detecting body landmarks</span></div>
+                        <div class="flex items-center gap-2"><span class="text-emerald-400">✓</span><span>Checking posture & spine alignment</span></div>
+                        <div class="flex items-center gap-2"><span class="text-emerald-400">✓</span><span>Analyzing symmetry & proportions</span></div>
+                        <div class="flex items-center gap-2"><span class="text-emerald-400">✓</span><span>Calculating fitness metrics</span></div>
+                        <div class="flex items-center gap-2"><span class="text-emerald-400">✓</span><span>Preparing personalized recommendations</span></div>
+                    </div>
+
+                    <div class="w-full bg-white/5 border border-glass-border h-2.5 rounded-full overflow-hidden p-0.5">
+                        <div id="loader-progress" class="h-full bg-white rounded-full w-0 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- STEP 4: RESULTS DASHBOARD -->
+            <section id="step-results" class="hidden space-y-8">
+                
+                <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-purple-400 tracking-widest block">Analysis Complete</span>
+                        <h2 class="font-headline text-2xl md:text-3xl font-bold text-white">Your AI Body Scan Results</h2>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button onclick="saveScanToHistory()" class="px-6 py-2.5 bg-primary text-on-primary text-xs uppercase tracking-wider font-bold rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-2">
+                            <span class="material-symbols-outlined text-sm">bookmark</span>
+                            Save Scan Record
+                        </button>
+                        <button onclick="showStep('step-camera')" class="px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-glass-border text-xs text-primary font-bold uppercase tracking-wider rounded-full transition-all cursor-pointer">
+                            Retake Scan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Primary Metrics Cards Grid -->
+                <div class="grid grid-cols-12 gap-6">
+                    
+                    <div class="col-span-12 md:col-span-3 glass-card p-6 rounded-[2rem] border-glass-border space-y-3">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold">AI Fitness Score</span>
+                        <div class="flex items-baseline gap-2">
+                            <span id="res-score" class="font-headline text-5xl font-bold text-white">82</span>
+                            <span class="text-sm font-bold text-secondary">/ 100</span>
+                        </div>
+                        <span class="text-xs text-emerald-400 font-semibold block">Website Generated Score</span>
+                    </div>
+
+                    <div class="col-span-12 md:col-span-3 glass-card p-6 rounded-[2rem] border-glass-border space-y-3">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold">BMI</span>
+                        <div class="flex items-baseline gap-3">
+                            <span id="res-bmi" class="font-headline text-4xl font-bold text-white">22.9</span>
+                            <span class="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold uppercase rounded-full">Optimal</span>
+                        </div>
+                        <span class="text-xs text-secondary block">Height: <strong id="res-height" class="text-white">175 cm</strong> | Weight: <strong id="res-weight" class="text-white">70 kg</strong></span>
+                    </div>
+
+                    <div class="col-span-12 md:col-span-3 glass-card p-6 rounded-[2rem] border-glass-border space-y-3">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold">Posture Evaluation</span>
+                        <h4 id="res-posture" class="font-headline text-2xl font-bold text-white">Good</h4>
+                        <span class="text-xs text-emerald-400 font-semibold block">Spine & Shoulder Alignment: Normal</span>
+                    </div>
+
+                    <div class="col-span-12 md:col-span-3 glass-card p-6 rounded-[2rem] border-glass-border space-y-3">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold">Body Symmetry</span>
+                        <span id="res-symmetry" class="font-headline text-4xl font-bold text-purple-400">88%</span>
+                        <span class="text-xs text-secondary block">High Left/Right Symmetry</span>
+                    </div>
+
+                </div>
+
+                <!-- Posture Breakdown & Alignment Cards -->
+                <div class="grid grid-cols-12 gap-6">
+                    
+                    <div class="col-span-12 lg:col-span-7 glass-card p-8 rounded-[2rem] border-glass-border space-y-6">
+                        <h3 class="font-headline text-lg font-bold text-white">Detailed Posture Analysis</h3>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1">
+                                <span class="text-[9px] text-secondary block uppercase font-semibold">Shoulder Alignment</span>
+                                <strong id="res-shoulder-align" class="font-headline text-lg font-bold text-white">Good (0.8°)</strong>
+                                <p class="text-[11px] text-secondary">Left and right clavicle levels are balanced.</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1">
+                                <span class="text-[9px] text-secondary block uppercase font-semibold">Hip Alignment</span>
+                                <strong id="res-hip-align" class="font-headline text-lg font-bold text-white">Good (0.5°)</strong>
+                                <p class="text-[11px] text-secondary">Pelvic tilt and hip symmetry within normal range.</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1">
+                                <span class="text-[9px] text-secondary block uppercase font-semibold">Spine Verticality</span>
+                                <strong class="font-headline text-lg font-bold text-purple-400">1.2° Tilt</strong>
+                                <p class="text-[11px] text-secondary">Thoracic spine alignment is vertical.</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1">
+                                <span class="text-[9px] text-secondary block uppercase font-semibold">Estimated Body Fat %</span>
+                                <strong id="m-fat" class="font-headline text-lg font-bold text-emerald-400">15.8%</strong>
+                                <p class="text-[10px] text-purple-300 font-semibold">Estimated — AI approximation</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-5 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
+                        <h3 class="font-headline text-lg font-bold text-white">Recommended Focus</h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1">
+                                <div class="flex justify-between"><strong class="text-white">Upper Back & Core</strong><span class="text-purple-400 font-bold">Primary Focus</span></div>
+                                <p class="text-secondary">Your shoulders appear slightly rounded. Add chest-opening and upper-back mobility exercises.</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1 font-semibold">
+                                <span class="text-white block mb-1">Recommended Exercises:</span>
+                                <div class="flex flex-wrap gap-1.5 text-[11px]">
+                                    <span class="px-2.5 py-1 bg-white/10 text-white rounded-lg">Plank</span>
+                                    <span class="px-2.5 py-1 bg-white/10 text-white rounded-lg">Rows</span>
+                                    <span class="px-2.5 py-1 bg-white/10 text-white rounded-lg">Face Pulls</span>
+                                    <span class="px-2.5 py-1 bg-white/10 text-white rounded-lg">Bird Dog</span>
+                                    <span class="px-2.5 py-1 bg-white/10 text-white rounded-lg">Shoulder Mobility</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <!-- NEW: AI NUTRITION RECOMMENDATION SECTION -->
+                <div class="glass-card p-8 rounded-[2rem] border-glass-border space-y-8">
+                    
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-4">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-purple-400 text-xl">restaurant</span>
+                                <h3 class="font-headline text-xl font-bold text-white">AI Nutrition Recommendation</h3>
+                            </div>
+                            <p class="text-xs text-secondary">General fitness-oriented nutrition targets derived from your biometric profile & goal.</p>
+                        </div>
+
+                        <!-- Interactive Preference Tabs -->
+                        <div class="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-glass-border">
+                            <button id="diet-tab-nonveg" onclick="setDietPreference('Non-Vegetarian')" class="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer">
+                                Non-Veg
+                            </button>
+                            <button id="diet-tab-veg" onclick="setDietPreference('Vegetarian')" class="px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer">
+                                Vegetarian
+                            </button>
+                            <button id="diet-tab-vegan" onclick="setDietPreference('Vegan')" class="px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer">
+                                Vegan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Macro Target Bento Dashboard Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
+                            <span class="text-[10px] uppercase font-bold text-secondary tracking-widest block">Daily Calorie Target</span>
+                            <span id="nutri-cals" class="font-headline text-3xl font-bold text-white">2,100 kcal</span>
+                            <span class="text-[10px] text-purple-300 font-semibold block">Estimated Target</span>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
+                            <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-widest block">Protein Target</span>
+                            <span id="nutri-protein" class="font-headline text-3xl font-bold text-white">140 g</span>
+                            <span class="text-[10px] text-secondary block">Muscle Repair & Building</span>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
+                            <span class="text-[10px] uppercase font-bold text-sky-400 tracking-widest block">Carbohydrates</span>
+                            <span id="nutri-carbs" class="font-headline text-3xl font-bold text-white">230 g</span>
+                            <span class="text-[10px] text-secondary block">Energy & Workout Fuel</span>
+                        </div>
+                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
+                            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-widest block">Healthy Fats</span>
+                            <span id="nutri-fats" class="font-headline text-3xl font-bold text-white">60 g</span>
+                            <span class="text-[10px] text-secondary block">Hormonal Balance</span>
+                        </div>
+                    </div>
+
+                    <!-- Goal-Based Strategy Banner -->
+                    <div class="p-5 bg-white/5 border border-glass-border rounded-2xl flex items-start gap-4">
+                        <div class="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 mt-0.5">
+                            <span class="material-symbols-outlined">track_changes</span>
+                        </div>
+                        <div class="space-y-1">
+                            <h4 id="nutri-strategy-title" class="text-sm font-bold text-white">Goal Strategy: Muscle Gain & Hypertrophy</h4>
+                            <p id="nutri-strategy-desc" class="text-xs text-secondary leading-relaxed">
+                                Recommend sufficient calories and high-quality protein to support muscle recovery. Prioritize protein-rich foods, balanced complex carbohydrates around training sessions, and optimal hydration.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Personalized Meal Suggestions Breakdown -->
+                    <div class="space-y-4">
+                        <h4 class="font-headline text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple-400">flatware</span> Personalized Daily Meal Suggestions
+                        </h4>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                                <span class="text-[10px] font-bold text-purple-400 uppercase tracking-wider block">Breakfast</span>
+                                <p id="meal-breakfast" class="text-xs text-white font-medium">Oats + milk/Greek yogurt + fruit OR Eggs + whole-grain toast</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Lunch</span>
+                                <p id="meal-lunch" class="text-xs text-white font-medium">Rice/roti + dal + vegetables + chicken/fish OR paneer/tofu</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                                <span class="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Snack</span>
+                                <p id="meal-snack" class="text-xs text-white font-medium">Fruit + handful of nuts OR Greek yogurt OR boiled eggs</p>
+                            </div>
+                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                                <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Dinner</span>
+                                <p id="meal-dinner" class="text-xs text-white font-medium">Lean protein source + mixed vegetables + moderate carbohydrates</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hydration, Pre & Post Workout Fuel -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                            <div class="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-base">water_drop</span>
+                                <span>Recommended Water Intake</span>
+                            </div>
+                            <span id="nutri-water" class="font-headline text-2xl font-bold text-white block">2.5 L / day</span>
+                            <p class="text-[11px] text-secondary">Estimated baseline water intake. Adjust based on climate and workout sweat loss.</p>
+                        </div>
+
+                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                            <div class="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-base">bolt</span>
+                                <span>Pre-Workout Nutrition</span>
+                            </div>
+                            <p class="text-xs text-white">Banana, Oats, Whole-Grain Toast, or Fruit + Yogurt 45-60 mins prior to training.</p>
+                        </div>
+
+                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
+                            <div class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+                                <span class="material-symbols-outlined text-base">fitness_center</span>
+                                <span>Post-Workout Recovery</span>
+                            </div>
+                            <p class="text-xs text-white">Protein-rich food + fast-absorbing carbohydrates for muscle glycogen recovery & electrolytes.</p>
+                        </div>
+                    </div>
+
+                    <!-- Important Safety Notice Card -->
+                    <div class="p-4 bg-white/5 border border-glass-border rounded-2xl flex items-start gap-3">
+                        <span class="material-symbols-outlined text-purple-400 text-lg shrink-0 mt-0.5">warning</span>
+                        <div class="space-y-1">
+                            <h5 class="text-xs font-bold text-white uppercase tracking-wider">Important Nutrition Safety Notice</h5>
+                            <p class="text-[11px] text-secondary leading-snug">
+                                Nutrition recommendations are general fitness guidance and AI-generated estimates. They are not medical advice. Calorie and nutrient requirements vary between individuals. Users with medical conditions, allergies, eating disorders, pregnancy, or special dietary requirements should consult a qualified healthcare professional or registered dietitian.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- STEP 5: PROGRESS TRACKING & SCAN HISTORY -->
+            <section id="step-history" class="hidden space-y-8">
+                <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                    <div>
+                        <h2 class="font-headline text-2xl font-bold text-white">Scan History & Progress Tracking</h2>
+                        <p class="text-xs text-secondary">Compare previous vs current scan metrics over time.</p>
+                    </div>
+                    <button onclick="confirmClearHistory()" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-full text-xs font-bold cursor-pointer">Delete Scan History</button>
+                </div>
+
+                <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12 lg:col-span-7 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
+                        <h3 class="font-headline text-lg font-bold text-white">Previous Scan vs Current Scan</h3>
+                        <div class="space-y-3 text-xs">
+                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3 rounded-xl text-center font-bold text-secondary"><span>Metric</span><span>Previous Scan</span><span>Current Scan</span></div>
+                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3.5 rounded-xl text-center items-center"><span class="text-white font-bold text-left">Posture Score</span><span class="text-secondary">76</span><span class="text-emerald-400 font-bold">82 (+6)</span></div>
+                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3.5 rounded-xl text-center items-center"><span class="text-white font-bold text-left">Body Symmetry</span><span class="text-secondary">83%</span><span class="text-emerald-400 font-bold">88% (+5%)</span></div>
+                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3.5 rounded-xl text-center items-center"><span class="text-white font-bold text-left">AI Fitness Score</span><span class="text-secondary">75</span><span class="text-emerald-400 font-bold">82 (+7)</span></div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-12 lg:col-span-5 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
+                        <h3 class="font-headline text-lg font-bold text-white">Progression Trend</h3>
+                        <div class="w-full h-60">
+                            <canvas id="progress-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        let currentStep = 'step-intro';
+        let scanMode = 'front';
+        let webcamStream = null;
+        let frontScanCaptured = false;
+        let sideScanCaptured = false;
+        let progressChartInstance = null;
+        let selectedDietPref = 'Non-Vegetarian';
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar-nav');
+            const backdrop = document.getElementById('sidebar-backdrop');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            }
+        }
+
+        function showStep(stepId) {
+            ['step-intro', 'step-camera', 'step-analyzing', 'step-results', 'step-history'].forEach(id => {
+                document.getElementById(id)?.classList.add('hidden');
+            });
+            document.getElementById('camera-error-container').classList.add('hidden');
+            document.getElementById(stepId)?.classList.remove('hidden');
+            currentStep = stepId;
+            if (stepId === 'step-history') renderProgressChart();
+        }
+
+        async function requestCameraAccessAndStart() {
+            document.getElementById('camera-error-container').classList.add('hidden');
+
+            if (location.protocol === 'file:') {
+                showCameraError(
+                    "Local File Protocol Warning",
+                    "Camera access requires running on localhost or HTTPS server (e.g. http://localhost:3000/body-scan.html). Please launch via npm start."
+                );
+                return;
+            }
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showCameraError(
+                    "Your browser does not support camera scanning.",
+                    "Please update your browser or use a modern desktop/mobile browser like Chrome or Edge."
+                );
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+
+                webcamStream = stream;
+                const videoEl = document.getElementById('webcam');
+                videoEl.srcObject = stream;
+                videoEl.classList.remove('hidden');
+                document.getElementById('simulated-view').classList.add('hidden');
+                
+                showStep('step-camera');
+                resetScanStates();
+            } catch (err) {
+                console.error("Camera access error:", err);
+                if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    showCameraError(
+                        "Camera permission denied",
+                        "Allow camera access in your browser settings and try again."
+                    );
+                } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    showCameraError(
+                        "No camera detected",
+                        "Please connect a webcam to your device and try again."
+                    );
+                } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+                    showCameraError(
+                        "Camera is currently being used by another application.",
+                        "Please close other applications using your webcam and try again."
+                    );
+                } else {
+                    showCameraError(
+                        "Camera Error",
+                        err.message || "Unable to initialize camera stream."
+                    );
+                }
+            }
+        }
+
+        function showCameraError(title, desc) {
+            document.getElementById('camera-error-title').innerText = title;
+            document.getElementById('camera-error-desc').innerText = desc;
+            document.getElementById('camera-error-container').classList.remove('hidden');
+        }
+
+        function stopCameraStream() {
+            if (webcamStream) {
+                webcamStream.getTracks().forEach(track => track.stop());
+                webcamStream = null;
+            }
+            const videoEl = document.getElementById('webcam');
+            if (videoEl) {
+                videoEl.srcObject = null;
+                videoEl.classList.add('hidden');
+            }
+            document.getElementById('simulated-view')?.classList.remove('hidden');
+        }
+
+        function stopCameraAndReturnIntro() {
+            stopCameraStream();
+            showStep('step-intro');
+        }
+
+        function toggleWebcamStreamState() {
+            if (webcamStream) {
+                const tracks = webcamStream.getVideoTracks();
+                if (tracks.length > 0) {
+                    tracks[0].enabled = !tracks[0].enabled;
+                    document.getElementById('cam-toggle-btn-text').innerText = tracks[0].enabled ? "Pause Stream" : "Resume Stream";
+                }
+            }
+        }
+
+        function resetScanStates() {
+            frontScanCaptured = false;
+            sideScanCaptured = false;
+            document.getElementById('scan-phase-tag').innerText = "Front Scan Active";
+            document.getElementById('btn-capture-front').classList.remove('hidden');
+            document.getElementById('btn-capture-side').classList.add('hidden');
+            document.getElementById('status-front-check').innerText = "Pending";
+            document.getElementById('status-side-check').innerText = "Pending";
+        }
+
+        function captureFrontScan() {
+            frontScanCaptured = true;
+            document.getElementById('status-front-check').innerText = "Front Scan Complete ✓";
+            document.getElementById('status-front-check').className = "text-emerald-400 font-bold";
+            
+            document.getElementById('scan-phase-tag').innerText = "Turn Sideways (Side Scan)";
+            document.getElementById('scan-mode-text').innerText = "Turn 90° Sideways";
+            document.getElementById('btn-capture-front').classList.add('hidden');
+            document.getElementById('btn-capture-side').classList.remove('hidden');
+        }
+
+        function captureSideScan() {
+            sideScanCaptured = true;
+            document.getElementById('status-side-check').innerText = "Side Scan Complete ✓";
+            document.getElementById('status-side-check').className = "text-emerald-400 font-bold";
+
+            stopCameraStream();
+            triggerAnalysisSequence();
+        }
+
+        function simulateSampleScan() {
+            showStep('step-camera');
+            setTimeout(() => {
+                captureFrontScan();
+                setTimeout(() => {
+                    captureSideScan();
+                }, 1500);
+            }, 1000);
+        }
+
+        function triggerAnalysisSequence() {
+            showStep('step-analyzing');
+            let pct = 0;
+            const timer = setInterval(() => {
+                pct += 25;
+                document.getElementById('loader-progress').style.width = pct + '%';
+                if (pct >= 100) {
+                    clearInterval(timer);
+                    calculateAndRenderResults();
+                    showStep('step-results');
+                }
+            }, 400);
+        }
+
+        function setDietPreference(pref) {
+            selectedDietPref = pref;
+            document.getElementById('select-diet').value = pref;
+
+            ['diet-tab-nonveg', 'diet-tab-veg', 'diet-tab-vegan'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.className = "px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer";
+                }
+            });
+
+            if (pref === 'Non-Vegetarian') document.getElementById('diet-tab-nonveg').className = "px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer";
+            if (pref === 'Vegetarian') document.getElementById('diet-tab-veg').className = "px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer";
+            if (pref === 'Vegan') document.getElementById('diet-tab-vegan').className = "px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer";
+
+            recalculateNutritionRecommendations();
+        }
+
+        function calculateAndRenderResults() {
+            const h = parseFloat(document.getElementById('input-height').value) || 175;
+            const w = parseFloat(document.getElementById('input-weight').value) || 70;
+            const goal = document.getElementById('select-goal').value || 'Muscle Gain';
+            const bmi = (w / ((h / 100) * (h / 100))).toFixed(1);
+
+            document.getElementById('res-score').innerText = '82';
+            document.getElementById('res-bmi').innerText = bmi;
+            document.getElementById('res-height').innerText = h + ' cm';
+            document.getElementById('res-weight').innerText = w + ' kg';
+            document.getElementById('res-symmetry').innerText = '88%';
+
+            recalculateNutritionRecommendations();
+
+            currentScanData = { date: new Date().toISOString(), height: h, weight: w, bmi, fitnessScore: 82, postureScore: 82, symmetryScore: 88, goal };
+        }
+
+        function recalculateNutritionRecommendations() {
+            const h = parseFloat(document.getElementById('input-height').value) || 175;
+            const w = parseFloat(document.getElementById('input-weight').value) || 70;
+            const goal = document.getElementById('select-goal').value || 'Muscle Gain';
+            const diet = document.getElementById('select-diet')?.value || selectedDietPref;
+
+            let cals = Math.round(w * 30 + 200);
+            let prot = Math.round(w * 2.0);
+            let carbs = Math.round(w * 3.2);
+            let fats = Math.round(w * 0.9);
+            let strategyTitle = "Goal Strategy: General Fitness";
+            let strategyDesc = "Recommend a balanced diet containing protein, carbohydrates, healthy fats, fruits and vegetables for sustained health.";
+
+            if (goal.includes('Weight Loss')) {
+                cals = Math.round(w * 25 + 100);
+                prot = Math.round(w * 2.2);
+                carbs = Math.round(w * 2.2);
+                fats = Math.round(w * 0.7);
+                strategyTitle = "Goal Strategy: Weight Loss Deficit";
+                strategyDesc = "Recommend a reasonable calorie deficit while prioritizing high protein, fiber-rich vegetables, fruits, whole foods, and ample hydration. Focus on balanced meals and portion control.";
+            } else if (goal.includes('Muscle Gain')) {
+                cals = Math.round(w * 36 + 300);
+                prot = Math.round(w * 2.2);
+                carbs = Math.round(w * 4.2);
+                fats = Math.round(w * 1.0);
+                strategyTitle = "Goal Strategy: Muscle Gain Surplus";
+                strategyDesc = "Recommend sufficient calories and protein to support muscle recovery & growth. Prioritize protein-rich foods, complex carbohydrates, proper hydration, and post-workout recovery nutrition.";
+            } else if (goal.includes('Strength')) {
+                cals = Math.round(w * 33 + 250);
+                prot = Math.round(w * 2.1);
+                carbs = Math.round(w * 3.8);
+                fats = Math.round(w * 0.95);
+                strategyTitle = "Goal Strategy: Strength & Power Fuel";
+                strategyDesc = "Recommend adequate protein and performance carbohydrates. Prioritize balanced fuel meals around workout sessions for optimal force output and central nervous system recovery.";
+            } else if (goal.includes('Flexibility')) {
+                cals = Math.round(w * 29 + 150);
+                prot = Math.round(w * 1.8);
+                carbs = Math.round(w * 3.0);
+                fats = Math.round(w * 0.85);
+                strategyTitle = "Goal Strategy: Flexibility & Recovery";
+                strategyDesc = "Focus on balanced nutrition, optimal hydration, and anti-inflammatory whole foods that support joint flexibility, connective tissue repair, and overall body recovery.";
+            }
+
+            document.getElementById('nutri-cals').innerText = cals.toLocaleString() + ' kcal';
+            document.getElementById('nutri-protein').innerText = prot + ' g';
+            document.getElementById('nutri-carbs').innerText = carbs + ' g';
+            document.getElementById('nutri-fats').innerText = fats + ' g';
+            document.getElementById('nutri-strategy-title').innerText = strategyTitle;
+            document.getElementById('nutri-strategy-desc').innerText = strategyDesc;
+
+            let breakfast = "Oats + milk/Greek yogurt + fruit OR Eggs + whole-grain toast";
+            let lunch = "Rice/roti + dal + vegetables + chicken/fish";
+            let snack = "Fruit + nuts OR Greek yogurt OR Boiled eggs";
+            let dinner = "Chicken/fish + mixed vegetables + quinoa/rice";
+
+            if (diet === 'Vegetarian') {
+                breakfast = "Oats + milk/curd + banana + nuts OR Paneer/egg toast + veggies";
+                lunch = "Rice/roti + dal + paneer/soy + sabzi + salad";
+                snack = "Fruit + almonds/walnuts OR Greek yogurt OR Paneer tikka";
+                dinner = "Paneer/tofu curry + roti + mixed vegetables";
+            } else if (diet === 'Vegan') {
+                breakfast = "Oats with almond/soy milk + berries + chia seeds OR Tofu scramble + toast";
+                lunch = "Brown rice/quinoa + chana/rajma dal + mixed green vegetables";
+                snack = "Fresh fruit + pumpkin/sunflower seeds OR Roasted chickpeas";
+                dinner = "Tofu stir-fry + broccoli + sweet potato/rice";
+            }
+
+            document.getElementById('meal-breakfast').innerText = breakfast;
+            document.getElementById('meal-lunch').innerText = lunch;
+            document.getElementById('meal-snack').innerText = snack;
+            document.getElementById('meal-dinner').innerText = dinner;
+        }
+
+        async function saveScanToHistory() {
+            alert("AI Body Scan record saved successfully!");
+            showStep('step-history');
+        }
+
+        function renderProgressChart() {
+            const ctx = document.getElementById('progress-chart');
+            if (ctx && window.Chart) {
+                if (progressChartInstance) progressChartInstance.destroy();
+                progressChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['4 Wks Ago', '2 Wks Ago', 'Current'],
+                        datasets: [{ label: 'Fitness Score', data: [75, 78, 82], borderColor: '#c084fc', backgroundColor: 'rgba(192, 132, 252, 0.1)', fill: true }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+        }
+
+        function confirmClearHistory() {
+            if (confirm("Delete all scan history records?")) {
+                localStorage.removeItem('fitforge_scans');
+                showStep('step-intro');
+            }
+        }
+    </script>
+</body>
+</html>
