@@ -125,12 +125,17 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="body-scan.html">
+                <span class="material-symbols-outlined">body_system</span>
+                <span class="font-body-md text-body-md tracking-tight">AI Body Scan</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="planner.html">
-                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
+                <span class="material-symbols-outlined">auto_awesome</span>
                 <span class="font-body-md text-body-md tracking-tight">AI Planner</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
@@ -147,11 +152,6 @@
                 href="scanner.html">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <span class="font-body-md text-body-md tracking-tight">Scanner</span>
-            </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
-                href="progress.html">
-                <span class="material-symbols-outlined">query_stats</span>
-                <span class="font-body-md text-body-md tracking-tight">Progress</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="profile.html">
@@ -187,9 +187,6 @@
             </div>
             <div class="flex items-center gap-stack-md">
                 <div class="flex items-center gap-4">
-                    <button class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
                     <a href="profile.html"
                         class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
                         <span class="material-symbols-outlined">account_circle</span>
@@ -219,33 +216,7 @@
 
             <!-- Diet Settings & Calculator Panel -->
             <section id="diet-settings-section" class="grid grid-cols-12 gap-6 mb-8">
-                <div class="col-span-12 lg:col-span-5 glass-card rounded-2xl p-6 flex flex-col gap-4">
-                    <div>
-                        <h3 class="font-bold text-lg mb-2 text-primary">Biometric Energy Calibration</h3>
-                        <p class="text-xs text-secondary/60 leading-relaxed mb-4">Daily estimated energy expenditure and
-                            caloric targets calculated dynamically from your personal onboarding telemetry.</p>
-                    </div>
-                    <div class="space-y-3 bg-black/20 p-4 rounded-xl border border-glass-border">
-                        <div class="flex justify-between text-xs">
-                            <span class="text-secondary/40">Basal Metabolic Rate (BMR):</span>
-                            <span class="text-primary font-bold" id="calced-bmr">Calculating...</span>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-secondary/40">Total Energy Needs (TDEE):</span>
-                            <span class="text-primary font-bold" id="calced-tdee">Calculating...</span>
-                        </div>
-                        <div class="flex justify-between text-xs border-t border-glass-border/40 pt-2">
-                            <span class="text-secondary/40">Recommended Caloric Intake:</span>
-                            <span class="text-carbs font-bold" id="calced-recommend">Calculating...</span>
-                        </div>
-                        <div class="flex justify-between text-xs">
-                            <span class="text-secondary/40">Recommended Hydration Target:</span>
-                            <span class="text-carbs font-bold" id="calced-water-goal">Calculating...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6">
+                <div class="col-span-12 glass-card rounded-2xl p-6">
                     <h3 class="font-bold text-lg mb-4 text-primary">Nutritional Specifications</h3>
                     <div class="grid grid-cols-2 gap-4 mb-4">
                         <div>
@@ -383,77 +354,28 @@
             <section id="diet-data-dashboard" class="bento-grid mb-8 hidden">
                 <!-- Calorie & Water Bento block -->
                 <div
-                    class="col-span-12 md:col-span-6 lg:col-span-3 glass-card rounded-2xl p-6 flex flex-col justify-between">
+                    class="col-span-12 md:col-span-6 lg:col-span-6 glass-card rounded-2xl p-6 flex flex-col justify-center items-center text-center">
                     <div>
                         <p class="text-[10px] font-bold text-secondary/40 uppercase tracking-[0.2em] mb-2">Eq. Calorie
                             Balancing</p>
                         <h3 class="text-4xl font-bold mb-1 tracking-tighter text-primary" id="dashboard-calories-val">
                             2,000</h3>
-                        <p class="text-[10px] text-secondary/60 mb-2 font-headline uppercase"
+                        <p class="hidden text-[10px] text-secondary/60 mb-2 font-headline uppercase"
                             id="dashboard-calories-ratio">Logged: 0 kcal</p>
                         <p class="text-[10px] text-secondary/40 leading-relaxed">Daily target energy load split across
                             meals.</p>
                     </div>
-                    <div class="pt-4 border-t border-glass-border/40">
-                        <button id="view-shopping-btn"
-                            class="w-full py-2 bg-white/5 border border-glass-border text-primary font-bold text-[10px] uppercase tracking-wider rounded-full hover:bg-white/10 transition-all active:scale-95">
-                            View Shopping List
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Macro Rings -->
-                <div
-                    class="col-span-12 md:col-span-6 lg:col-span-5 glass-card rounded-2xl p-6 flex items-center justify-around relative">
-                    <div class="relative flex flex-col items-center">
-                        <svg class="w-24 h-24 transform -rotate-90">
-                            <circle class="text-white/5" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <circle class="text-protein macro-ring" cx="48" cy="48" fill="transparent" r="40"
-                                stroke="currentColor" stroke-linecap="round" stroke-width="6" id="ring-protein"
-                                stroke-dasharray="251" stroke-dashoffset="251"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-2">
-                            <span class="text-sm font-bold text-primary" id="txt-protein-val">0g</span>
-                            <span class="text-[8px] font-bold text-secondary/40 uppercase">Protein</span>
-                        </div>
-                    </div>
-                    <div class="relative flex flex-col items-center">
-                        <svg class="w-24 h-24 transform -rotate-90">
-                            <circle class="text-white/5" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <circle class="text-carbs macro-ring" cx="48" cy="48" fill="transparent" r="40"
-                                stroke="currentColor" stroke-linecap="round" stroke-width="6" id="ring-carbs"
-                                stroke-dasharray="251" stroke-dashoffset="251"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-2">
-                            <span class="text-sm font-bold text-primary" id="txt-carbs-val">0g</span>
-                            <span class="text-[8px] font-bold text-secondary/40 uppercase">Carbs</span>
-                        </div>
-                    </div>
-                    <div class="relative flex flex-col items-center">
-                        <svg class="w-24 h-24 transform -rotate-90">
-                            <circle class="text-white/5" cx="48" cy="48" fill="transparent" r="40" stroke="currentColor"
-                                stroke-width="4"></circle>
-                            <circle class="text-fats macro-ring" cx="48" cy="48" fill="transparent" r="40"
-                                stroke="currentColor" stroke-linecap="round" stroke-width="6" id="ring-fats"
-                                stroke-dasharray="251" stroke-dashoffset="251"></circle>
-                        </svg>
-                        <div class="absolute inset-0 flex flex-col items-center justify-center pt-2">
-                            <span class="text-sm font-bold text-primary" id="txt-fats-val">0g</span>
-                            <span class="text-[8px] font-bold text-secondary/40 uppercase">Fats</span>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Hydration Tracker Cups -->
-                <div class="col-span-12 lg:col-span-4 glass-card rounded-2xl p-6 flex flex-col justify-between">
+                <div
+                    class="col-span-12 md:col-span-6 lg:col-span-6 glass-card rounded-2xl p-6 flex flex-col justify-between">
                     <div class="flex justify-between items-start">
                         <div>
                             <p class="text-[10px] font-bold text-secondary/40 uppercase tracking-[0.2em] mb-1">Hydration
                                 Tracker</p>
-                            <h4 class="text-2xl font-bold tracking-tighter text-primary"><span
-                                    id="water-logged-val">0.0</span> / <span id="water-target-val">3.0</span>L</h4>
+                            <h4 class="text-2xl font-bold tracking-tighter text-primary" id="water-header-text"><span
+                                    id="water-logged-val">0.0</span> / <span id="water-target-val">4.0</span>L</h4>
                         </div>
                         <span class="material-symbols-outlined text-carbs text-lg animate-pulse">water_drop</span>
                     </div>
@@ -463,6 +385,15 @@
                             </div>
                         </div>
                     </div>
+                    <div class="flex items-center gap-2 py-2">
+                        <input type="number" id="custom-water-input" placeholder="e.g. 200" min="10" max="2000"
+                            class="flex-1 bg-white/5 border border-glass-border rounded-xl px-3 py-1.5 text-xs text-white placeholder-secondary/40 focus:outline-none focus:border-carbs focus:ring-0">
+                        <span class="text-[10px] font-bold text-secondary/60">ml</span>
+                        <button onclick="logCustomWater()"
+                            class="bg-carbs text-surface-obsidian font-bold px-3 py-1.5 rounded-xl hover:scale-105 active:scale-95 transition-all text-xs cursor-pointer">
+                            Add
+                        </button>
+                    </div>
                     <div class="flex justify-between gap-2 pt-2">
                         <button onclick="logWater(0.25)"
                             class="flex-1 py-1.5 bg-white/5 border border-glass-border hover:bg-white/10 rounded-lg text-[10px] font-semibold text-primary transition-all active:scale-95 flex items-center justify-center gap-1">
@@ -471,10 +402,6 @@
                         <button onclick="logWater(0.5)"
                             class="flex-1 py-1.5 bg-white/5 border border-glass-border hover:bg-white/10 rounded-lg text-[10px] font-semibold text-primary transition-all active:scale-95 flex items-center justify-center gap-1">
                             <span class="material-symbols-outlined text-sm">water_bottle</span> +500ml
-                        </button>
-                        <button onclick="resetWater()"
-                            class="py-1.5 px-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-[10px] font-semibold text-error transition-all active:scale-95">
-                            Reset
                         </button>
                     </div>
                 </div>
@@ -486,21 +413,17 @@
                     <button onclick="switchTab('daily', this)"
                         class="diet-tab-btn py-3 px-6 text-sm text-primary font-bold border-b-2 border-primary active:scale-95 transition-all">Daily
                         Meal Plan</button>
-                    <button onclick="switchTab('weekly', this)"
-                        class="diet-tab-btn py-3 px-6 text-sm text-secondary opacity-60 font-semibold border-b-2 border-transparent active:scale-95 transition-all">Weekly
-                        Schedule</button>
+
                     <button onclick="switchTab('shopping', this)"
                         class="diet-tab-btn py-3 px-6 text-sm text-secondary opacity-60 font-semibold border-b-2 border-transparent active:scale-95 transition-all">Shopping
                         Checklist</button>
-                    <button onclick="switchTab('journal', this)"
-                        class="diet-tab-btn py-3 px-6 text-sm text-secondary opacity-60 font-semibold border-b-2 border-transparent active:scale-95 transition-all">Food
-                        Journal</button>
                 </div>
 
                 <!-- Tab Content: Daily meal layout -->
                 <div id="tab-daily" class="diet-tab-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Breakfast Card -->
-                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[300px]">
+                    <div id="card-breakfast"
+                        class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[350px]">
                         <div>
                             <div class="flex justify-between items-center mb-3">
                                 <span
@@ -515,16 +438,30 @@
                                 </ul>
                             </div>
                         </div>
-                        <div
-                            class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase">
-                            <span id="breakfast-p">P: 0g</span>
-                            <span id="breakfast-c">C: 0g</span>
-                            <span id="breakfast-f">F: 0g</span>
+                        <div>
+                            <div
+                                class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase mb-3">
+                                <span id="breakfast-p">P: 0g</span>
+                                <span id="breakfast-c">C: 0g</span>
+                                <span id="breakfast-f">F: 0g</span>
+                            </div>
+                            <div class="flex justify-start gap-2 flex-wrap">
+                                <button id="btn-done-breakfast" onclick="toggleMealDone('breakfast', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">radio_button_unchecked</span>
+                                    MARK AS DONE
+                                </button>
+                                <button id="btn-skip-breakfast" onclick="toggleMealSkipped('breakfast', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">block</span>
+                                    MARK AS SKIPPED
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Lunch Card -->
-                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[300px]">
+                    <div id="card-lunch" class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[350px]">
                         <div>
                             <div class="flex justify-between items-center mb-3">
                                 <span
@@ -539,40 +476,30 @@
                                 </ul>
                             </div>
                         </div>
-                        <div
-                            class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase">
-                            <span id="lunch-p">P: 0g</span>
-                            <span id="lunch-c">C: 0g</span>
-                            <span id="lunch-f">F: 0g</span>
-                        </div>
-                    </div>
-
-                    <!-- Dinner Card -->
-                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[300px]">
                         <div>
-                            <div class="flex justify-between items-center mb-3">
-                                <span
-                                    class="text-[9px] font-bold text-carbs bg-carbs/10 border border-carbs/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Dinner</span>
-                                <span class="text-xs text-secondary/40" id="dinner-calories">0 kcal</span>
+                            <div
+                                class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase mb-3">
+                                <span id="lunch-p">P: 0g</span>
+                                <span id="lunch-c">C: 0g</span>
+                                <span id="lunch-f">F: 0g</span>
                             </div>
-                            <h4 class="font-bold text-sm text-primary mb-3" id="dinner-name">Steak & Veggies</h4>
-                            <div class="text-[11px] text-secondary/60 mb-4">
-                                <p class="font-semibold text-secondary/80 mb-1">Ingredients:</p>
-                                <ul class="list-disc pl-4 space-y-1" id="dinner-ingredients">
-                                    <li>Ribeye steak</li>
-                                </ul>
+                            <div class="flex justify-start gap-2 flex-wrap">
+                                <button id="btn-done-lunch" onclick="toggleMealDone('lunch', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">radio_button_unchecked</span>
+                                    MARK AS DONE
+                                </button>
+                                <button id="btn-skip-lunch" onclick="toggleMealSkipped('lunch', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">block</span>
+                                    MARK AS SKIPPED
+                                </button>
                             </div>
-                        </div>
-                        <div
-                            class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase">
-                            <span id="dinner-p">P: 0g</span>
-                            <span id="dinner-c">C: 0g</span>
-                            <span id="dinner-f">F: 0g</span>
                         </div>
                     </div>
 
                     <!-- Snack Card -->
-                    <div class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[300px]">
+                    <div id="card-snack" class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[350px]">
                         <div>
                             <div class="flex justify-between items-center mb-3">
                                 <span
@@ -587,107 +514,80 @@
                                 </ul>
                             </div>
                         </div>
-                        <div
-                            class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase">
-                            <span id="snack-p">P: 0g</span>
-                            <span id="snack-c">C: 0g</span>
-                            <span id="snack-f">F: 0g</span>
+                        <div>
+                            <div
+                                class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase mb-3">
+                                <span id="snack-p">P: 0g</span>
+                                <span id="snack-c">C: 0g</span>
+                                <span id="snack-f">F: 0g</span>
+                            </div>
+                            <div class="flex justify-start gap-2 flex-wrap">
+                                <button id="btn-done-snack" onclick="toggleMealDone('snack', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">radio_button_unchecked</span>
+                                    MARK AS DONE
+                                </button>
+                                <button id="btn-skip-snack" onclick="toggleMealSkipped('snack', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">block</span>
+                                    MARK AS SKIPPED
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dinner Card -->
+                    <div id="card-dinner"
+                        class="glass-card rounded-2xl p-5 flex flex-col justify-between min-h-[350px]">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span
+                                    class="text-[9px] font-bold text-carbs bg-carbs/10 border border-carbs/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Dinner</span>
+                                <span class="text-xs text-secondary/40" id="dinner-calories">0 kcal</span>
+                            </div>
+                            <h4 class="font-bold text-sm text-primary mb-3" id="dinner-name">Steak & Veggies</h4>
+                            <div class="text-[11px] text-secondary/60 mb-4">
+                                <p class="font-semibold text-secondary/80 mb-1">Ingredients:</p>
+                                <ul class="list-disc pl-4 space-y-1" id="dinner-ingredients">
+                                    <li>Ribeye steak</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                class="flex justify-between border-t border-glass-border/40 pt-3 text-[10px] text-secondary/40 font-bold uppercase mb-3">
+                                <span id="dinner-p">P: 0g</span>
+                                <span id="dinner-c">C: 0g</span>
+                                <span id="dinner-f">F: 0g</span>
+                            </div>
+                            <div class="flex justify-start gap-2 flex-wrap">
+                                <button id="btn-done-dinner" onclick="toggleMealDone('dinner', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">radio_button_unchecked</span>
+                                    MARK AS DONE
+                                </button>
+                                <button id="btn-skip-dinner" onclick="toggleMealSkipped('dinner', this)"
+                                    class="px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all">
+                                    <span class="material-symbols-outlined text-xs">block</span>
+                                    MARK AS SKIPPED
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Tab Content: Weekly calendar schedule -->
-                <div id="tab-weekly" class="diet-tab-content hidden space-y-3">
-                    <div class="grid grid-cols-7 gap-2" id="weekly-days-row">
-                        <!-- Schedulers generated dynamically -->
-                    </div>
-                    <div id="weekly-details-display" class="glass-card rounded-2xl p-6 border border-glass-border">
-                        <h4 class="font-bold text-primary text-base mb-4" id="weekly-detail-day-label">Day 1 Details
-                        </h4>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="weekly-day-meal-grid">
-                            <!-- Meal cards populated dynamically on Day selection -->
-                        </div>
-                    </div>
-                </div>
+
 
                 <!-- Tab Content: Shopping List checklist -->
                 <div id="tab-shopping" class="diet-tab-content hidden glass-card rounded-2xl p-6">
-                    <h4 class="font-bold text-primary text-lg mb-2">Aggregated Weekly Pantry Items</h4>
-                    <p class="text-xs text-secondary/60 mb-6 font-medium">Ingredients pooled and consolidated from your
-                        7-day nutritional split. Tap items to check them off.</p>
+                    <h4 class="font-bold text-primary text-lg mb-2">Pantry Items</h4>
+                    <p class="text-xs text-secondary/60 mb-6 font-medium">Tap items to check them off.</p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="shopping-checklist-items">
                         <!-- Checklist items populated dynamically -->
                     </div>
                 </div>
 
-                <!-- Tab Content: Food Journal log history -->
-                <div id="tab-journal" class="diet-tab-content hidden glass-card rounded-2xl p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <div>
-                            <h4 class="font-bold text-primary text-lg">Daily Food Journal</h4>
-                            <p class="text-xs text-secondary/60 font-medium">History of meals scanned or logged today.
-                            </p>
-                        </div>
-                        <button id="btn-manual-log" onclick="showManualLogModal()"
-                            class="px-5 py-2.5 bg-primary text-black font-headline font-bold text-xs uppercase rounded-full hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
-                            <span class="material-symbols-outlined text-sm">add</span>
-                            Log Meal Manually
-                        </button>
-                    </div>
 
-                    <!-- Journal Stats Overview -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 border-b border-glass-border pb-8">
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Calories
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-primary" id="journal-cal-consumed">0 kcal</span>
-                        </div>
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Protein
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-protein" id="journal-protein-consumed">0g</span>
-                        </div>
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Carbs
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-carbs" id="journal-carbs-consumed">0g</span>
-                        </div>
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Fats
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-fats" id="journal-fats-consumed">0g</span>
-                        </div>
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Fiber
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-purple-400" id="journal-fiber-consumed">0g</span>
-                        </div>
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Sugar
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-yellow-400" id="journal-sugar-consumed">0g</span>
-                        </div>
-                        <div class="bg-white/2 border border-glass-border/40 p-4 rounded-xl">
-                            <span
-                                class="text-[9px] font-bold text-secondary/40 uppercase tracking-wider block mb-1">Minerals
-                                Consumed</span>
-                            <span class="text-2xl font-bold text-teal-400" id="journal-minerals-consumed">0mg</span>
-                        </div>
-                    </div>
-
-                    <!-- Logged Meals List -->
-                    <div class="space-y-4" id="logged-meals-list">
-                        <!-- Meals populated dynamically -->
-                        <div class="text-xs text-secondary/40 text-center py-12">No meals logged for today yet. Use the
-                            Scanner or button above to log one!</div>
-                    </div>
-                </div>
             </section>
         </div>
         </div>
@@ -702,15 +602,15 @@
                 <span class="font-headline text-sm font-bold text-primary">FitForge</span>
             </div>
             <div class="flex flex-wrap justify-center gap-8 text-secondary opacity-60">
-                <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-                <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span>Privacy Policy</span>
+                <span>Terms of Service</span>
+                <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                     System Status: Online
-                </a>
+                </span>
             </div>
             <div class="text-secondary opacity-40 text-[10px]">
-                &copy; 2024 FitForge. Engineered for Excellence.
+                &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
     </main>
@@ -807,6 +707,11 @@
             window.location.href = 'login.html';
         }
 
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) el.innerText = text;
+        }
+
         let userProtocol = {};
         let currentDietPlan = null;
         let selectedWeeklyDay = 1;
@@ -814,6 +719,7 @@
         function logout() {
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
+            localStorage.removeItem('userProtocol');
             window.location.href = 'login.html';
         }
 
@@ -911,10 +817,18 @@
 
         async function loadUserProfileAndCalculate() {
             try {
-                // 1. Get user protocol
-                const protocolResponse = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
-                const protoData = await protocolResponse.json();
-                userProtocol = protoData.protocol || {};
+                // 1. Get user protocol - check localStorage first (avoids offline mode redirect loop)
+                const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+                if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
+                    userProtocol = cachedProto;
+                } else {
+                    const protocolResponse = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
+                    const protoData = await protocolResponse.json();
+                    userProtocol = protoData.protocol || {};
+                    if (userProtocol.age && userProtocol.height && userProtocol.weight && userProtocol.biologicalSex) {
+                        localStorage.setItem('userProtocol', JSON.stringify(userProtocol));
+                    }
+                }
 
                 // Validate protocol exists
                 if (!userProtocol.age || !userProtocol.height || !userProtocol.weight || !userProtocol.biologicalSex) {
@@ -958,11 +872,15 @@
                 const calcLit = (weight * 35) / 1000;
                 const recWater = Math.min(5.0, Math.max(2.0, Number(calcLit.toFixed(1))));
 
-                // Update UI estimators
-                document.getElementById('calced-bmr').innerText = `${Math.round(bmr)} kcal`;
-                document.getElementById('calced-tdee').innerText = `${Math.round(tdee)} kcal`;
-                document.getElementById('calced-recommend').innerText = `${calorieTarget} kcal`;
-                document.getElementById('calced-water-goal').innerText = `${recWater} L`;
+                // Update UI estimators (if elements exist)
+                const bmrEl = document.getElementById('calced-bmr');
+                if (bmrEl) bmrEl.innerText = `${Math.round(bmr)} kcal`;
+                const tdeeEl = document.getElementById('calced-tdee');
+                if (tdeeEl) tdeeEl.innerText = `${Math.round(tdee)} kcal`;
+                const recommendEl = document.getElementById('calced-recommend');
+                if (recommendEl) recommendEl.innerText = `${calorieTarget} kcal`;
+                const waterGoalEl = document.getElementById('calced-water-goal');
+                if (waterGoalEl) waterGoalEl.innerText = `${recWater} L`;
 
                 // Set input default calorie
                 document.getElementById('diet-calories-input').value = calorieTarget;
@@ -1088,20 +1006,21 @@
             document.getElementById('diet-data-dashboard').classList.remove('hidden');
             document.getElementById('diet-tabs-section').classList.remove('hidden');
 
-            const targetCalories = currentDietPlan.dailyMeals.breakfast.calories + currentDietPlan.dailyMeals.lunch.calories + currentDietPlan.dailyMeals.dinner.calories + currentDietPlan.dailyMeals.snack.calories;
+            const targetCalories = currentDietPlan.dailyCalories || (currentDietPlan.dailyMeals.breakfast.calories + currentDietPlan.dailyMeals.lunch.calories + currentDietPlan.dailyMeals.dinner.calories + currentDietPlan.dailyMeals.snack.calories);
             document.getElementById('dashboard-calories-val').innerText = `${targetCalories}`;
-            document.getElementById('water-target-val').innerText = currentDietPlan.waterGoal || '3.0';
+            document.getElementById('water-target-val').innerText = '4.0';
 
             const totalProtein = currentDietPlan.dailyMeals.breakfast.protein + currentDietPlan.dailyMeals.lunch.protein + currentDietPlan.dailyMeals.dinner.protein + currentDietPlan.dailyMeals.snack.protein;
             const totalCarbs = currentDietPlan.dailyMeals.breakfast.carbs + currentDietPlan.dailyMeals.lunch.carbs + currentDietPlan.dailyMeals.dinner.carbs + currentDietPlan.dailyMeals.snack.carbs;
             const totalFats = currentDietPlan.dailyMeals.breakfast.fat + currentDietPlan.dailyMeals.lunch.fat + currentDietPlan.dailyMeals.dinner.fat + currentDietPlan.dailyMeals.snack.fat;
 
-            document.getElementById('txt-protein-val').innerText = `0/${totalProtein}g`;
-            document.getElementById('txt-carbs-val').innerText = `0/${totalCarbs}g`;
-            document.getElementById('txt-fats-val').innerText = `0/${totalFats}g`;
+            safeSetText('txt-protein-val', `0/${totalProtein}g`);
+            safeSetText('txt-carbs-val', `0/${totalCarbs}g`);
+            safeSetText('txt-fats-val', `0/${totalFats}g`);
 
             animateRings(0, totalProtein, 0, totalCarbs, 0, totalFats);
             renderDailyMeals(currentDietPlan.dailyMeals);
+            updateMealsDoneUI();
             updateWaterDisplay();
             renderWeeklyCalendarTimeline();
             renderShoppingChecklist();
@@ -1148,6 +1067,7 @@
 
         function renderWeeklyCalendarTimeline() {
             const timeline = document.getElementById('weekly-days-row');
+            if (!timeline) return;
             timeline.innerHTML = '';
             for (let i = 1; i <= 7; i++) {
                 const btn = document.createElement('button');
@@ -1170,6 +1090,7 @@
         function loadWeeklyDayDetails(dayNum) {
             const dayLabel = document.getElementById('weekly-detail-day-label');
             const container = document.getElementById('weekly-day-meal-grid');
+            if (!dayLabel || !container) return;
             dayLabel.innerText = `Detailed Breakdown for Cycle Day ${dayNum}`;
             container.innerHTML = '';
 
@@ -1215,30 +1136,24 @@
             const itemsStr = localStorage.getItem(`shoppingCheckOff_${userEmail}`) || '[]';
             const checkedOff = JSON.parse(itemsStr);
 
-            // Healthy staples to add optionally
-            const healthyStaples = [
-                "Organic apples",
-                "Ripe bananas",
-                "Fresh organic broccoli",
-                "Fresh baby carrots",
-                "Free-range eggs",
-                "Extra virgin olive oil"
-            ];
-
-            // Merge staples if not already somewhat present
-            const listItemsSet = new Set(currentDietPlan.shoppingList);
-            healthyStaples.forEach(staple => {
-                const words = staple.toLowerCase().split(' ');
-                const mainNoun = words[words.length - 1]; // e.g. "eggs", "oil", "apples"
-                const hasSimilar = currentDietPlan.shoppingList.some(item =>
-                    item.toLowerCase().includes(mainNoun) ||
-                    (mainNoun === 'eggs' && item.toLowerCase().includes('egg'))
-                );
-                if (!hasSimilar) {
-                    listItemsSet.add(staple);
-                }
-            });
-            const allItems = Array.from(listItemsSet);
+            let allItems = [];
+            if (currentDietPlan.shoppingList && currentDietPlan.shoppingList.length > 0) {
+                allItems = currentDietPlan.shoppingList;
+            } else {
+                const listItemsSet = new Set();
+                const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+                mealTypes.forEach(t => {
+                    const meal = currentDietPlan.dailyMeals[t];
+                    if (meal && Array.isArray(meal.ingredients)) {
+                        meal.ingredients.forEach(ing => {
+                            const cleanedText = ing.replace(/^\d+(\.\d+)?\s+(\w+)\s+(of\s+)?/i, '').trim();
+                            const capitalized = cleanedText.charAt(0).toUpperCase() + cleanedText.slice(1);
+                            listItemsSet.add(capitalized);
+                        });
+                    }
+                });
+                allItems = Array.from(listItemsSet);
+            }
 
             // Categorization setup
             const categories = [
@@ -1321,24 +1236,284 @@
             });
         }
 
+        let waterResetTimeout = null;
+
+        // Daily meal completions persistence
+        function getMealDoneKey() {
+            const todayStr = new Date().toLocaleDateString();
+            return `mealsDone_${userEmail}_${todayStr}`;
+        }
+
+        function getMealSkippedKey() {
+            const todayStr = new Date().toLocaleDateString();
+            return `mealsSkipped_${userEmail}_${todayStr}`;
+        }
+
+        async function logAllDailyMealsToProgress() {
+            if (!currentDietPlan) return;
+            const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+
+            showToast("Congrats! All meals addressed!");
+
+            try {
+                const completedKey = getMealDoneKey();
+                const completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+
+                // Remove the mealLogId mappings from localStorage as the day's plan is completed
+                mealTypes.forEach(t => {
+                    const logKey = `mealLogId_${t}_${new Date().toLocaleDateString()}`;
+                    localStorage.removeItem(logKey);
+                });
+
+                localStorage.setItem(completedKey, JSON.stringify([]));
+                localStorage.setItem(getMealSkippedKey(), JSON.stringify([]));
+
+                // Delete current plan on server so past meals disappear
+                await fetch(`/api/user/diet-plan?email=${encodeURIComponent(userEmail)}`, {
+                    method: 'DELETE'
+                });
+
+                currentDietPlan = null;
+
+                // Hide dashboard and tabs sections
+                document.getElementById('diet-data-dashboard').classList.add('hidden');
+                document.getElementById('diet-tabs-section').classList.add('hidden');
+
+                // Smooth scroll user back to the nutritional specifications section
+                const settingsSection = document.getElementById('diet-settings-section');
+                if (settingsSection) {
+                    settingsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+
+                setTimeout(async () => {
+                    updateMealsDoneUI();
+                    showToast("Regenerating new daily meals...");
+                    // AI generates new meals automatically according to the specifications
+                    await generatePlan();
+                }, 2500);
+
+            } catch (error) {
+                console.error("Error auto-completing daily meals:", error);
+            }
+        }
+
+        window.toggleMealDone = async function (mealType, btn) {
+            const completedKey = getMealDoneKey();
+            const skippedKey = getMealSkippedKey();
+
+            let completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+            let skipped = JSON.parse(localStorage.getItem(skippedKey) || '[]');
+
+            // Remove from skipped if marking as done
+            const skipIdx = skipped.indexOf(mealType);
+            if (skipIdx > -1) {
+                skipped.splice(skipIdx, 1);
+                localStorage.setItem(skippedKey, JSON.stringify(skipped));
+            }
+
+            const index = completed.indexOf(mealType);
+            if (index > -1) {
+                // Was done, toggle to undone
+                completed.splice(index, 1);
+                localStorage.setItem(completedKey, JSON.stringify(completed));
+                
+                // Remove meal log from database
+                const logKey = `mealLogId_${mealType}_${new Date().toLocaleDateString()}`;
+                const logId = localStorage.getItem(logKey);
+                if (logId) {
+                    try {
+                        const res = await fetch(`/api/nutrition/log/${logId}`, { method: 'DELETE' });
+                        if (res.ok) {
+                            localStorage.removeItem(logKey);
+                            showToast(`Removed meal from Progress Analysis.`);
+                        }
+                    } catch (err) {
+                        console.error("Error removing meal log:", err);
+                    }
+                }
+            } else {
+                // Toggle to done
+                completed.push(mealType);
+                localStorage.setItem(completedKey, JSON.stringify(completed));
+
+                // Save completed meal to database
+                if (currentDietPlan && currentDietPlan.dailyMeals) {
+                    const meal = currentDietPlan.dailyMeals[mealType];
+                    if (meal) {
+                        try {
+                            const response = await fetch('/api/nutrition/log', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    email: userEmail,
+                                    foodName: meal.name,
+                                    calories: meal.calories,
+                                    protein: meal.protein,
+                                    carbs: meal.carbs,
+                                    fat: meal.fat,
+                                    fiber: 0,
+                                    sugar: 0,
+                                    sodium: 0,
+                                    potassium: 0,
+                                    items: [],
+                                    imageUrl: "meal_done_log", // Shows in meals logs
+                                    date: new Date().toISOString()
+                                })
+                            });
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (data.log && data.log._id) {
+                                    const logKey = `mealLogId_${mealType}_${new Date().toLocaleDateString()}`;
+                                    localStorage.setItem(logKey, data.log._id);
+                                }
+                                showToast(`Saved completed meal to Progress Analysis.`);
+                            }
+                        } catch (err) {
+                            console.error("Error logging meal to progress:", err);
+                        }
+                    }
+                }
+            }
+
+            localStorage.setItem(completedKey, JSON.stringify(completed));
+            updateMealsDoneUI();
+
+            if (completed.length + skipped.length === 4) {
+                logAllDailyMealsToProgress();
+            }
+        }
+
+        window.toggleMealSkipped = function (mealType, btn) {
+            const completedKey = getMealDoneKey();
+            const skippedKey = getMealSkippedKey();
+
+            let completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+            let skipped = JSON.parse(localStorage.getItem(skippedKey) || '[]');
+
+            // Remove from completed if marking as skipped
+            const compIdx = completed.indexOf(mealType);
+            if (compIdx > -1) {
+                completed.splice(compIdx, 1);
+                localStorage.setItem(completedKey, JSON.stringify(completed));
+            }
+
+            const index = skipped.indexOf(mealType);
+            if (index > -1) {
+                // Was skipped, toggle to un-skipped
+                skipped.splice(index, 1);
+            } else {
+                // Toggle to skipped
+                skipped.push(mealType);
+            }
+
+            localStorage.setItem(skippedKey, JSON.stringify(skipped));
+            updateMealsDoneUI();
+
+            if (completed.length + skipped.length === 4) {
+                logAllDailyMealsToProgress();
+            }
+        }
+
+        function updateMealsDoneUI() {
+            const completedKey = getMealDoneKey();
+            const skippedKey = getMealSkippedKey();
+            const completed = JSON.parse(localStorage.getItem(completedKey) || '[]');
+            const skipped = JSON.parse(localStorage.getItem(skippedKey) || '[]');
+            const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
+
+            mealTypes.forEach(t => {
+                const card = document.getElementById(`card-${t}`);
+                const btnDone = document.getElementById(`btn-done-${t}`);
+                const btnSkip = document.getElementById(`btn-skip-${t}`);
+                if (!card || !btnDone || !btnSkip) return;
+
+                const isDone = completed.includes(t);
+                const isSkipped = skipped.includes(t);
+
+                if (isDone) {
+                    card.classList.add('opacity-40');
+                    btnDone.className = "px-4 py-1.5 rounded-full bg-carbs/10 border border-carbs/20 text-carbs hover:bg-carbs/20 text-[10px] font-bold tracking-wider flex items-center gap-1.5 active:scale-95 transition-all";
+                    btnDone.innerHTML = `<span class="material-symbols-outlined text-xs">check_circle</span>COMPLETED`;
+                    btnDone.classList.remove('hidden');
+                    btnSkip.classList.add('hidden');
+                } else if (isSkipped) {
+                    card.classList.add('opacity-40');
+                    btnSkip.className = "px-4 py-1.5 rounded-full bg-protein/10 border border-protein/20 text-protein hover:bg-protein/20 text-[10px] font-bold tracking-wider flex items-center gap-1.5 active:scale-95 transition-all";
+                    btnSkip.innerHTML = `<span class="material-symbols-outlined text-xs">block</span>SKIPPED`;
+                    btnSkip.classList.remove('hidden');
+                    btnDone.classList.add('hidden');
+                } else {
+                    card.classList.remove('opacity-40');
+
+                    btnDone.className = "px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all";
+                    btnDone.innerHTML = `<span class="material-symbols-outlined text-xs">radio_button_unchecked</span>MARK AS DONE`;
+                    btnDone.classList.remove('hidden');
+
+                    btnSkip.className = "px-4 py-1.5 rounded-full border border-glass-border hover:bg-white/5 text-[10px] font-bold tracking-wider text-secondary flex items-center gap-1.5 active:scale-95 transition-all";
+                    btnSkip.innerHTML = `<span class="material-symbols-outlined text-xs">block</span>MARK AS SKIPPED`;
+                    btnSkip.classList.remove('hidden');
+                }
+            });
+        }
+
         function updateWaterDisplay() {
-            const target = currentDietPlan ? currentDietPlan.waterGoal : 3.0;
+            const target = 4.0;
+            const todayStr = new Date().toLocaleDateString();
+            const dateKey = `waterLoggedDate_${userEmail}`;
             const key = `waterLogged_${userEmail}`;
-            const logged = Number(localStorage.getItem(key)) || 0.0;
 
-            document.getElementById('water-logged-val').innerText = logged.toFixed(2);
-            document.getElementById('water-target-val').innerText = target.toFixed(1);
+            // Check if date has changed (daily reset)
+            const savedDate = localStorage.getItem(dateKey);
+            if (savedDate !== todayStr) {
+                localStorage.setItem(dateKey, todayStr);
+                localStorage.setItem(key, '0.00');
+            }
 
-            const percent = Math.min(100, Math.round((logged / target) * 100));
-            document.getElementById('water-progress-bar').style.width = `${percent}%`;
+            let logged = Number(localStorage.getItem(key)) || 0.0;
+
+            const header = document.getElementById('water-header-text');
+            const progressBar = document.getElementById('water-progress-bar');
+
+            if (logged >= target) {
+                if (header) {
+                    header.innerHTML = `
+                        <div class="flex flex-col gap-0.5">
+                            <div><span id="water-logged-val">${logged.toFixed(2)}</span> / <span id="water-target-val">${target.toFixed(1)}</span>L <span class="text-[10px] font-bold text-carbs animate-pulse ml-2">(Target Achieved!)</span></div>
+                            <span class="text-[9px] text-secondary opacity-60 font-semibold uppercase tracking-wider block mt-1">Note: This tracker will reset tomorrow.</span>
+                        </div>
+                    `;
+                }
+                if (progressBar) {
+                    progressBar.style.width = '100%';
+                }
+            } else {
+                if (header) {
+                    header.innerHTML = `<span id="water-logged-val">${logged.toFixed(2)}</span> / <span id="water-target-val">${target.toFixed(1)}</span>L`;
+                }
+                if (progressBar) {
+                    const percent = Math.min(100, Math.round((logged / target) * 100));
+                    progressBar.style.width = `${percent}%`;
+                }
+            }
         }
 
         window.logWater = function (amount) {
             const key = `waterLogged_${userEmail}`;
             let logged = Number(localStorage.getItem(key)) || 0.0;
+            
+            // Allow logging more than target
             logged += amount;
             localStorage.setItem(key, logged.toFixed(2));
             updateWaterDisplay();
+        }
+
+        window.logCustomWater = function () {
+            const input = document.getElementById('custom-water-input');
+            const ml = Number(input.value);
+            if (ml && ml > 0) {
+                logWater(ml / 1000);
+                input.value = '';
+            }
         }
 
         window.resetWater = function () {
@@ -1382,80 +1557,84 @@
             });
 
             // Update tab stats
-            document.getElementById('journal-cal-consumed').innerText = `${loggedCalories} kcal`;
-            document.getElementById('journal-protein-consumed').innerText = `${loggedProtein}g`;
-            document.getElementById('journal-carbs-consumed').innerText = `${loggedCarbs}g`;
-            document.getElementById('journal-fats-consumed').innerText = `${loggedFat}g`;
-            document.getElementById('journal-fiber-consumed').innerText = `${loggedFiber}g`;
-            document.getElementById('journal-sugar-consumed').innerText = `${loggedSugar}g`;
-            document.getElementById('journal-minerals-consumed').innerText = `${loggedMinerals}mg`;
+            safeSetText('journal-cal-consumed', `${loggedCalories} kcal`);
+            safeSetText('journal-protein-consumed', `${loggedProtein}g`);
+            safeSetText('journal-carbs-consumed', `${loggedCarbs}g`);
+            safeSetText('journal-fats-consumed', `${loggedFat}g`);
+            safeSetText('journal-fiber-consumed', `${loggedFiber}g`);
+            safeSetText('journal-sugar-consumed', `${loggedSugar}g`);
+            safeSetText('journal-minerals-consumed', `${loggedMinerals}mg`);
 
             // Update main dashboard metrics if plan is loaded
             if (currentDietPlan) {
                 const targetProtein = currentDietPlan.dailyMeals.breakfast.protein + currentDietPlan.dailyMeals.lunch.protein + currentDietPlan.dailyMeals.dinner.protein + currentDietPlan.dailyMeals.snack.protein;
                 const targetCarbs = currentDietPlan.dailyMeals.breakfast.carbs + currentDietPlan.dailyMeals.lunch.carbs + currentDietPlan.dailyMeals.dinner.carbs + currentDietPlan.dailyMeals.snack.carbs;
                 const targetFats = currentDietPlan.dailyMeals.breakfast.fat + currentDietPlan.dailyMeals.lunch.fat + currentDietPlan.dailyMeals.dinner.fat + currentDietPlan.dailyMeals.snack.fat;
-                const targetCalories = currentDietPlan.dailyMeals.breakfast.calories + currentDietPlan.dailyMeals.lunch.calories + currentDietPlan.dailyMeals.dinner.calories + currentDietPlan.dailyMeals.snack.calories;
+                const targetCalories = currentDietPlan.dailyCalories || (currentDietPlan.dailyMeals.breakfast.calories + currentDietPlan.dailyMeals.lunch.calories + currentDietPlan.dailyMeals.dinner.calories + currentDietPlan.dailyMeals.snack.calories);
 
                 document.getElementById('dashboard-calories-val').innerText = `${targetCalories}`;
-                document.getElementById('dashboard-calories-ratio').innerText = `Logged: ${loggedCalories} kcal`;
+                const ratioEl = document.getElementById('dashboard-calories-ratio');
+                if (ratioEl) ratioEl.innerText = `Logged: ${loggedCalories} kcal`;
 
-                document.getElementById('txt-protein-val').innerText = `${loggedProtein}/${targetProtein}g`;
-                document.getElementById('txt-carbs-val').innerText = `${loggedCarbs}/${targetCarbs}g`;
-                document.getElementById('txt-fats-val').innerText = `${loggedFat}/${targetFats}g`;
+                safeSetText('txt-protein-val', `${loggedProtein}/${targetProtein}g`);
+                safeSetText('txt-carbs-val', `${loggedCarbs}/${targetCarbs}g`);
+                safeSetText('txt-fats-val', `${loggedFat}/${targetFats}g`);
 
                 animateRings(loggedProtein, targetProtein, loggedCarbs, targetCarbs, loggedFat, targetFats);
             } else {
-                document.getElementById('dashboard-calories-ratio').innerText = `Logged: ${loggedCalories} kcal`;
-                document.getElementById('txt-protein-val').innerText = `${loggedProtein}g`;
-                document.getElementById('txt-carbs-val').innerText = `${loggedCarbs}g`;
-                document.getElementById('txt-fats-val').innerText = `${loggedFat}g`;
+                const ratioEl = document.getElementById('dashboard-calories-ratio');
+                if (ratioEl) ratioEl.innerText = `Logged: ${loggedCalories} kcal`;
+                safeSetText('txt-protein-val', `${loggedProtein}g`);
+                safeSetText('txt-carbs-val', `${loggedCarbs}g`);
+                safeSetText('txt-fats-val', `${loggedFat}g`);
                 animateRings(loggedProtein, 150, loggedCarbs, 300, loggedFat, 80);
             }
 
             // Populate logged meals list
             const container = document.getElementById('logged-meals-list');
-            if (todayLogs.length === 0) {
-                container.innerHTML = `<div class="text-xs text-secondary/40 text-center py-12">No meals logged for today yet. Use the Scanner or button above to log one!</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            todayLogs.forEach(log => {
-                const card = document.createElement('div');
-                card.className = "bg-white/2 border border-glass-border/40 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-white/10 transition-all";
-
-                let itemsList = '';
-                if (log.items && log.items.length > 0) {
-                    itemsList = `<div class="text-[10px] text-secondary/40 mt-1 flex flex-wrap gap-2">
-                        ${log.items.map(it => `<span class="bg-white/5 px-2 py-0.5 rounded-full">${it.name} (${it.portion || '1 serving'})</span>`).join('')}
-                    </div>`;
+            if (container) {
+                if (todayLogs.length === 0) {
+                    container.innerHTML = `<div class="text-xs text-secondary/40 text-center py-12">No meals logged for today yet. Use the Scanner or button above to log one!</div>`;
+                    return;
                 }
 
-                const timeStr = new Date(log.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                const mineralAmt = (log.sodium || 0) + (log.potassium || 0);
+                container.innerHTML = '';
+                todayLogs.forEach(log => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white/2 border border-glass-border/40 rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-white/10 transition-all";
 
-                card.innerHTML = `
-                    <div class="flex-1">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-[10px] text-white/40 font-bold font-headline">${timeStr}</span>
-                            <h5 class="font-bold text-xs text-primary">${log.foodName}</h5>
+                    let itemsList = '';
+                    if (log.items && log.items.length > 0) {
+                        itemsList = `<div class="text-[10px] text-secondary/40 mt-1 flex flex-wrap gap-2">
+                            ${log.items.map(it => `<span class="bg-white/5 px-2 py-0.5 rounded-full">${it.name} (${it.portion || '1 serving'})</span>`).join('')}
+                        </div>`;
+                    }
+
+                    const timeStr = new Date(log.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const mineralAmt = (log.sodium || 0) + (log.potassium || 0);
+
+                    card.innerHTML = `
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="text-[10px] text-white/40 font-bold font-headline">${timeStr}</span>
+                                <h5 class="font-bold text-xs text-primary">${log.foodName}</h5>
+                            </div>
+                            ${itemsList}
                         </div>
-                        ${itemsList}
-                    </div>
-                    <div class="flex items-center gap-6 self-stretch md:self-auto justify-between border-t border-glass-border/20 pt-3 md:pt-0 md:border-t-0">
-                        <div class="text-right flex flex-col">
-                            <span class="text-xs font-bold text-primary font-headline block">${log.calories} kcal</span>
-                            <span class="text-[9px] text-secondary/40 font-bold uppercase block mt-0.5">P:${log.protein}g C:${log.carbs}g F:${log.fat}g</span>
-                            <span class="text-[8px] text-secondary/40 block mt-0.5">Fiber:${log.fiber || 0}g Sugar:${log.sugar || 0}g Min:${mineralAmt}mg</span>
+                        <div class="flex items-center gap-6 self-stretch md:self-auto justify-between border-t border-glass-border/20 pt-3 md:pt-0 md:border-t-0">
+                            <div class="text-right flex flex-col">
+                                <span class="text-xs font-bold text-primary font-headline block">${log.calories} kcal</span>
+                                <span class="text-[9px] text-secondary/40 font-bold uppercase block mt-0.5">P:${log.protein}g C:${log.carbs}g F:${log.fat}g</span>
+                                <span class="text-[8px] text-secondary/40 block mt-0.5">Fiber:${log.fiber || 0}g Sugar:${log.sugar || 0}g Min:${mineralAmt}mg</span>
+                            </div>
+                            <button onclick="deleteLoggedMeal('${log._id}')" class="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 active:scale-95 transition-all flex items-center justify-center cursor-pointer">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
                         </div>
-                        <button onclick="deleteLoggedMeal('${log._id}')" class="text-red-400 hover:text-red-300 p-1.5 rounded-lg hover:bg-red-500/10 active:scale-95 transition-all flex items-center justify-center cursor-pointer">
-                            <span class="material-symbols-outlined text-sm">delete</span>
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+                    `;
+                    container.appendChild(card);
+                });
+            }
         }
 
         window.deleteLoggedMeal = async function (logId) {
@@ -1563,14 +1742,7 @@
             }
         }
 
-        document.getElementById('view-shopping-btn').addEventListener('click', () => {
-            const tabBtns = document.querySelectorAll('.diet-tab-btn');
-            tabBtns.forEach(btn => {
-                if (btn.innerText.toLowerCase().includes('shopping')) {
-                    btn.click();
-                }
-            });
-        });
+        // View Shopping List button has been removed from UI
 
         // Sidebar Navigation Drawer Toggle logic
         function toggleSidebar() {

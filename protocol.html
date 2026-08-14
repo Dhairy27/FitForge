@@ -232,7 +232,7 @@
                                     <option disabled="" selected="" value="">Select</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
-                                    <option value="other">Prefer not to say</option>
+                                    <option value="other">Other</option>
                                 </select>
                                 <span
                                     class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-on-surface-variant">
@@ -335,44 +335,7 @@
                                 </label>
                             </div>
                         </div>
-                        <!-- Fitness Level (Chips) -->
-                        <div class="space-y-3">
-                            <label class="block font-label-md text-label-md text-on-surface uppercase">Fitness
-                                Level</label>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <label class="cursor-pointer relative group">
-                                    <input checked="" class="peer sr-only" name="fitness_level" type="radio"
-                                        value="beginner">
-                                    <div
-                                        class="w-full h-full p-4 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex flex-col items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span
-                                            class="material-symbols-outlined text-[24px] text-on-surface-variant peer-checked:text-primary"
-                                            style="font-variation-settings: 'FILL' 0;">rocket_launch</span>
-                                        <span class="font-label-md text-label-md text-primary">Beginner</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="peer sr-only" name="fitness_level" type="radio" value="intermediate">
-                                    <div
-                                        class="w-full h-full p-4 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex flex-col items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span
-                                            class="material-symbols-outlined text-[24px] text-on-surface-variant peer-checked:text-primary"
-                                            style="font-variation-settings: 'FILL' 0;">bolt</span>
-                                        <span class="font-label-md text-label-md text-primary">Intermediate</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="peer sr-only" name="fitness_level" type="radio" value="advanced">
-                                    <div
-                                        class="w-full h-full p-4 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex flex-col items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span
-                                            class="material-symbols-outlined text-[24px] text-on-surface-variant peer-checked:text-primary"
-                                            style="font-variation-settings: 'FILL' 0;">trophy</span>
-                                        <span class="font-label-md text-label-md text-primary">Advanced</span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
+
                         <!-- Workout Location (Chips) -->
                         <div class="space-y-3">
                             <label class="block font-label-md text-label-md text-on-surface uppercase">Preferred Workout
@@ -400,57 +363,7 @@
                                 </label>
                             </div>
                         </div>
-                        <!-- Available Equipment (Checkbox Chips) -->
-                        <div class="space-y-3">
-                            <label class="block font-label-md text-label-md text-on-surface uppercase">Available
-                                Equipment</label>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                <label class="cursor-pointer relative group">
-                                    <input class="equipment-checkbox peer sr-only" type="checkbox" value="bodyweight"
-                                        checked>
-                                    <div
-                                        class="w-full h-full p-3 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span class="font-label-md text-label-md text-primary">Bodyweight/None</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="equipment-checkbox peer sr-only" type="checkbox" value="dumbbells">
-                                    <div
-                                        class="w-full h-full p-3 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span class="font-label-md text-label-md text-primary">Dumbbells</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="equipment-checkbox peer sr-only" type="checkbox" value="barbell">
-                                    <div
-                                        class="w-full h-full p-3 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span class="font-label-md text-label-md text-primary">Barbell</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="equipment-checkbox peer sr-only" type="checkbox" value="kettlebell">
-                                    <div
-                                        class="w-full h-full p-3 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span class="font-label-md text-label-md text-primary">Kettlebell</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="equipment-checkbox peer sr-only" type="checkbox"
-                                        value="resistance bands">
-                                    <div
-                                        class="w-full h-full p-3 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span class="font-label-md text-label-md text-primary">Resistance Bands</span>
-                                    </div>
-                                </label>
-                                <label class="cursor-pointer relative group">
-                                    <input class="equipment-checkbox peer sr-only" type="checkbox" value="pull-up bar">
-                                    <div
-                                        class="w-full h-full p-3 border border-glass-border rounded-DEFAULT bg-surface-container-low peer-checked:border-primary peer-checked:bg-surface-container-high transition-all flex items-center justify-center text-center gap-2 group-hover:border-outline">
-                                        <span class="font-label-md text-label-md text-primary">Pull-up Bar</span>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
+
                         <!-- Workout Duration (Chips) -->
                         <div class="space-y-3">
                             <label class="block font-label-md text-label-md text-on-surface uppercase">Workout
@@ -557,16 +470,48 @@
                 return;
             }
 
-            // Check if protocol details are already filled (details are fixed and cannot be changed)
+            function prefillProtocol(proto) {
+                if (!proto) return;
+                if (proto.age) document.getElementById('age').value = proto.age;
+                if (proto.biologicalSex) document.getElementById('gender').value = proto.biologicalSex;
+                if (proto.height) document.getElementById('height').value = proto.height;
+                if (proto.weight) document.getElementById('weight').value = proto.weight;
+                if (proto.occupation) document.getElementById('occupation').value = proto.occupation;
+
+                if (proto.activityLevel) {
+                    const el = document.querySelector(`input[name="activity_level"][value="${proto.activityLevel}"]`);
+                    if (el) el.checked = true;
+                }
+                if (proto.location) {
+                    const el = document.querySelector(`input[name="location"][value="${proto.location}"]`);
+                    if (el) el.checked = true;
+                }
+                if (proto.duration) {
+                    const el = document.querySelector(`input[name="duration"][value="${proto.duration}"]`);
+                    if (el) el.checked = true;
+                }
+                if (Array.isArray(proto.goals)) {
+                    document.querySelectorAll('.goal-checkbox').forEach(cb => {
+                        cb.checked = proto.goals.includes(cb.value);
+                    });
+                }
+            }
+
+            // Pre-fill existing protocol if cached or from server
+            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+            if (cachedProto.age || cachedProto.height || cachedProto.weight) {
+                prefillProtocol(cachedProto);
+            }
             fetch(`/api/user/protocol?email=${encodeURIComponent(email)}`)
                 .then(res => res.json())
                 .then(data => {
                     const proto = data.protocol || {};
-                    if (proto.age && proto.height && proto.weight && proto.biologicalSex) {
-                        window.location.href = 'dashboard.html';
+                    if (proto.age || proto.height || proto.weight) {
+                        localStorage.setItem('userProtocol', JSON.stringify(proto));
+                        prefillProtocol(proto);
                     }
                 })
-                .catch(err => console.error("Error validating protocol status:", err));
+                .catch(err => console.error("Error retrieving protocol baseline:", err));
 
             const steps = [
                 document.getElementById('step-1'),
@@ -651,17 +596,19 @@
                         showError("Please enter all physical metrics (Age, Sex, Height, and Weight) to proceed.");
                         return false;
                     }
-                    if (Number(age) <= 0 || Number(height) <= 0 || Number(weight) <= 0) {
-                        showError("Please enter valid positive numbers for Age, Height, and Weight.");
+                    if (Number(age) < 18) {
+                        showError("Minimum age must be 18.");
+                        return false;
+                    }
+                    if (Number(height) <= 0 || Number(weight) <= 0) {
+                        showError("Please enter valid positive numbers for Height and Weight.");
                         return false;
                     }
                 } else if (stepIndex === 1) {
                     const occupation = document.getElementById('occupation').value.trim();
                     const activityLevel = document.querySelector('input[name="activity_level"]:checked')?.value;
-                    const fitnessLevel = document.querySelector('input[name="fitness_level"]:checked')?.value;
                     const location = document.querySelector('input[name="location"]:checked')?.value;
                     const duration = document.querySelector('input[name="duration"]:checked')?.value;
-                    const equipment = Array.from(document.querySelectorAll('.equipment-checkbox:checked'));
 
                     if (!occupation) {
                         showError("Please enter your primary occupation.");
@@ -671,16 +618,8 @@
                         showError("Please select your daily activity level.");
                         return false;
                     }
-                    if (!fitnessLevel) {
-                        showError("Please select your fitness level.");
-                        return false;
-                    }
                     if (!location) {
                         showError("Please select your preferred workout location.");
-                        return false;
-                    }
-                    if (equipment.length === 0) {
-                        showError("Please select at least one available equipment (e.g. Bodyweight/None).");
                         return false;
                     }
                     if (!duration) {
@@ -722,10 +661,8 @@
                     const weight = document.getElementById('weight').value;
                     const occupation = document.getElementById('occupation').value;
                     const activityLevel = document.querySelector('input[name="activity_level"]:checked')?.value;
-                    const fitnessLevel = document.querySelector('input[name="fitness_level"]:checked')?.value;
                     const locationVal = document.querySelector('input[name="location"]:checked')?.value;
                     const duration = document.querySelector('input[name="duration"]:checked')?.value;
-                    const equipment = Array.from(document.querySelectorAll('.equipment-checkbox:checked')).map(cb => cb.value);
                     const goals = Array.from(document.querySelectorAll('.goal-checkbox:checked')).map(cb => cb.value);
 
                     // Send POST request to backend API
@@ -744,9 +681,9 @@
                             activityLevel,
                             goals,
                             location: locationVal,
-                            equipment,
+                            equipment: [],
                             duration: Number(duration),
-                            fitnessLevel
+                            fitnessLevel: 'beginner'
                         })
                     })
                         .then(response => {
@@ -766,9 +703,9 @@
                                 activityLevel,
                                 goals,
                                 location: locationVal,
-                                equipment,
+                                equipment: [],
                                 duration: Number(duration),
-                                fitnessLevel
+                                fitnessLevel: 'beginner'
                             }));
                             // Display success and redirect to dashboard
                             btnNext.innerHTML = `Initialized <span class="material-symbols-outlined text-[18px]">check</span>`;

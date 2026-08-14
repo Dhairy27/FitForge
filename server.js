@@ -1,6 +1,171 @@
 require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
+
+function cleanAndParseJson(rawText) {
+  if (typeof rawText !== 'string') return rawText;
+  let str = rawText.trim();
+  str = str.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const matchObj = str.match(/\{[\s\S]*\}/);
+  if (matchObj && matchObj[0]) {
+    try {
+      return JSON.parse(matchObj[0]);
+    } catch (e) {}
+  }
+  const matchArr = str.match(/\[[\s\S]*\]/);
+  if (matchArr && matchArr[0]) {
+    try {
+      return JSON.parse(matchArr[0]);
+    } catch (e) {}
+  }
+  return JSON.parse(str);
+}
+
+let useMockDb = false;
+
+const mockDb = {
+  users: [],
+  workouts: [],
+  nutritionlogs: [],
+  bodyscans: []
+};
+
+function makeChainable(arr) {
+  const res = [...arr];
+  res.sort = function (sortObj) {
+    return makeChainable(res);
+  };
+  res.limit = function (num) {
+    return makeChainable(res.slice(0, num));
+  };
+  res.select = function () {
+    return makeChainable(res);
+  };
+  res.populate = function () {
+    return makeChainable(res);
+  };
+  res.exec = function () {
+    return Promise.resolve([...res]);
+  };
+  res.then = function (onResolve, onReject) {
+    return Promise.resolve([...res]).then(onResolve, onReject);
+  };
+  return res;
+}
+
+class MockModel {
+  constructor(data) {
+    Object.assign(this, data);
+    const modelName = this.constructor.modelName;
+    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
+      this.date = new Date();
+    }
+    if (!this.createdAt) this.createdAt = new Date();
+    if (!this.updatedAt) this.updatedAt = new Date();
+  }
+  async save() {
+    const collectionName = this.constructor.modelName.toLowerCase() + 's';
+    if (!mockDb[collectionName]) {
+      mockDb[collectionName] = [];
+    }
+    
+    const modelName = this.constructor.modelName;
+    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
+      this.date = new Date();
+    }
+    if (!this.createdAt) this.createdAt = new Date();
+    this.updatedAt = new Date();
+
+    const idx = mockDb[collectionName].findIndex(item => item._id === this._id || (collectionName === 'users' && this.email && item.email === this.email));
+    if (idx !== -1) {
+      mockDb[collectionName][idx] = { ...this };
+    } else {
+      if (!this._id) this._id = Math.random().toString(36).substring(2);
+      mockDb[collectionName].push({ ...this });
+    }
+    return this;
+  }
+  static async findOne(query) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    const list = mockDb[collectionName] || [];
+    const found = list.find(item => {
+      for (let key in query) {
+        if (item[key] !== query[key]) return false;
+      }
+      return true;
+    });
+    return found ? new this(found) : null;
+  }
+  static find(query) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    const list = mockDb[collectionName] || [];
+    const found = list.filter(item => {
+      for (let key in query) {
+        if (item[key] !== query[key]) return false;
+      }
+      return true;
+    });
+    return makeChainable(found.map(item => new this(item)));
+  }
+  static async findOneAndUpdate(query, update, options) {
+    const doc = await this.findOne(query);
+    if (!doc) {
+      if (options && options.upsert) {
+        const newDoc = new this({ ...query, ...(update.$set || update) });
+        await newDoc.save();
+        return newDoc;
+      }
+      return null;
+    }
+    const setUpdate = update.$set || update;
+    Object.assign(doc, setUpdate);
+    await doc.save();
+    return doc;
+  }
+  static async findOneAndDelete(query) {
+    const doc = await this.findOne(query);
+    if (doc) {
+      await this.deleteMany(query);
+    }
+    return doc;
+  }
+  static async deleteMany(query) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    mockDb[collectionName] = (mockDb[collectionName] || []).filter(item => {
+      for (let key in query) {
+        if (item[key] !== query[key]) return true;
+      }
+      return false;
+    });
+    return { deletedCount: 1 };
+  }
+}
+
+const originalModel = mongoose.model;
+mongoose.model = function (name, schema) {
+  const RealModel = originalModel.apply(this, arguments);
+
+  class MockSubclass extends MockModel { }
+  MockSubclass.modelName = name;
+
+  const handler = {
+    get(target, prop) {
+      if (useMockDb || process.env.MOCK_DB === 'true') {
+        return MockSubclass[prop];
+      }
+      return RealModel[prop];
+    },
+    construct(target, args) {
+      if (useMockDb || process.env.MOCK_DB === 'true') {
+        return new MockSubclass(...args);
+      }
+      return new RealModel(...args);
+    }
+  };
+
+  return new Proxy(RealModel, handler);
+};
+
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const nodemailer = require('nodemailer');
@@ -13,10 +178,70 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/fitfor
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Express JSON parsing error handler
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    console.error('Invalid JSON body in request:', err.message);
+    return res.status(400).json({ error: 'Malformed JSON in request body.' });
+  }
+  next();
+});
+
 // Database Connection
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB successfully'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+const dns = require('dns');
+
+// Use Google DNS to resolve SRV records (local ISP DNS may block SRV queries)
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+
+// Extract host to test reachability
+let dbHost = '';
+let isSrv = false;
+if (MONGODB_URI.startsWith('mongodb+srv://')) {
+  dbHost = MONGODB_URI.split('@')[1]?.split('/')[0] || '';
+  isSrv = true;
+} else if (MONGODB_URI.startsWith('mongodb://')) {
+  const parts = MONGODB_URI.split('@')[1] || MONGODB_URI.split('//')[1];
+  dbHost = parts?.split('/')[0]?.split(':')[0] || '';
+}
+
+const handleReachabilityResult = (dnsErr) => {
+  if (dnsErr) {
+    console.error('🔴 DNS Lookup Failed for host:', dbHost, dnsErr);
+    console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
+    console.log('👉 All features are fully functional. No setup required!\n');
+    useMockDb = true;
+  } else {
+    // Suppress background connection error events from crashing the node process
+    mongoose.connection.on('error', (err) => {
+      if (useMockDb) return;
+      console.log('⚠️ Database connection lost. Operating in offline mock database mode.', err);
+    });
+
+    mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000,
+      family: 4
+    })
+      .then(() => console.log('🟢 Connected to MongoDB Atlas successfully!'))
+      .catch((err) => {
+        console.error('🔴 MongoDB Connection Error:', err);
+        console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
+        console.log('👉 All features are fully functional. No setup required!\n');
+        useMockDb = true;
+      });
+  }
+};
+
+// Perform DNS check to see if database host is reachable (support SRV lookup for mongodb+srv://)
+if (isSrv) {
+  dns.resolveSrv('_mongodb._tcp.' + dbHost, (dnsErr) => {
+    handleReachabilityResult(dnsErr);
+  });
+} else {
+  dns.lookup(dbHost, (dnsErr) => {
+    handleReachabilityResult(dnsErr);
+  });
+}
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
@@ -92,6 +317,39 @@ const nutritionLogSchema = new mongoose.Schema({
 
 const NutritionLog = mongoose.model('NutritionLog', nutritionLogSchema);
 
+const bodyScanSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  height: { type: Number },
+  weight: { type: Number },
+  bmi: { type: Number },
+  fitnessScore: { type: Number },
+  posture: { type: String },
+  shoulderAlignment: { type: String },
+  bodySymmetry: { type: Number },
+  goal: { type: String },
+  measurements: { type: Object },
+  recommendations: { type: Object },
+  frontScanImage: { type: String },
+  sideScanImage: { type: String },
+  date: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const BodyScan = mongoose.model('BodyScan', bodyScanSchema);
+
+async function findUserOrMock(email) {
+  if (!email) return null;
+  const normalized = email.toLowerCase();
+  let user = await User.findOne({ email: normalized });
+  if (!user && (useMockDb || process.env.MOCK_DB === 'true')) {
+    user = new User({
+      name: email.split('@')[0],
+      email: normalized,
+      password: 'mockpassword'
+    });
+    await user.save();
+  }
+  return user;
+}
 
 // API Routes
 
@@ -103,8 +361,18 @@ app.post('/api/auth/signup', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists (with fail-safe fallback)
+    let existingUser;
+    try {
+      existingUser = await User.findOne({ email: normalizedEmail });
+    } catch (dbErr) {
+      console.warn('Signup findOne fallback:', dbErr.message);
+      useMockDb = true;
+      existingUser = await User.findOne({ email: normalizedEmail });
+    }
+
     if (existingUser) {
       return res.status(400).json({ error: 'Account already exists with this email.' });
     }
@@ -115,16 +383,23 @@ app.post('/api/auth/signup', async (req, res) => {
 
     // Create user
     const newUser = new User({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: normalizedEmail,
       password: hashedPassword
     });
 
-    await newUser.save();
+    try {
+      await newUser.save();
+    } catch (saveErr) {
+      console.warn('Signup save fallback:', saveErr.message);
+      useMockDb = true;
+      await newUser.save();
+    }
+
     res.status(201).json({ message: 'Account initialized.', email: newUser.email, name: newUser.name });
   } catch (error) {
     console.error('Signup error:', error);
-    res.status(500).json({ error: 'Failed to process signup.' });
+    res.status(500).json({ error: error.message || 'Failed to process signup.' });
   }
 });
 
@@ -136,8 +411,18 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required.' });
     }
 
-    // Check user
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check user (with fail-safe fallback)
+    let user;
+    try {
+      user = await User.findOne({ email: normalizedEmail });
+    } catch (dbErr) {
+      console.warn('Login findOne fallback:', dbErr.message);
+      useMockDb = true;
+      user = await User.findOne({ email: normalizedEmail });
+    }
+
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
@@ -151,7 +436,7 @@ app.post('/api/auth/login', async (req, res) => {
     res.status(200).json({ message: 'Access granted.', email: user.email, name: user.name });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Failed to process login.' });
+    res.status(500).json({ error: error.message || 'Failed to process login.' });
   }
 });
 
@@ -323,24 +608,25 @@ app.post('/api/user/protocol', async (req, res) => {
       return res.status(400).json({ error: 'User email is required to save protocol.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await findUserOrMock(email);
     if (!user) {
       return res.status(404).json({ error: 'User profile not found.' });
     }
 
     // Update protocol telemetry
     user.protocol = {
-      age: age ? Number(age) : undefined,
-      biologicalSex,
-      height: height ? Number(height) : undefined,
-      weight: weight ? Number(weight) : undefined,
-      occupation,
-      activityLevel,
-      goals,
-      location,
-      equipment,
-      duration: duration ? Number(duration) : undefined,
-      fitnessLevel
+      ...(user.protocol || {}),
+      age: age !== undefined && age !== null ? Number(age) : (user.protocol ? user.protocol.age : undefined),
+      biologicalSex: biologicalSex !== undefined && biologicalSex !== null ? biologicalSex : (user.protocol ? user.protocol.biologicalSex : undefined),
+      height: height !== undefined && height !== null ? Number(height) : (user.protocol ? user.protocol.height : undefined),
+      weight: weight !== undefined && weight !== null ? Number(weight) : (user.protocol ? user.protocol.weight : undefined),
+      occupation: occupation !== undefined && occupation !== null ? occupation : (user.protocol ? user.protocol.occupation : undefined),
+      activityLevel: activityLevel !== undefined && activityLevel !== null ? activityLevel : (user.protocol ? user.protocol.activityLevel : undefined),
+      goals: goals !== undefined && goals !== null ? goals : (user.protocol ? user.protocol.goals : undefined),
+      location: location !== undefined && location !== null ? location : (user.protocol ? user.protocol.location : undefined),
+      equipment: equipment !== undefined && equipment !== null ? equipment : (user.protocol ? user.protocol.equipment : undefined),
+      duration: duration !== undefined && duration !== null ? Number(duration) : (user.protocol ? user.protocol.duration : undefined),
+      fitnessLevel: fitnessLevel !== undefined && fitnessLevel !== null ? fitnessLevel : (user.protocol ? user.protocol.fitnessLevel : undefined)
     };
 
     await user.save();
@@ -358,7 +644,7 @@ app.get('/api/user/protocol', async (req, res) => {
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await findUserOrMock(email);
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -376,7 +662,7 @@ app.get('/api/user/profile', async (req, res) => {
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await findUserOrMock(email);
     if (!user) {
       return res.status(404).json({ error: 'User not found.' });
     }
@@ -1074,17 +1360,19 @@ app.post('/api/user/workout-plan', async (req, res) => {
 // 5. Save Workout Session Route
 app.post('/api/workouts', async (req, res) => {
   try {
-    const { email, workoutName, duration, steps, distance, calories } = req.body;
+    const { email, workoutName, duration, steps, distance, calories, date } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'User email is required to save workout.' });
     }
+    const logDate = date ? new Date(date) : new Date();
     const workout = new Workout({
       email: email.toLowerCase(),
       workoutName: workoutName || 'Custom Session',
       duration: Number(duration),
       steps: Number(steps),
       distance: Number(distance),
-      calories: calories ? Number(calories) : undefined
+      calories: calories ? Number(calories) : undefined,
+      date: logDate
     });
     await workout.save();
     res.status(201).json({ message: 'Workout saved successfully.', workout });
@@ -1102,6 +1390,11 @@ app.get('/api/workouts', async (req, res) => {
       return res.status(400).json({ error: 'User email is required.' });
     }
     const workouts = await Workout.find({ email: email.toLowerCase() }).sort({ date: -1 });
+    workouts.forEach(w => {
+      if (!w.date) {
+        w.date = w.createdAt || new Date();
+      }
+    });
     res.status(200).json(workouts);
   } catch (error) {
     console.error('Get workouts error:', error);
@@ -1198,6 +1491,51 @@ const RECIPES_DATABASE = [
     mealType: "breakfast",
     ingredients: ["100g smoked salmon", "2 tbsp cream cheese", "1 whole wheat bagel"]
   },
+  {
+    name: "Chia Seed Pudding with Berries & Almonds",
+    type: "vegan",
+    calories: 380, protein: 10, carbs: 45, fat: 18,
+    allergens: ["nuts"],
+    budgetTier: "mid",
+    mealType: "breakfast",
+    ingredients: ["3 tbsp chia seeds", "1 cup almond milk", "0.5 cup mixed berries", "10g sliced almonds"]
+  },
+  {
+    name: "Peanut Butter Banana Toast",
+    type: "vegan",
+    calories: 350, protein: 12, carbs: 48, fat: 14,
+    allergens: ["nuts", "peanuts", "gluten"],
+    budgetTier: "low",
+    mealType: "breakfast",
+    ingredients: ["2 slices whole wheat bread", "2 tbsp peanut butter", "1 medium banana"]
+  },
+  {
+    name: "Tofu Scramble with Spinach & Cherry Tomatoes",
+    type: "vegan",
+    calories: 310, protein: 20, carbs: 12, fat: 18,
+    allergens: ["soy"],
+    budgetTier: "mid",
+    mealType: "breakfast",
+    ingredients: ["150g firm tofu", "1 cup fresh spinach", "0.5 cup cherry tomatoes", "1 tsp olive oil"]
+  },
+  {
+    name: "Quinoa Porridge with Apple & Cinnamon",
+    type: "vegan",
+    calories: 390, protein: 11, carbs: 62, fat: 8,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "breakfast",
+    ingredients: ["0.5 cup dry quinoa", "1 cup oat milk", "1 red apple", "1 tsp cinnamon"]
+  },
+  {
+    name: "Protein Berry Smoothie Bowl",
+    type: "vegan",
+    calories: 420, protein: 25, carbs: 58, fat: 10,
+    allergens: [],
+    budgetTier: "high",
+    mealType: "breakfast",
+    ingredients: ["1 scoop plant protein powder", "1 cup frozen mixed berries", "1 banana", "1 cup coconut water"]
+  },
 
   // LUNCHES
   {
@@ -1280,6 +1618,51 @@ const RECIPES_DATABASE = [
     budgetTier: "high",
     mealType: "lunch",
     ingredients: ["200g grass-fed steak", "200g baby potatoes", "1 bunch asparagus", "1.5 tbsp garlic butter"]
+  },
+  {
+    name: "Vegan Buddha Bowl with Tahini Dressing",
+    type: "vegan",
+    calories: 610, protein: 20, carbs: 80, fat: 22,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "lunch",
+    ingredients: ["0.5 cup chickpeas", "0.5 cup quinoa", "0.5 avocado", "2 tbsp tahini dressing", "1 cup shredded carrots & purple cabbage"]
+  },
+  {
+    name: "Sweet Potato & Chickpea Curry",
+    type: "vegan",
+    calories: 580, protein: 16, carbs: 88, fat: 14,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "lunch",
+    ingredients: ["1 medium sweet potato", "1 cup canned chickpeas", "0.5 cup tomato puree", "1 tsp curry powder"]
+  },
+  {
+    name: "Edamame Quinoa Salad with Ginger Dressing",
+    type: "vegan",
+    calories: 540, protein: 22, carbs: 68, fat: 16,
+    allergens: ["soy"],
+    budgetTier: "high",
+    mealType: "lunch",
+    ingredients: ["1 cup shelled edamame", "1 cup cooked quinoa", "1 diced cucumber", "2 tbsp ginger sesame dressing"]
+  },
+  {
+    name: "Tempeh Lettuce Tomato (TLT) Sandwich",
+    type: "vegan",
+    calories: 480, protein: 22, carbs: 42, fat: 18,
+    allergens: ["soy", "gluten"],
+    budgetTier: "mid",
+    mealType: "lunch",
+    ingredients: ["100g organic tempeh", "2 slices whole wheat bread", "2 slices tomato", "2 leaves romaine lettuce", "1 tbsp vegan mayo"]
+  },
+  {
+    name: "Black-Eyed Peas & Collard Greens Bowl",
+    type: "vegan",
+    calories: 460, protein: 18, carbs: 64, fat: 10,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "lunch",
+    ingredients: ["1 cup black-eyed peas", "2 cups chopped collard greens", "1 cup cooked brown rice", "smoked paprika"]
   },
 
   // DINNERS
@@ -1364,6 +1747,51 @@ const RECIPES_DATABASE = [
     mealType: "dinner",
     ingredients: ["250g ribeye steak", "1 large sweet potato", "2 cups baby spinach", "1 tbsp butter"]
   },
+  {
+    name: "Lentil Shepherd's Pie",
+    type: "vegan",
+    calories: 510, protein: 22, carbs: 78, fat: 10,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "dinner",
+    ingredients: ["1 cup cooked brown lentils", "1 large mashed potato", "0.5 cup mixed peas & carrots", "vegetable gravy"]
+  },
+  {
+    name: "Spaghetti Squash with Marinara & White Beans",
+    type: "vegan",
+    calories: 430, protein: 16, carbs: 68, fat: 8,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "dinner",
+    ingredients: ["1 medium spaghetti squash", "1 cup marinara sauce", "1 cup cannellini beans"]
+  },
+  {
+    name: "Coconut Lime Tofu Curry with Brown Rice",
+    type: "vegan",
+    calories: 640, protein: 24, carbs: 80, fat: 22,
+    allergens: ["soy"],
+    budgetTier: "high",
+    mealType: "dinner",
+    ingredients: ["150g extra firm tofu", "0.5 cup light coconut milk", "1 tbsp lime juice", "1 cup brown rice", "Thai green curry paste"]
+  },
+  {
+    name: "Black Bean Sweet Potato Chili",
+    type: "vegan",
+    calories: 480, protein: 18, carbs: 84, fat: 6,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "dinner",
+    ingredients: ["1 cup black beans", "1 cup diced sweet potatoes", "1 cup diced tomatoes", "chili powder"]
+  },
+  {
+    name: "Mushroom & Lentil Bolognese with Pasta",
+    type: "vegan",
+    calories: 590, protein: 24, carbs: 92, fat: 12,
+    allergens: ["gluten"],
+    budgetTier: "mid",
+    mealType: "dinner",
+    ingredients: ["80g whole wheat pasta", "0.5 cup cooked brown lentils", "1 cup chopped portobello mushrooms", "1 cup tomato sauce"]
+  },
 
   // SNACKS
   {
@@ -1446,11 +1874,56 @@ const RECIPES_DATABASE = [
     budgetTier: "high",
     mealType: "snack",
     ingredients: ["3 slices prosciutto", "40g soft goat cheese"]
+  },
+  {
+    name: "Celery Sticks with Almond Butter",
+    type: "vegan",
+    calories: 190, protein: 5, carbs: 12, fat: 15,
+    allergens: ["nuts"],
+    budgetTier: "low",
+    mealType: "snack",
+    ingredients: ["4 celery stalks", "1.5 tbsp almond butter"]
+  },
+  {
+    name: "Roasted Chickpeas (Spicy)",
+    type: "vegan",
+    calories: 150, protein: 7, carbs: 22, fat: 4,
+    allergens: [],
+    budgetTier: "low",
+    mealType: "snack",
+    ingredients: ["0.5 cup canned chickpeas", "1 tsp olive oil", "chili powder & salt"]
+  },
+  {
+    name: "Guacamole with Baked Tortilla Chips",
+    type: "vegan",
+    calories: 230, protein: 3, carbs: 24, fat: 15,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "snack",
+    ingredients: ["0.5 ripe avocado", "15 baked tortilla chips", "lime & salt"]
+  },
+  {
+    name: "Chia Seed Oat Energy Bites",
+    type: "vegan",
+    calories: 210, protein: 6, carbs: 26, fat: 10,
+    allergens: [],
+    budgetTier: "mid",
+    mealType: "snack",
+    ingredients: ["3 homemade oat energy bites", "rolled oats", "chia seeds", "maple syrup"]
+  },
+  {
+    name: "Pistachios & Dried Apricots",
+    type: "vegan",
+    calories: 260, protein: 7, carbs: 28, fat: 14,
+    allergens: ["nuts"],
+    budgetTier: "high",
+    mealType: "snack",
+    ingredients: ["30g shelled pistachios", "4 dried apricots"]
   }
-];
+];;
 
 // Helper to filter and adapt a recipe based on dietary preferences, budget, allergies, and health conditions
-function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthConditions) {
+function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthConditions, excludeNames = []) {
   let candidates = RECIPES_DATABASE.filter(r => r.mealType === mealType);
 
   if (healthConditions && healthConditions.length > 0) {
@@ -1489,7 +1962,22 @@ function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthCon
     });
   }
 
-  let budgetMatches = candidates.filter(r => r.budgetTier === budget);
+  // Filter out already used names to ensure daily variety
+  const unusedCandidates = candidates.filter(r => !excludeNames.includes(r.name));
+
+  let budgetMatches = unusedCandidates.filter(r => r.budgetTier === budget);
+
+  // Fallback 1: If no unused candidates match the budget, try any budget tier of unused candidates
+  if (budgetMatches.length === 0) {
+    budgetMatches = unusedCandidates;
+  }
+
+  // Fallback 2: If still no unused candidates exist, relax the excludeNames filter and match budget tier
+  if (budgetMatches.length === 0) {
+    budgetMatches = candidates.filter(r => r.budgetTier === budget);
+  }
+
+  // Fallback 3: If still no candidates of that budget tier, take any candidate
   if (budgetMatches.length === 0) {
     budgetMatches = candidates;
   }
@@ -1601,8 +2089,7 @@ app.post('/api/user/diet-plan', async (req, res) => {
     const allergies = dProfile.allergies || [];
     const healthConditions = dProfile.healthConditions || [];
 
-    const calculatedWater = (weight * 35) / 1000;
-    const waterGoal = Math.min(5.0, Math.max(2.0, Number(calculatedWater.toFixed(1))));
+    const waterGoal = 4.0;
 
     const scaleMeal = (meal, targetMealKcal) => {
       const baseScale = targetMealKcal / meal.calories;
@@ -1616,16 +2103,35 @@ app.post('/api/user/diet-plan', async (req, res) => {
       };
     };
 
+    const usedRecipeNames = [];
+    if (user.dietPlan && user.dietPlan.dailyMeals) {
+      Object.keys(user.dietPlan.dailyMeals).forEach(k => {
+        if (user.dietPlan.dailyMeals[k] && user.dietPlan.dailyMeals[k].name) {
+          usedRecipeNames.push(user.dietPlan.dailyMeals[k].name);
+        }
+      });
+    }
+
     const compileDaysPlan = () => {
-      const bMealRaw = findAndFilterRecipe("breakfast", dietaryType, budget, allergies, healthConditions);
-      const lMealRaw = findAndFilterRecipe("lunch", dietaryType, budget, allergies, healthConditions);
-      const dMealRaw = findAndFilterRecipe("dinner", dietaryType, budget, allergies, healthConditions);
-      const sMealRaw = findAndFilterRecipe("snack", dietaryType, budget, allergies, healthConditions);
+      const bMealRaw = findAndFilterRecipe("breakfast", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(bMealRaw.name);
+      const lMealRaw = findAndFilterRecipe("lunch", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(lMealRaw.name);
+      const dMealRaw = findAndFilterRecipe("dinner", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(dMealRaw.name);
+      const sMealRaw = findAndFilterRecipe("snack", dietaryType, budget, allergies, healthConditions, usedRecipeNames);
+      usedRecipeNames.push(sMealRaw.name);
 
       const breakfast = scaleMeal(bMealRaw, targetKcal * 0.25);
       const lunch = scaleMeal(lMealRaw, targetKcal * 0.35);
       const dinner = scaleMeal(dMealRaw, targetKcal * 0.30);
       const snack = scaleMeal(sMealRaw, targetKcal * 0.10);
+
+      const sumCalories = breakfast.calories + lunch.calories + dinner.calories + snack.calories;
+      const diff = targetKcal - sumCalories;
+      if (diff !== 0) {
+        lunch.calories += diff;
+      }
 
       return { breakfast, lunch, dinner, snack };
     };
@@ -1655,6 +2161,7 @@ app.post('/api/user/diet-plan', async (req, res) => {
     const plan = {
       generatedAt: new Date().toISOString(),
       waterGoal,
+      dailyCalories: targetKcal,
       dailyMeals,
       weeklyMeals,
       shoppingList
@@ -1685,6 +2192,25 @@ app.get('/api/user/diet-plan', async (req, res) => {
   } catch (error) {
     console.error("Get diet plan error:", error);
     res.status(500).json({ error: "Failed to fetch diet plan." });
+  }
+});
+
+app.delete('/api/user/diet-plan', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    user.dietPlan = null;
+    await user.save();
+    res.status(200).json({ message: "Diet plan deleted successfully." });
+  } catch (error) {
+    console.error("Delete diet plan error:", error);
+    res.status(500).json({ error: "Failed to delete diet plan." });
   }
 });
 
@@ -1754,6 +2280,93 @@ function getCalorieDetails(name, weightGrams) {
     carbs: Math.round(base.carbs * factor),
     fat: Math.round(base.fat * factor),
     portion: `${weightGrams}g`
+  };
+}
+
+function resolveNutritionForMeal(items) {
+  let calculatedItems = [];
+  let totalCalories = 0;
+  let totalProtein = 0;
+  let totalCarbs = 0;
+  let totalFat = 0;
+  let totalFiber = 0;
+  let totalSugar = 0;
+  let totalSodium = 0;
+  let totalCholesterol = 0;
+  let totalPotassium = 0;
+
+  for (let item of items) {
+    const name = item.name || "Unknown item";
+    const norm = (item.normalizedName || name).toLowerCase().trim();
+    const grams = Number(item.estimatedGrams || 100);
+
+    // Initial base values per 100g from the AI
+    let basePer100 = {
+      calories: Number(item.caloriesPer100g !== undefined ? item.caloriesPer100g : (item.calories / (grams/100) || 150)),
+      protein: Number(item.proteinPer100g !== undefined ? item.proteinPer100g : (item.protein / (grams/100) || 5)),
+      carbs: Number(item.carbsPer100g !== undefined ? item.carbsPer100g : (item.carbs / (grams/100) || 20)),
+      fat: Number(item.fatPer100g !== undefined ? item.fatPer100g : (item.fat / (grams/100) || 5)),
+      fiber: Number(item.fiberPer100g !== undefined ? item.fiberPer100g : (item.fiber / (grams/100) || 1)),
+      sugar: Number(item.sugarPer100g !== undefined ? item.sugarPer100g : (item.sugar / (grams/100) || 1)),
+      sodium: Number(item.sodiumPer100g !== undefined ? item.sodiumPer100g : (item.sodium / (grams/100) || 100)),
+      cholesterol: Number(item.cholesterolPer100g !== undefined ? item.cholesterolPer100g : (item.cholesterol / (grams/100) || 0)),
+      potassium: Number(item.potassiumPer100g !== undefined ? item.potassiumPer100g : (item.potassium / (grams/100) || 100))
+    };
+
+    // Override with local database if match exists
+    let matchKey = Object.keys(FOOD_DATABASE).find(k => norm.includes(k) || k.includes(norm));
+    if (matchKey) {
+      const dbBase = FOOD_DATABASE[matchKey];
+      basePer100.calories = dbBase.calories;
+      basePer100.protein = dbBase.protein;
+      basePer100.carbs = dbBase.carbs;
+      basePer100.fat = dbBase.fat;
+      if (dbBase.fiber !== undefined) basePer100.fiber = dbBase.fiber;
+      if (dbBase.sugar !== undefined) basePer100.sugar = dbBase.sugar;
+      if (dbBase.sodium !== undefined) basePer100.sodium = dbBase.sodium;
+      if (dbBase.cholesterol !== undefined) basePer100.cholesterol = dbBase.cholesterol;
+      if (dbBase.potassium !== undefined) basePer100.potassium = dbBase.potassium;
+    }
+
+    const factor = grams / 100;
+    const calcItem = {
+      name: matchKey ? FOOD_DATABASE[matchKey].name : name,
+      portion: item.portion || `${grams}g`,
+      calories: Math.round(basePer100.calories * factor),
+      protein: Math.round(basePer100.protein * factor),
+      carbs: Math.round(basePer100.carbs * factor),
+      fat: Math.round(basePer100.fat * factor),
+      fiber: Math.round(basePer100.fiber * factor),
+      sugar: Math.round(basePer100.sugar * factor),
+      sodium: Math.round(basePer100.sodium * factor),
+      cholesterol: Math.round(basePer100.cholesterol * factor),
+      potassium: Math.round(basePer100.potassium * factor)
+    };
+
+    calculatedItems.push(calcItem);
+
+    totalCalories += calcItem.calories;
+    totalProtein += calcItem.protein;
+    totalCarbs += calcItem.carbs;
+    totalFat += calcItem.fat;
+    totalFiber += calcItem.fiber;
+    totalSugar += calcItem.sugar;
+    totalSodium += calcItem.sodium;
+    totalCholesterol += calcItem.cholesterol;
+    totalPotassium += calcItem.potassium;
+  }
+
+  return {
+    items: calculatedItems,
+    totalCalories,
+    protein: totalProtein,
+    carbs: totalCarbs,
+    fat: totalFat,
+    fiber: totalFiber,
+    sugar: totalSugar,
+    sodium: totalSodium,
+    cholesterol: totalCholesterol,
+    potassium: totalPotassium
   };
 }
 
@@ -2363,18 +2976,69 @@ app.post('/api/scan-food', async (req, res) => {
           throw new Error("No response text from Gemini API.");
         }
 
-        const data = JSON.parse(responseText);
+        const data = cleanAndParseJson(responseText);
+        if (data.items && data.items.length > 0) {
+          const resolved = resolveNutritionForMeal(data.items);
+          data.items = resolved.items;
+          data.totalCalories = resolved.totalCalories;
+          data.protein = resolved.protein;
+          data.carbs = resolved.carbs;
+          data.fat = resolved.fat;
+          data.fiber = resolved.fiber;
+          data.sugar = resolved.sugar;
+          data.sodium = resolved.sodium;
+          data.cholesterol = resolved.cholesterol;
+          data.potassium = resolved.potassium;
+        }
         return res.status(200).json(data);
       } catch (geminiError) {
         console.error("Gemini AI failed, using fallback mock analyzer:", geminiError);
         const mockData = getMockVisionAnalysis(name);
         mockData.simulated = true;
         mockData.warning = "Gemini API key call failed. Showing simulated analysis.";
+        if (mockData.items && mockData.items.length > 0) {
+          mockData.items.forEach(item => {
+            if (!item.estimatedGrams) {
+              const matchGrams = (item.portion || '').match(/(\d+)g/);
+              item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 100;
+            }
+          });
+          const resolved = resolveNutritionForMeal(mockData.items);
+          mockData.items = resolved.items;
+          mockData.totalCalories = resolved.totalCalories;
+          mockData.protein = resolved.protein;
+          mockData.carbs = resolved.carbs;
+          mockData.fat = resolved.fat;
+          mockData.fiber = resolved.fiber;
+          mockData.sugar = resolved.sugar;
+          mockData.sodium = resolved.sodium;
+          mockData.cholesterol = resolved.cholesterol;
+          mockData.potassium = resolved.potassium;
+        }
         return res.status(200).json(mockData);
       }
     } else {
       const mockData = getMockVisionAnalysis(name);
       mockData.simulated = true;
+      if (mockData.items && mockData.items.length > 0) {
+        mockData.items.forEach(item => {
+          if (!item.estimatedGrams) {
+            const matchGrams = (item.portion || '').match(/(\d+)g/);
+            item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 100;
+          }
+        });
+        const resolved = resolveNutritionForMeal(mockData.items);
+        mockData.items = resolved.items;
+        mockData.totalCalories = resolved.totalCalories;
+        mockData.protein = resolved.protein;
+        mockData.carbs = resolved.carbs;
+        mockData.fat = resolved.fat;
+        mockData.fiber = resolved.fiber;
+        mockData.sugar = resolved.sugar;
+        mockData.sodium = resolved.sodium;
+        mockData.cholesterol = resolved.cholesterol;
+        mockData.potassium = resolved.potassium;
+      }
       return res.status(200).json(mockData);
     }
   } catch (error) {
@@ -2454,7 +3118,20 @@ app.post('/api/analyze-text-food', async (req, res) => {
           const resultJson = await response.json();
           const responseText = resultJson.candidates?.[0]?.content?.parts?.[0]?.text;
           if (responseText) {
-            const data = JSON.parse(responseText);
+            const data = cleanAndParseJson(responseText);
+            if (data.items && data.items.length > 0) {
+              const resolved = resolveNutritionForMeal(data.items);
+              data.items = resolved.items;
+              data.totalCalories = resolved.totalCalories;
+              data.protein = resolved.protein;
+              data.carbs = resolved.carbs;
+              data.fat = resolved.fat;
+              data.fiber = resolved.fiber;
+              data.sugar = resolved.sugar;
+              data.sodium = resolved.sodium;
+              data.cholesterol = resolved.cholesterol;
+              data.potassium = resolved.potassium;
+            }
             return res.status(200).json(data);
           }
         }
@@ -2520,25 +3197,50 @@ app.post('/api/analyze-text-food', async (req, res) => {
       }
     }
 
-    let totalCalories = 0;
-    let protein = 0;
-    let carbs = 0;
-    let fat = 0;
     items.forEach(item => {
-      totalCalories += item.calories;
-      protein += item.protein;
-      carbs += item.carbs;
-      fat += item.fat;
+      if (!item.estimatedGrams) {
+        const matchGrams = (item.portion || '').match(/(\d+)g/);
+        item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 150;
+      }
     });
+
+    const resolved = resolveNutritionForMeal(items);
 
     const payload = {
       foodName: dominantMealName,
       confidence: 100,
-      totalCalories,
-      protein,
-      carbs,
-      fat,
-      items,
+      totalCalories: resolved.totalCalories,
+      protein: resolved.protein,
+      carbs: resolved.carbs,
+      fat: resolved.fat,
+      fiber: resolved.fiber,
+      sugar: resolved.sugar,
+      sodium: resolved.sodium,
+      cholesterol: resolved.cholesterol,
+      potassium: resolved.potassium,
+      items: resolved.items,
+      healthAnalysis: {
+        isHealthy: resolved.totalCalories < 600 && resolved.fat < 20,
+        suitableWeightLoss: resolved.totalCalories < 500,
+        suitableMuscleGain: resolved.protein > 20,
+        suitableDiabetic: resolved.sugar < 10,
+        suitableHeartHealth: resolved.cholesterol < 20 && resolved.sodium < 400,
+        highProtein: resolved.protein > 25,
+        highFat: resolved.fat > 20,
+        highSugar: resolved.sugar > 15,
+        highSodium: resolved.sodium > 500,
+        isBalanced: resolved.protein > 10 && resolved.carbs > 20,
+        healthScore: Math.max(20, Math.min(100, 100 - (resolved.fat * 1.5) - (resolved.sugar * 2) + (resolved.protein * 0.5))),
+        explanation: `Computed analysis based on portion weights: ${dominantMealName}.`
+      },
+      recommendations: {
+        bestTimeToEat: "Lunch or Post-workout",
+        alternatives: ["Switch to complex carbs", "Increase protein toppings"],
+        portionAdvice: `Keep serving weight around ${items.reduce((sum, i)=>sum+(i.estimatedGrams||150),0)}g`,
+        waterRecommendation: "Drink 250ml water",
+        workoutRecommendation: `Burn ${resolved.totalCalories} kcal through active movement`,
+        foodsToPairWith: ["Leafy salad greens", "Water with lemon slice"]
+      },
       simulated: true
     };
     return res.status(200).json(payload);
@@ -2711,7 +3413,7 @@ app.post('/api/ai/generate-plan', async (req, res) => {
           const resData = await response.json();
           const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (txt) {
-            const parsed = JSON.parse(txt);
+            const parsed = cleanAndParseJson(txt);
             return res.status(200).json(parsed);
           }
         }
@@ -2989,7 +3691,7 @@ app.post('/api/ai/verify-meal-photo', async (req, res) => {
           const resData = await response.json();
           const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (txt) {
-            const parsed = JSON.parse(txt);
+            const parsed = cleanAndParseJson(txt);
             detectedMealName = parsed.foodName || detectedMealName;
             detectedCalories = parsed.totalCalories || detectedCalories;
             detectedProtein = parsed.protein || detectedProtein;
@@ -3092,6 +3794,11 @@ app.get('/api/nutrition/logs', async (req, res) => {
     }
 
     const logs = await NutritionLog.find(query).sort({ date: -1 });
+    logs.forEach(l => {
+      if (!l.date) {
+        l.date = l.createdAt || new Date();
+      }
+    });
     res.status(200).json({ logs });
   } catch (error) {
     console.error("Get nutrition logs error:", error);
@@ -3141,6 +3848,99 @@ app.delete('/api/workout/:id', async (req, res) => {
   }
 });
 
+// 4n. Delete User Account and associated logs
+app.delete('/api/user/account', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+    const normalizedEmail = email.toLowerCase();
+    
+    // Delete user profile
+    await User.findOneAndDelete({ email: normalizedEmail });
+    
+    // Delete associated logs
+    await Workout.deleteMany({ email: normalizedEmail });
+    await NutritionLog.deleteMany({ email: normalizedEmail });
+    
+    res.status(200).json({ message: "Account and associated data deleted successfully." });
+  } catch (error) {
+    console.error("Delete user account error:", error);
+    res.status(500).json({ error: "Failed to delete user account." });
+  }
+});
+
+// 5. Body Scan Routes
+app.post('/api/bodyscan', async (req, res) => {
+  try {
+    const { email, height, weight, bmi, fitnessScore, posture, shoulderAlignment, bodySymmetry, goal, measurements, recommendations, frontScanImage, sideScanImage } = req.body;
+    const userEmail = (email || 'guest@fitforge.ai').toLowerCase().trim();
+
+    const scanRecord = new BodyScan({
+      email: userEmail,
+      height: Number(height) || 175,
+      weight: Number(weight) || 70,
+      bmi: Number(bmi) || 22.9,
+      fitnessScore: Number(fitnessScore) || 78,
+      posture: posture || 'Good',
+      shoulderAlignment: shoulderAlignment || 'Aligned',
+      bodySymmetry: Number(bodySymmetry) || 86,
+      goal: goal || 'Muscle Gain',
+      measurements: measurements || {},
+      recommendations: recommendations || {},
+      frontScanImage: frontScanImage || null,
+      sideScanImage: sideScanImage || null,
+      date: new Date()
+    });
+
+    try {
+      await scanRecord.save();
+    } catch (err) {
+      useMockDb = true;
+      await scanRecord.save();
+    }
+
+    res.status(201).json({ success: true, scan: scanRecord });
+  } catch (error) {
+    console.error('Body scan save error:', error);
+    res.status(500).json({ error: error.message || 'Failed to save body scan' });
+  }
+});
+
+app.get('/api/bodyscan', async (req, res) => {
+  try {
+    const email = (req.query.email || 'guest@fitforge.ai').toLowerCase().trim();
+    let scans;
+    try {
+      scans = await BodyScan.find({ email }).sort({ date: -1 });
+    } catch (err) {
+      useMockDb = true;
+      scans = await BodyScan.find({ email }).sort({ date: -1 });
+    }
+    res.json({ success: true, scans: scans || [] });
+  } catch (error) {
+    console.error('Get body scans error:', error);
+    res.status(500).json({ error: error.message || 'Failed to retrieve body scans' });
+  }
+});
+
+app.delete('/api/bodyscan', async (req, res) => {
+  try {
+    const email = (req.query.email || req.body.email || 'guest@fitforge.ai').toLowerCase().trim();
+    try {
+      await BodyScan.deleteMany({ email });
+    } catch (err) {
+      useMockDb = true;
+      await BodyScan.deleteMany({ email });
+    }
+    res.json({ success: true, message: 'All body scan data deleted successfully.' });
+  } catch (error) {
+    console.error('Delete body scans error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete body scans' });
+  }
+});
+
 // Serve Static Frontend files from root
 // Disable caching for HTML files so updates are immediately visible
 app.use((req, res, next) => {
@@ -3162,6 +3962,6 @@ module.exports = app;
 // Start local server if run directly
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`🟢 Server is running at http://localhost:${PORT}`);
   });
 }

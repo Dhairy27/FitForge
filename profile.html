@@ -128,12 +128,17 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="body-scan.html">
+                <span class="material-symbols-outlined">body_system</span>
+                <span class="font-body-md text-body-md tracking-tight">AI Body Scan</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="planner.html">
-                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
+                <span class="material-symbols-outlined">auto_awesome</span>
                 <span class="font-body-md text-body-md tracking-tight">AI Planner</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
@@ -151,11 +156,6 @@
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <span class="font-body-md text-body-md tracking-tight">Scanner</span>
             </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
-                href="progress.html">
-                <span class="material-symbols-outlined">query_stats</span>
-                <span class="font-body-md text-body-md tracking-tight">Progress</span>
-            </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
                 href="profile.html">
                 <span class="material-symbols-outlined">person</span>
@@ -171,25 +171,25 @@
     </aside>
 
     <!-- Sidebar Mobile Backdrop -->
-    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden" onclick="toggleSidebar()"></div>
+    <div id="sidebar-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden lg:hidden"
+        onclick="toggleSidebar()"></div>
 
     <!-- Main Content Shell -->
-    <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
+    <main
+        class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
         <!-- Top Navbar -->
         <header
             class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
             <div class="flex items-center gap-4">
                 <!-- Hamburger Toggle Menu Button -->
-                <button onclick="toggleSidebar()" class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                <button onclick="toggleSidebar()"
+                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
                 <h2 class="font-headline-md text-headline-md text-primary font-bold">My Profile</h2>
             </div>
             <div class="flex items-center gap-stack-md">
                 <div class="flex items-center gap-4">
-                    <button class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
-                        <span class="material-symbols-outlined">notifications</span>
-                    </button>
                     <button
                         class="text-primary opacity-100 transition-opacity active:scale-95 border border-primary/20 bg-white/5 rounded-full p-1">
                         <span class="material-symbols-outlined text-primary text-xl">person</span>
@@ -214,30 +214,24 @@
                     <h3 class="font-headline-lg text-headline-md font-bold mb-1 text-primary" id="profile-name">Loading
                         Profile...</h3>
                     <p class="text-secondary opacity-60 mb-2 font-body-md" id="profile-email">email@address.com</p>
-                    <div class="flex flex-wrap gap-2 justify-center md:justify-start mt-4">
-                        <span
-                            class="px-3.5 py-1 border border-glass-border bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-primary flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                            Biological Status: Synced
-                        </span>
-                        <span
-                            class="px-3.5 py-1 border border-glass-border bg-white/5 rounded-full text-[10px] font-bold uppercase tracking-widest text-secondary opacity-60"
-                            id="profile-joined">
-                            Member since: --
-                        </span>
-                    </div>
+
                 </div>
-                <div class="flex-shrink-0 w-full md:w-auto flex justify-center mt-4 md:mt-0">
+                <div class="flex-shrink-0 w-full md:w-auto flex justify-center mt-4 md:mt-0 gap-3">
                     <button onclick="logout()"
-                        class="px-6 py-3 border border-red-500/30 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all text-red-400 font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                        class="px-6 py-3 border border-glass-border bg-white/5 hover:bg-white/10 transition-all text-secondary font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95">
                         <span class="material-symbols-outlined text-sm">logout</span>
                         Logout
+                    </button>
+                    <button onclick="deleteAccount()"
+                        class="px-6 py-3 border border-red-500/30 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all text-red-400 font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                        <span class="material-symbols-outlined text-sm">delete_forever</span>
+                        Delete Account
                     </button>
                 </div>
             </div>
 
-            <!-- Biometrics Bento Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mb-gutter">
+            <!-- Biometrics Bento Grid Row 1 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-gutter">
                 <!-- Biological Telemetry -->
                 <div class="glass-card p-stack-md rounded-xl flex flex-col justify-between">
                     <div class="flex justify-between items-start mb-6">
@@ -246,7 +240,9 @@
                                 Telemetry</p>
                             <h4 class="font-headline-md text-headline-md text-primary">Baseline</h4>
                         </div>
-                        <span class="material-symbols-outlined text-primary/40">biotech</span>
+                        <button onclick="openEditBaselineModal()" class="text-secondary opacity-60 hover:opacity-100 hover:text-primary transition-all flex items-center justify-center p-1.5 rounded-full border border-white/10 bg-white/5 active:scale-95 cursor-pointer" title="Edit Telemetry Baseline">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
                     </div>
                     <div class="space-y-3 font-body-md text-sm border-t border-glass-border/30 pt-4" id="bio-details">
                         <div class="flex justify-between"><span class="opacity-60 text-secondary">Age:</span><span
@@ -271,9 +267,9 @@
                         <span class="material-symbols-outlined text-primary/40">fitness_center</span>
                     </div>
                     <div class="space-y-4">
-                        <div class="w-full bg-white/10 h-2 rounded-full relative overflow-hidden" id="bmi-scale-bar">
+                        <div class="w-full bg-white/10 h-1.5 rounded-full relative" id="bmi-scale-bar">
                             <!-- BMI indicator dot -->
-                            <div class="absolute w-2.5 h-2.5 bg-primary border border-surface-obsidian rounded-full top-1/2 -translate-y-1/2 transition-all duration-500"
+                            <div class="absolute w-3 h-3 bg-primary border border-surface-obsidian rounded-full top-1/2 -translate-y-1/2 transition-all duration-500"
                                 id="bmi-indicator-dot" style="left: 0%;"></div>
                         </div>
                         <div
@@ -289,7 +285,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <!-- Biometrics Bento Grid Row 2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter mb-gutter">
                 <!-- Lifestyle & Environment -->
                 <div class="glass-card p-stack-md rounded-xl flex flex-col justify-between">
                     <div class="flex justify-between items-start mb-6">
@@ -298,7 +297,9 @@
                                 &amp; Load</p>
                             <h4 class="font-headline-md text-headline-md text-primary">Activity</h4>
                         </div>
-                        <span class="material-symbols-outlined text-primary/40">work</span>
+                        <button onclick="openEditActivityModal()" class="text-secondary opacity-60 hover:opacity-100 hover:text-primary transition-all flex items-center justify-center p-1.5 rounded-full border border-white/10 bg-white/5 active:scale-95 cursor-pointer" title="Edit Activity & Lifestyle">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
                     </div>
                     <div class="space-y-3 font-body-md text-sm border-t border-glass-border/30 pt-4"
                         id="lifestyle-details">
@@ -318,19 +319,18 @@
                                 id="detail-duration" class="font-bold text-primary">-- mins</span></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Goals & Achievements Section -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
                 <!-- Active Performance Goals -->
-                <div class="glass-card p-stack-md rounded-xl md:col-span-5 flex flex-col justify-between">
+                <div class="glass-card p-stack-md rounded-xl flex flex-col justify-start">
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">
                                 Performance Protocol</p>
                             <h4 class="font-headline-md text-headline-md text-primary">Goals &amp; Equipment</h4>
                         </div>
-                        <span class="material-symbols-outlined text-primary/40">my_location</span>
+                        <button onclick="openEditGoalsModal()" class="text-secondary opacity-60 hover:opacity-100 hover:text-primary transition-all flex items-center justify-center p-1.5 rounded-full border border-white/10 bg-white/5 active:scale-95 cursor-pointer" title="Edit Goals & Equipment">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
                     </div>
                     <div class="space-y-4">
                         <div>
@@ -349,56 +349,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="mt-6 pt-4 border-t border-glass-border/30">
-                        <p
-                            class="text-[10px] text-secondary opacity-50 font-label uppercase tracking-widest leading-relaxed">
-                            Metrics sync: Realtime with neural backend calibration.
-                        </p>
-                    </div>
-                </div>
 
-                <!-- Lifetime Activity Summary Achievements -->
-                <div class="glass-card p-stack-md rounded-xl md:col-span-7 flex flex-col justify-between">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <p class="text-label-sm uppercase tracking-widest text-secondary opacity-60 mb-1">Lifetime
-                                Statistics</p>
-                            <h4 class="font-headline-md text-headline-md text-primary">Achievements</h4>
-                        </div>
-                        <span class="material-symbols-outlined text-primary/40">emoji_events</span>
-                    </div>
-
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 text-center">
-                        <div
-                            class="bg-white/5 border border-glass-border p-3.5 rounded-lg flex flex-col justify-center">
-                            <p class="text-[9px] uppercase tracking-widest text-secondary opacity-50 font-label">
-                                Sessions</p>
-                            <p class="font-headline text-2xl font-bold text-primary mt-1" id="stat-sessions">0</p>
-                        </div>
-                        <div
-                            class="bg-white/5 border border-glass-border p-3.5 rounded-lg flex flex-col justify-center">
-                            <p class="text-[9px] uppercase tracking-widest text-secondary opacity-50 font-label">Steps
-                            </p>
-                            <p class="font-headline text-2xl font-bold text-primary mt-1" id="stat-steps">0</p>
-                        </div>
-                        <div
-                            class="bg-white/5 border border-glass-border p-3.5 rounded-lg flex flex-col justify-center">
-                            <p class="text-[9px] uppercase tracking-widest text-secondary opacity-50 font-label">
-                                Distance</p>
-                            <p class="font-headline text-2xl font-bold text-primary mt-1" id="stat-distance">0.00 km</p>
-                        </div>
-                        <div
-                            class="bg-white/5 border border-glass-border p-3.5 rounded-lg flex flex-col justify-center">
-                            <p class="text-[9px] uppercase tracking-widest text-secondary opacity-50 font-label">Est.
-                                Calories</p>
-                            <p class="font-headline text-2xl font-bold text-primary mt-1" id="stat-calories">0 kcal</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-6 pt-4 border-t border-glass-border/30 flex items-center justify-between">
-                        <span class="text-[10px] text-secondary opacity-50 uppercase tracking-wider">Sync: Online</span>
-                        <span class="material-symbols-outlined text-secondary opacity-40 text-sm">trending_up</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -413,15 +364,15 @@
                 <span class="font-headline text-sm font-bold text-primary">FitForge</span>
             </div>
             <div class="flex flex-wrap justify-center gap-8 text-secondary opacity-60">
-                <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-                <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span>Privacy Policy</span>
+                <span>Terms of Service</span>
+                <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                     System Status: Online
-                </a>
+                </span>
             </div>
             <div class="text-secondary opacity-40 text-[10px]">
-                &copy; 2024 FitForge. Engineered for Excellence.
+                &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
     </main>
@@ -433,23 +384,64 @@
         if (!userEmail) {
             window.location.href = 'login.html';
         } else {
-            // Enforce completed protocol details
-            fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
-                .then(res => res.json())
-                .then(data => {
-                    const proto = data.protocol || {};
-                    if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
-                        window.location.href = 'protocol.html';
-                    }
-                })
-                .catch(err => console.error("Error validating protocol completion:", err));
+            // Check localStorage cache first (avoids redirect loop in offline mode)
+            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+            if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
+                // Protocol already complete - no redirect needed
+            } else {
+                // Fallback: verify via API
+                fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const proto = data.protocol || {};
+                        if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
+                            window.location.href = 'protocol.html';
+                        } else {
+                            localStorage.setItem('userProtocol', JSON.stringify(proto));
+                        }
+                    })
+                    .catch(err => console.error("Error validating protocol completion:", err));
+            }
         }
 
         // Logout
         function logout() {
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
+            localStorage.removeItem('userProtocol');
             window.location.href = 'login.html';
+        }
+
+        async function deleteAccount() {
+            if (!confirm("Are you sure you want to permanently delete your account and all workout/nutrition logs? This action cannot be undone.")) return;
+
+            try {
+                const response = await fetch(`/api/user/account?email=${encodeURIComponent(userEmail)}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to delete account from server.");
+                }
+
+                alert("Your account and all associated logs have been permanently deleted.");
+                
+                // Clear all local storage records for this user to reset logs
+                const emailKey = userEmail;
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && (key.includes(emailKey) || key === 'userEmail' || key === 'userName')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+
+                window.location.href = 'signup.html';
+            } catch (err) {
+                console.error("Delete account error:", err);
+                alert("Error deleting account: " + err.message);
+            }
         }
 
         // Card interactivity (Mouse glow effect)
@@ -469,6 +461,8 @@
         }
 
         // Load User Profile Data
+        let currentProtocol = {};
+
         async function loadUserProfile() {
             try {
                 const response = await fetch(`/api/user/profile?email=${encodeURIComponent(userEmail)}`);
@@ -478,16 +472,10 @@
                     // Set Header details
                     document.getElementById('profile-name').textContent = user.name || userName;
                     document.getElementById('profile-email').textContent = user.email;
-                    if (user.createdAt) {
-                        const joinedDate = new Date(user.createdAt).toLocaleDateString([], {
-                            year: 'numeric',
-                            month: 'short'
-                        });
-                        document.getElementById('profile-joined').textContent = `Member since: ${joinedDate}`;
-                    }
 
                     // Set Biological telemetry baseline details
                     const proto = user.protocol || {};
+                    currentProtocol = proto;
                     document.getElementById('detail-age').textContent = proto.age ? `${proto.age} yrs` : 'Not set';
 
                     let biologicalSex = 'Not set';
@@ -501,7 +489,8 @@
                     // BMI Calculation
                     if (proto.height && proto.weight) {
                         const heightM = proto.height / 100;
-                        const bmi = (proto.weight / (heightM * heightM)).toFixed(1);
+                        const bmiVal = proto.weight / (heightM * heightM);
+                        const bmi = parseFloat(bmiVal.toFixed(1));
                         document.getElementById('bmi-value').textContent = bmi;
 
                         let status = '';
@@ -598,37 +587,9 @@
             }
         }
 
-        // Load Lifetime Workout Summary
-        async function loadWorkoutSummary() {
-            try {
-                const response = await fetch(`/api/workouts?email=${encodeURIComponent(userEmail)}`);
-                if (response.ok) {
-                    const workouts = await response.json();
-
-                    let totalSteps = 0;
-                    let totalDistance = 0;
-                    let totalCalories = 0;
-
-                    workouts.forEach(w => {
-                        totalSteps += w.steps || 0;
-                        totalDistance += w.distance || 0;
-                        totalCalories += w.calories || 0;
-                    });
-
-                    document.getElementById('stat-sessions').textContent = workouts.length;
-                    document.getElementById('stat-steps').textContent = totalSteps.toLocaleString();
-                    document.getElementById('stat-distance').textContent = `${(totalDistance / 1000).toFixed(2)} km`;
-                    document.getElementById('stat-calories').textContent = `${Math.round(totalCalories).toLocaleString()} kcal`;
-                }
-            } catch (e) {
-                console.error("Network error fetching workout summary stats:", e);
-            }
-        }
-
         // Run data fetch operations on page load
         if (userEmail) {
             loadUserProfile();
-            loadWorkoutSummary();
         }
 
         // Sidebar Navigation Drawer Toggle logic
@@ -643,8 +604,356 @@
                 backdrop.classList.add('hidden');
             }
         }
+
+        // Edit Baseline Modal Toggles & Actions
+        function openEditBaselineModal() {
+            document.getElementById('edit-age').value = currentProtocol.age || '';
+            document.getElementById('edit-sex').value = currentProtocol.biologicalSex || 'male';
+            document.getElementById('edit-height').value = currentProtocol.height || '';
+            document.getElementById('edit-weight').value = currentProtocol.weight || '';
+            document.getElementById('edit-baseline-modal').classList.remove('hidden');
+        }
+
+        function closeEditBaselineModal() {
+            document.getElementById('edit-baseline-modal').classList.add('hidden');
+        }
+
+        async function handleEditBaselineSubmit(e) {
+            e.preventDefault();
+            const ageVal = document.getElementById('edit-age').value;
+            const sexVal = document.getElementById('edit-sex').value;
+            const heightVal = document.getElementById('edit-height').value;
+            const weightVal = document.getElementById('edit-weight').value;
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch('/api/user/protocol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        ...currentProtocol,
+                        age: Number(ageVal),
+                        biologicalSex: sexVal,
+                        height: Number(heightVal),
+                        weight: Number(weightVal)
+                    })
+                });
+
+                if (response.ok) {
+                    closeEditBaselineModal();
+                    await loadUserProfile();
+                } else {
+                    alert("Failed to save baseline telemetry.");
+                }
+            } catch (err) {
+                console.error("Save baseline error:", err);
+                alert("Error saving baseline telemetry.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // Edit Activity Modal Toggles & Actions
+        function openEditActivityModal() {
+            document.getElementById('edit-occupation').value = currentProtocol.occupation || '';
+            document.getElementById('edit-activityLevel').value = currentProtocol.activityLevel || 'moderate';
+            document.getElementById('edit-fitnessLevel').value = currentProtocol.fitnessLevel || 'beginner';
+            document.getElementById('edit-location').value = currentProtocol.location || 'gym';
+            document.getElementById('edit-duration').value = currentProtocol.duration || '30';
+            document.getElementById('edit-activity-modal').classList.remove('hidden');
+        }
+
+        function closeEditActivityModal() {
+            document.getElementById('edit-activity-modal').classList.add('hidden');
+        }
+
+        async function handleEditActivitySubmit(e) {
+            e.preventDefault();
+            const occVal = document.getElementById('edit-occupation').value;
+            const actVal = document.getElementById('edit-activityLevel').value;
+            const fitVal = document.getElementById('edit-fitnessLevel').value;
+            const locVal = document.getElementById('edit-location').value;
+            const durVal = document.getElementById('edit-duration').value;
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch('/api/user/protocol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        ...currentProtocol,
+                        occupation: occVal,
+                        activityLevel: actVal,
+                        fitnessLevel: fitVal,
+                        location: locVal,
+                        duration: Number(durVal)
+                    })
+                });
+
+                if (response.ok) {
+                    closeEditActivityModal();
+                    await loadUserProfile();
+                } else {
+                    alert("Failed to save activity telemetry.");
+                }
+            } catch (err) {
+                console.error("Save activity error:", err);
+                alert("Error saving activity telemetry.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        // Edit Goals Modal Toggles & Actions
+        function openEditGoalsModal() {
+            const goals = currentProtocol.goals || [];
+            document.querySelectorAll('.edit-goal-checkbox').forEach(cb => {
+                cb.checked = goals.includes(cb.value);
+            });
+
+            const eq = currentProtocol.equipment || [];
+            document.querySelectorAll('.edit-eq-checkbox').forEach(cb => {
+                cb.checked = eq.includes(cb.value);
+            });
+
+            document.getElementById('edit-goals-modal').classList.remove('hidden');
+        }
+
+        function closeEditGoalsModal() {
+            document.getElementById('edit-goals-modal').classList.add('hidden');
+        }
+
+        async function handleEditGoalsSubmit(e) {
+            e.preventDefault();
+            const selectedGoals = Array.from(document.querySelectorAll('.edit-goal-checkbox:checked')).map(cb => cb.value);
+            const selectedEq = Array.from(document.querySelectorAll('.edit-eq-checkbox:checked')).map(cb => cb.value);
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            try {
+                const response = await fetch('/api/user/protocol', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        ...currentProtocol,
+                        goals: selectedGoals,
+                        equipment: selectedEq
+                    })
+                });
+
+                if (response.ok) {
+                    closeEditGoalsModal();
+                    await loadUserProfile();
+                } else {
+                    alert("Failed to save protocol goals.");
+                }
+            } catch (err) {
+                console.error("Save goals error:", err);
+                alert("Error saving protocol goals.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
     </script>
     <script src="subscription-check.js"></script>
+
+    <!-- EDIT BASELINE MODAL -->
+    <div id="edit-baseline-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeEditBaselineModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-primary uppercase tracking-widest">Update Telemetry</span>
+                <h3 class="text-xl font-bold text-white font-headline">Edit Baseline</h3>
+                <p class="text-xs text-secondary">Update your biometrics to recalculate BMI and target plans.</p>
+            </div>
+
+            <form id="edit-baseline-form" class="space-y-4" onsubmit="handleEditBaselineSubmit(event)">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Age (yrs)</label>
+                        <input type="number" id="edit-age" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required min="1" max="120" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Sex</label>
+                        <select id="edit-sex" class="w-full bg-surface-obsidian border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Height (cm)</label>
+                        <input type="number" id="edit-height" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required min="50" max="250" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Weight (kg)</label>
+                        <input type="number" id="edit-weight" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required min="10" max="300" />
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full py-3 bg-white hover:bg-white/90 text-black font-bold text-sm rounded-full uppercase tracking-wider transition-all cursor-pointer mt-4">
+                    Save Telemetry
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT ACTIVITY & LIFESTYLE MODAL -->
+    <div id="edit-activity-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeEditActivityModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-primary uppercase tracking-widest">Update Lifestyle</span>
+                <h3 class="text-xl font-bold text-white font-headline">Edit Activity</h3>
+                <p class="text-xs text-secondary">Tune your workload preferences and schedule constraints.</p>
+            </div>
+
+            <form id="edit-activity-form" class="space-y-4" onsubmit="handleEditActivitySubmit(event)">
+                <div>
+                    <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Occupation</label>
+                    <input type="text" id="edit-occupation" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required />
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Activity Level</label>
+                        <select id="edit-activityLevel" class="w-full bg-surface-obsidian border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required>
+                            <option value="sedentary">Sedentary</option>
+                            <option value="moderate">Moderately Active</option>
+                            <option value="high">Highly Active</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Fitness Level</label>
+                        <select id="edit-fitnessLevel" class="w-full bg-surface-obsidian border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required>
+                            <option value="beginner">Beginner</option>
+                            <option value="intermediate">Intermediate</option>
+                            <option value="advanced">Advanced</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Preferred Location</label>
+                        <select id="edit-location" class="w-full bg-surface-obsidian border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required>
+                            <option value="gym">Standard Gym</option>
+                            <option value="home">Home Workout</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Duration (mins)</label>
+                        <select id="edit-duration" class="w-full bg-surface-obsidian border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required>
+                            <option value="15">15 Min</option>
+                            <option value="30">30 Min</option>
+                            <option value="45">45 Min</option>
+                            <option value="60">60 Min</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full py-3 bg-white hover:bg-white/90 text-black font-bold text-sm rounded-full uppercase tracking-wider transition-all cursor-pointer mt-4">
+                    Save Activity Settings
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- EDIT GOALS & EQUIPMENT MODAL -->
+    <div id="edit-goals-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeEditGoalsModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-primary uppercase tracking-widest">Update Protocol</span>
+                <h3 class="text-xl font-bold text-white font-headline">Goals &amp; Equipment</h3>
+                <p class="text-xs text-secondary">Adjust your primary performance targets and gear access.</p>
+            </div>
+
+            <form id="edit-goals-form" class="space-y-4" onsubmit="handleEditGoalsSubmit(event)">
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-2">Primary Goals</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-goal-checkbox" value="Muscle Gain" />
+                            <span>Muscle Gain</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-goal-checkbox" value="Weight Loss" />
+                            <span>Weight Loss</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-goal-checkbox" value="Endurance" />
+                            <span>Endurance</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-goal-checkbox" value="Flexibility" />
+                            <span>Flexibility</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-secondary uppercase tracking-wider mb-2">Available Equipment</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-eq-checkbox" value="bodyweight" />
+                            <span>Bodyweight/None</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-eq-checkbox" value="dumbbells" />
+                            <span>Dumbbells</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-eq-checkbox" value="barbell" />
+                            <span>Barbell</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-eq-checkbox" value="kettlebell" />
+                            <span>Kettlebell</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-eq-checkbox" value="resistance bands" />
+                            <span>Resistance Bands</span>
+                        </label>
+                        <label class="flex items-center gap-2 p-2 border border-glass-border rounded-xl bg-white/5 cursor-pointer hover:bg-white/10 text-xs">
+                            <input type="checkbox" class="edit-eq-checkbox" value="pull-up bar" />
+                            <span>Pull-up Bar</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full py-3 bg-white hover:bg-white/90 text-black font-bold text-sm rounded-full uppercase tracking-wider transition-all cursor-pointer mt-4">
+                    Save Goals &amp; Equipment
+                </button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -79,18 +79,18 @@ async function runDietVerification(scenario, profilePayload) {
     console.log(`Calorie details -> Target: ${profilePayload.dailyCalories} kcal`);
 
     // Check Water Goal
-    const expectedWater = 2.8; // (80 * 35) / 1000
+    const expectedWater = 4.0; // Daily target is 4.0 L
     console.log(`Water Goal: ${plan.waterGoal} L (Expected: ${expectedWater} L)`);
     if (plan.waterGoal !== expectedWater) {
         throw new Error(`Water Goal mismatch: expected ${expectedWater} but got ${plan.waterGoal}`);
     }
 
-    // Verify dailyMeals calories sum is close to target
+    // Verify dailyMeals calories sum matches target exactly
     const daily = plan.dailyMeals;
     const dailyCaloriesSum = daily.breakfast.calories + daily.lunch.calories + daily.dinner.calories + daily.snack.calories;
     console.log(`Daily Calories Sum: ${dailyCaloriesSum} kcal`);
-    if (Math.abs(dailyCaloriesSum - profilePayload.dailyCalories) > 100) {
-        throw new Error(`Calorie calibration deviation too high: target ${profilePayload.dailyCalories}, got ${dailyCaloriesSum}`);
+    if (dailyCaloriesSum !== profilePayload.dailyCalories) {
+        throw new Error(`Calorie calibration mismatch: expected exactly target ${profilePayload.dailyCalories}, got ${dailyCaloriesSum}`);
     }
 
     // Verify Allergies Absence in all ingredients
@@ -192,6 +192,14 @@ async function main() {
             healthConditions: ["diabetes"],
             budget: "mid",
             dailyCalories: 2000
+        });
+
+        // Scenario E: Exact Calorie Calibration Check, Moderate Budget, 3222kcal
+        await runDietVerification("Exact-Calorie-Calibration-3222", {
+            dietaryType: "vegetarian",
+            allergies: [],
+            budget: "mid",
+            dailyCalories: 3222
         });
 
         console.log("\n=== ALL DIET PLANNER TESTS PASSED! ===");

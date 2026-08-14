@@ -162,12 +162,17 @@
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="dashboard.html">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-md text-body-md tracking-tight">Dashboard</span>
+                <span class="material-symbols-outlined">query_stats</span>
+                <span class="font-body-md text-body-md tracking-tight">Progress Analysis</span>
+            </a>
+            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
+                href="body-scan.html">
+                <span class="material-symbols-outlined">body_system</span>
+                <span class="font-body-md text-body-md tracking-tight">AI Body Scan</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="planner.html">
-                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
+                <span class="material-symbols-outlined">auto_awesome</span>
                 <span class="font-body-md text-body-md tracking-tight">AI Planner</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
@@ -184,11 +189,6 @@
                 href="scanner.html">
                 <span class="material-symbols-outlined">qr_code_scanner</span>
                 <span class="font-body-md text-body-md tracking-tight">Scanner</span>
-            </a>
-            <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
-                href="progress.html">
-                <span class="material-symbols-outlined">query_stats</span>
-                <span class="font-body-md text-body-md tracking-tight">Progress</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
                 href="profile.html">
@@ -227,10 +227,6 @@
                     <button id="btn-api-settings"
                         class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 cursor-pointer bg-transparent border-0">
                         <span class="material-symbols-outlined">settings</span>
-                    </button>
-                    <button
-                        class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 bg-transparent border-0">
-                        <span class="material-symbols-outlined">notifications</span>
                     </button>
                     <a href="profile.html"
                         class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
@@ -694,6 +690,13 @@
                                         class="w-full bg-black/60 border border-glass-border rounded-xl px-4 py-2.5 text-xs text-primary focus:outline-none focus:border-primary transition-colors" />
                                 </div>
                             </div>
+                            <!-- Item portions list -->
+                            <div class="space-y-3 border-t border-white/5 pt-4" id="edit-items-section">
+                                <label class="block text-[9px] text-primary/60 uppercase tracking-widest font-bold font-headline">Adjust Item Portions</label>
+                                <div id="edit-items-list" class="space-y-3">
+                                    <!-- Dynamic item inputs -->
+                                </div>
+                            </div>
                         </div>
                         <div class="flex gap-3 mt-4">
                             <button id="btn-edit-cancel"
@@ -907,15 +910,15 @@
                 <span class="font-headline text-sm font-bold text-primary">FitForge</span>
             </div>
             <div class="flex flex-wrap justify-center gap-8 text-secondary opacity-60">
-                <a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
-                <a class="hover:text-primary transition-colors" href="#">Terms of Service</a>
-                <a class="hover:text-primary transition-colors flex items-center gap-2" href="#">
-                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                <span>Privacy Policy</span>
+                <span>Terms of Service</span>
+                <span class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
                     System Status: Online
-                </a>
+                </span>
             </div>
             <div class="text-secondary opacity-40 text-[10px]">
-                &copy; 2024 FitForge. Engineered for Excellence.
+                &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
     </main>
@@ -926,18 +929,26 @@
         if (!userEmail) {
             window.location.href = 'login.html';
         } else {
-            // Enforce completed protocol details
-            fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
-                .then(res => res.json())
-                .then(data => {
-                    const proto = data.protocol || {};
-                    if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
-                        window.location.href = 'protocol.html';
-                    }
-                })
-                .catch(err => console.error("Error validating protocol completion:", err));
+            // Check localStorage cache first (avoids redirect loop in offline mode)
+            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+            if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
+                // Protocol already complete - no redirect needed
+            } else {
+                // Fallback: verify via API
+                fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const proto = data.protocol || {};
+                        if (!proto.age || !proto.height || !proto.weight || !proto.biologicalSex) {
+                            window.location.href = 'protocol.html';
+                        } else {
+                            localStorage.setItem('userProtocol', JSON.stringify(proto));
+                        }
+                    })
+                    .catch(err => console.error("Error validating protocol completion:", err));
+            }
         }
-        function logout() { localStorage.removeItem('userEmail'); localStorage.removeItem('userName'); window.location.href = 'login.html'; }
+        function logout() { localStorage.removeItem('userEmail'); localStorage.removeItem('userName'); localStorage.removeItem('userProtocol'); window.location.href = 'login.html'; }
 
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('camera-video');
@@ -1142,6 +1153,9 @@
                         btnToggleCamera.classList.add('hidden');
                         matrixStatusText.innerText = "GALLERY_MODE";
                         matrixStatusDot.className = "w-2 h-2 rounded-full bg-amber-400";
+                        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                            showToast("Camera permission denied. Using Gallery upload instead.");
+                        }
                     });
             }
 
@@ -1244,12 +1258,35 @@
                 const file = e.target.files[0];
                 if (!file) return;
 
+                const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+                if (!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)) {
+                    alert("Invalid file format. Please select an image file (JPEG, PNG, WebP, or HEIC).");
+                    fileInput.value = "";
+                    return;
+                }
+
+                if (file.size < 5000) {
+                    alert("Selected image is too small or invalid. Please select a valid image of your food.");
+                    fileInput.value = "";
+                    return;
+                }
+
+                if (file.size > 20 * 1024 * 1024) {
+                    alert("Selected image is too large. Please select an image under 20MB.");
+                    fileInput.value = "";
+                    return;
+                }
+
                 currentFileName = file.name;
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const img = new Image();
                     img.onload = () => {
                         compressImage(img, (compressedBase64) => {
+                            if (!compressedBase64 || compressedBase64.length < 100) {
+                                alert("Failed to process image. The file may be corrupt.");
+                                return;
+                            }
                             currentImageBase64 = compressedBase64;
                             previewImg.src = compressedBase64;
                             previewImg.classList.remove('hidden');
@@ -1258,6 +1295,9 @@
 
                             setUIState('preview');
                         });
+                    };
+                    img.onerror = () => {
+                        alert("Selected file is not a valid image stream or is corrupted.");
                     };
                     img.src = event.target.result;
                 };
@@ -1994,6 +2034,108 @@
             });
 
             // Edit / Calibrate Macros Event Listeners
+            function renderEditItemsList() {
+                const listContainer = document.getElementById('edit-items-list');
+                if (!listContainer || !scannedFoodData || !scannedFoodData.items) return;
+
+                listContainer.innerHTML = scannedFoodData.items.map((item, idx) => {
+                    let grams = 100;
+                    if (item.portion) {
+                        const m = item.portion.match(/(\d+)g/);
+                        if (m) grams = Number(m[1]);
+                    }
+                    
+                    if (!item.basePer100) {
+                        const factor = grams / 100;
+                        item.basePer100 = {
+                            calories: Number(item.caloriesPer100g !== undefined ? item.caloriesPer100g : (item.calories / factor || 150)),
+                            protein: Number(item.proteinPer100g !== undefined ? item.proteinPer100g : (item.protein / factor || 5)),
+                            carbs: Number(item.carbsPer100g !== undefined ? item.carbsPer100g : (item.carbs / factor || 20)),
+                            fat: Number(item.fatPer100g !== undefined ? item.fatPer100g : (item.fat / factor || 5)),
+                            fiber: Number(item.fiberPer100g !== undefined ? item.fiberPer100g : (item.fiber / factor || 1)),
+                            sugar: Number(item.sugarPer100g !== undefined ? item.sugarPer100g : (item.sugar / factor || 1)),
+                            sodium: Number(item.sodiumPer100g !== undefined ? item.sodiumPer100g : (item.sodium / factor || 100)),
+                            cholesterol: Number(item.cholesterolPer100g !== undefined ? item.cholesterolPer100g : (item.cholesterol / factor || 0)),
+                            potassium: Number(item.potassiumPer100g !== undefined ? item.potassiumPer100g : (item.potassium / factor || 100))
+                        };
+                    }
+
+                    return `
+                        <div class="flex items-center justify-between gap-3 text-xs py-2 border-b border-white/5 last:border-0">
+                            <span class="text-secondary/80 flex-1 truncate font-medium">${item.name}</span>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <button type="button" onclick="changeItemWeight(${idx}, -50)" class="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white cursor-pointer hover:bg-white/10 active:scale-95 transition-all font-bold">-</button>
+                                <input type="number" id="edit-item-weight-${idx}" value="${grams}" oninput="onItemWeightInput(${idx}, this.value)" class="w-14 bg-black/60 border border-white/10 rounded-lg text-center py-1 text-xs text-primary focus:outline-none focus:border-primary font-bold" />
+                                <span class="text-[10px] text-secondary">g</span>
+                                <button type="button" onclick="changeItemWeight(${idx}, 50)" class="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white cursor-pointer hover:bg-white/10 active:scale-95 transition-all font-bold">+</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            window.changeItemWeight = function(idx, delta) {
+                const input = document.getElementById(`edit-item-weight-${idx}`);
+                if (!input) return;
+                let current = Number(input.value) || 0;
+                let newVal = Math.max(10, current + delta);
+                input.value = newVal;
+                onItemWeightInput(idx, newVal);
+            };
+
+            window.onItemWeightInput = function(idx, val) {
+                if (!scannedFoodData || !scannedFoodData.items || !scannedFoodData.items[idx]) return;
+                const grams = Math.max(10, Number(val) || 10);
+                const item = scannedFoodData.items[idx];
+                const base = item.basePer100;
+                if (!base) return;
+
+                const factor = grams / 100;
+                item.portion = `${grams}g`;
+                item.calories = Math.round(base.calories * factor);
+                item.protein = Math.round(base.protein * factor);
+                item.carbs = Math.round(base.carbs * factor);
+                item.fat = Math.round(base.fat * factor);
+                item.fiber = Math.round(base.fiber * factor);
+                item.sugar = Math.round(base.sugar * factor);
+                item.sodium = Math.round(base.sodium * factor);
+                item.cholesterol = Math.round(base.cholesterol * factor);
+                item.potassium = Math.round(base.potassium * factor);
+
+                // Recalculate totals
+                let totalCalories = 0;
+                let totalProtein = 0;
+                let totalCarbs = 0;
+                let totalFat = 0;
+                let totalFiber = 0;
+                let totalSugar = 0;
+                let totalSodium = 0;
+                let totalCholesterol = 0;
+                let totalPotassium = 0;
+
+                scannedFoodData.items.forEach(i => {
+                    totalCalories += Number(i.calories || 0);
+                    totalProtein += Number(i.protein || 0);
+                    totalCarbs += Number(i.carbs || 0);
+                    totalFat += Number(i.fat || 0);
+                    totalFiber += Number(i.fiber || 0);
+                    totalSugar += Number(i.sugar || 0);
+                    totalSodium += Number(i.sodium || 0);
+                    totalCholesterol += Number(i.cholesterol || 0);
+                    totalPotassium += Number(i.potassium || 0);
+                });
+
+                editCalories.value = totalCalories;
+                editProtein.value = totalProtein;
+                editCarbs.value = totalCarbs;
+                editFats.value = totalFat;
+                editFiber.value = totalFiber;
+                editSugar.value = totalSugar;
+                editSodium.value = totalSodium;
+                editCholesterol.value = totalCholesterol;
+                editPotassium.value = totalPotassium;
+            };
+
             btnEditMacros.addEventListener('click', () => {
                 if (!scannedFoodData) return;
 
@@ -2008,6 +2150,9 @@
                 editSodium.value = scannedFoodData.sodium || 0;
                 editCholesterol.value = scannedFoodData.cholesterol || 0;
                 editPotassium.value = scannedFoodData.potassium || 0;
+
+                // Render dynamic item inputs
+                renderEditItemsList();
 
                 // Toggle visibility to edit container
                 macrosDisplayContainer.classList.add('hidden');
@@ -2036,20 +2181,21 @@
                 scannedFoodData.cholesterol = Math.max(0, Math.round(Number(editCholesterol.value)));
                 scannedFoodData.potassium = Math.max(0, Math.round(Number(editPotassium.value)));
 
-                // Update items array so it matches the custom summary if necessary
-                scannedFoodData.items = [{
-                    name: scannedFoodData.foodName,
-                    calories: scannedFoodData.totalCalories,
-                    protein: scannedFoodData.protein,
-                    carbs: scannedFoodData.carbs,
-                    fat: scannedFoodData.fat,
-                    fiber: scannedFoodData.fiber,
-                    sugar: scannedFoodData.sugar,
-                    sodium: scannedFoodData.sodium,
-                    cholesterol: scannedFoodData.cholesterol,
-                    potassium: scannedFoodData.potassium,
-                    portion: "1 serving (calibrated)"
-                }];
+                if (!scannedFoodData.items || scannedFoodData.items.length === 0) {
+                    scannedFoodData.items = [{
+                        name: scannedFoodData.foodName,
+                        calories: scannedFoodData.totalCalories,
+                        protein: scannedFoodData.protein,
+                        carbs: scannedFoodData.carbs,
+                        fat: scannedFoodData.fat,
+                        fiber: scannedFoodData.fiber,
+                        sugar: scannedFoodData.sugar,
+                        sodium: scannedFoodData.sodium,
+                        cholesterol: scannedFoodData.cholesterol,
+                        potassium: scannedFoodData.potassium,
+                        portion: "1 serving"
+                    }];
+                }
 
                 // Re-render displaying customized metrics
                 renderNutritionalResults(scannedFoodData);
