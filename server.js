@@ -200,7 +200,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/fitforge';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dhairy:2336@clothy.4mh44a5.mongodb.net/fitforge?appName=clothy';
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -216,60 +216,20 @@ app.use((err, req, res, next) => {
 });
 
 // Database Connection
-const dns = require('dns');
-
-// Use Google DNS to resolve SRV records (local ISP DNS may block SRV queries)
-dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
-
-// Extract host to test reachability
-let dbHost = '';
-let isSrv = false;
-if (MONGODB_URI.startsWith('mongodb+srv://')) {
-  dbHost = MONGODB_URI.split('@')[1]?.split('/')[0] || '';
-  isSrv = true;
-} else if (MONGODB_URI.startsWith('mongodb://')) {
-  const parts = MONGODB_URI.split('@')[1] || MONGODB_URI.split('//')[1];
-  dbHost = parts?.split('/')[0]?.split(':')[0] || '';
-}
-
-const handleReachabilityResult = (dnsErr) => {
-  if (dnsErr) {
-    console.error('🔴 DNS Lookup Failed for host:', dbHost, dnsErr);
+mongoose.connect(MONGODB_URI, {
+  serverSelectionTimeoutMS: 15000,
+  connectTimeoutMS: 15000,
+  family: 4
+})
+  .then(() => {
+    useMockDb = false;
+    console.log('🟢 Connected to MongoDB Atlas Cloud Database successfully!');
+  })
+  .catch((err) => {
+    console.error('🔴 MongoDB Connection Error:', err);
     console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
-    console.log('👉 All features are fully functional. No setup required!\n');
     useMockDb = true;
-  } else {
-    // Suppress background connection error events from crashing the node process
-    mongoose.connection.on('error', (err) => {
-      if (useMockDb) return;
-      console.log('⚠️ Database connection lost. Operating in offline mock database mode.', err);
-    });
-
-    mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 8000,
-      family: 4
-    })
-      .then(() => console.log('🟢 Connected to MongoDB Atlas successfully!'))
-      .catch((err) => {
-        console.error('🔴 MongoDB Connection Error:', err);
-        console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
-        console.log('👉 All features are fully functional. No setup required!\n');
-        useMockDb = true;
-      });
-  }
-};
-
-// Perform DNS check to see if database host is reachable (support SRV lookup for mongodb+srv://)
-if (isSrv) {
-  dns.resolveSrv('_mongodb._tcp.' + dbHost, (dnsErr) => {
-    handleReachabilityResult(dnsErr);
   });
-} else {
-  dns.lookup(dbHost, (dnsErr) => {
-    handleReachabilityResult(dnsErr);
-  });
-}
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
