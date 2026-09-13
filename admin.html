@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>FitForge | Root Admin Command Center</title>
+    <meta name="description" content="FitForge Elite Admin Dashboard - Full user directory, biometric telemetry, progress analysis, and database management.">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-obsidian": "#050505",
+                        "surface": "#121212",
+                        "surface-card": "#181818",
+                        "surface-container": "#201f1f",
+                        "glass-border": "#2B2B2B",
+                        "primary": "#ffffff",
+                        "secondary": "#a1a1aa",
+                        "accent-silver": "#c6c6c6",
+                        "accent-emerald": "#10b981",
+                        "accent-cyan": "#06b6d4",
+                        "accent-amber": "#f59e0b",
+                        "accent-rose": "#f43f5e",
+                        "error": "#ffb4ab"
+                    },
+                    borderRadius: { "DEFAULT": "1rem", "lg": "1.5rem", "xl": "2rem", "full": "9999px" },
+                    fontFamily: { "body": ["Inter", "sans-serif"], "headline": ["Space Grotesk", "sans-serif"] }
+                },
+            },
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #e5e2e1;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .glass-card {
+            background: rgba(24, 24, 27, 0.65);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.16);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #FFFFFF 0%, #a1a1aa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glow-emerald {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
+        }
+
+        .glow-cyan {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.3);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #09090b;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 9999px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+        }
+
+        .tab-btn.active {
+            background-color: #ffffff;
+            color: #000000;
+            font-weight: 700;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-surface-obsidian text-zinc-200 antialiased flex flex-col">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-40 bg-zinc-950/80 backdrop-blur-xl border-b border-zinc-800/80 px-4 lg:px-8 py-3.5">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- Brand & Badge -->
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                <a href="dashboard.html" class="flex items-center gap-3 group">
+                    <img alt="FitForge Logo" class="h-9 w-9 object-contain group-hover:scale-105 transition-transform" src="assets/logo.svg">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-headline font-bold text-lg tracking-tight text-white">FitForge</span>
+                            <span class="px-2 py-0.5 text-[10px] font-bold tracking-widest uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Root Admin
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-zinc-400 font-medium">Unified Database Command Center</p>
+                    </div>
+                </a>
+
+                <!-- Mobile Menu Toggles -->
+                <div class="flex sm:hidden items-center gap-2">
+                    <button onclick="fetchAdminData()" class="p-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-300 hover:text-white" title="Refresh Database">
+                        <span class="material-symbols-outlined text-lg">sync</span>
+                    </button>
+                    <button onclick="logoutAdmin()" class="p-2 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400" title="Logout">
+                        <span class="material-symbols-outlined text-lg">logout</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Global Action Controls & Sync Status -->
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                <!-- Database Sync Status Indicator -->
+                <div id="db-status-badge" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-zinc-800 text-xs text-zinc-300">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span id="db-status-text" class="font-mono text-[11px]">Connecting DB...</span>
+                </div>
+
+                <!-- Refresh Button -->
+                <button onclick="fetchAdminData()" id="refresh-btn" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-semibold text-zinc-300 hover:text-white transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-base" id="refresh-icon">sync</span>
+                    <span class="hidden sm:inline">Sync DB</span>
+                </button>
+
+                <!-- Provision User Button -->
+                <button onclick="openCreateUserModal()" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-lg active:scale-95">
+                    <span class="material-symbols-outlined text-base">person_add</span>
+                    <span>New User</span>
+                </button>
+
+                <!-- Switch to User Dashboard -->
+                <a href="dashboard.html" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-semibold text-zinc-300 hover:text-white transition-all">
+                    <span class="material-symbols-outlined text-base">dashboard</span>
+                    <span class="hidden md:inline">User Portal</span>
+                </a>
+
+                <!-- Logout Button -->
+                <button onclick="logoutAdmin()" class="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs font-bold text-rose-300 transition-all cursor-pointer">
+                    <span class="material-symbols-outlined text-base">logout</span>
+                    <span>Exit</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+        <!-- Toast Alert Notification Box -->
+        <div id="toast-banner" class="hidden fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl bg-zinc-900/95 border border-zinc-700 text-white shadow-2xl backdrop-blur-xl transition-all duration-300">
+            <span class="material-symbols-outlined text-emerald-400" id="toast-icon">check_circle</span>
+            <span class="text-xs font-medium" id="toast-message">Database operation successful.</span>
+        </div>
+
+        <!-- KPI Executive Summary Bar -->
+        <section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+            <!-- Metric 1: Total Users -->
+            <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-all">
+                <div class="flex items-center justify-between text-zinc-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Total Users</span>
+                    <span class="material-symbols-outlined text-zinc-400 text-lg">group</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-total-users" class="text-2xl sm:text-3xl font-bold font-headline text-white">0</span>
+                    <span class="text-[10px] text-zinc-400">accounts</span>
+                </div>
+            </div>
+
+            <!-- Metric 2: Active Pro Subscriptions -->
+            <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-all">
+                <div class="flex items-center justify-between text-emerald-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Active Pro</span>
+                    <span class="material-symbols-outlined text-emerald-400 text-lg">verified</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-active-subs" class="text-2xl sm:text-3xl font-bold font-headline text-emerald-400">0</span>
+                    <span class="text-[10px] text-zinc-400">members</span>
+                </div>
+            </div>
+
+            <!-- Metric 3: Total Workouts Logged -->
+            <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-all">
+                <div class="flex items-center justify-between text-cyan-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Workouts</span>
+                    <span class="material-symbols-outlined text-cyan-400 text-lg">fitness_center</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-total-workouts" class="text-2xl sm:text-3xl font-bold font-headline text-cyan-400">0</span>
+                    <span class="text-[10px] text-zinc-400">sessions</span>
+                </div>
+            </div>
+
+            <!-- Metric 4: Total Calories Burned -->
+            <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-all">
+                <div class="flex items-center justify-between text-amber-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Burned</span>
+                    <span class="material-symbols-outlined text-amber-400 text-lg">local_fire_department</span>
+                </div>
+                <div class="flex items-baseline gap-1">
+                    <span id="stat-cals-burned" class="text-2xl sm:text-3xl font-bold font-headline text-white">0</span>
+                    <span class="text-[10px] text-amber-400 font-semibold">kcal</span>
+                </div>
+            </div>
+
+            <!-- Metric 5: Nutrition Logs -->
+            <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-all">
+                <div class="flex items-center justify-between text-rose-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Diet Logs</span>
+                    <span class="material-symbols-outlined text-rose-400 text-lg">restaurant</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-total-nutrition" class="text-2xl sm:text-3xl font-bold font-headline text-rose-400">0</span>
+                    <span class="text-[10px] text-zinc-400">meals</span>
+                </div>
+            </div>
+
+            <!-- Metric 6: AI Body Scans -->
+            <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 hover:border-zinc-700 transition-all">
+                <div class="flex items-center justify-between text-indigo-400 mb-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-wider">Body Scans</span>
+                    <span class="material-symbols-outlined text-indigo-400 text-lg">body_system</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span id="stat-total-scans" class="text-2xl sm:text-3xl font-bold font-headline text-indigo-400">0</span>
+                    <span class="text-[10px] text-zinc-400">scans</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search, Filter & Quick Directory Controls -->
+        <section class="glass-card p-5 rounded-3xl border border-zinc-800/90 space-y-4">
+            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                
+                <!-- Search Input -->
+                <div class="relative flex-1">
+                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-xl">search</span>
+                    <input type="text" id="search-input" oninput="handleSearchAndFilter()" placeholder="Search users by name, email, goal, or role..." 
+                        class="w-full bg-zinc-900/90 border border-zinc-800 rounded-2xl pl-11 pr-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:ring-1 focus:ring-white focus:border-white focus:outline-none transition-all">
+                </div>
+
+                <!-- Filter Selectors -->
+                <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+                    <select id="filter-plan" onchange="handleSearchAndFilter()" class="bg-zinc-900/90 border border-zinc-800 rounded-2xl px-3 py-2.5 text-xs text-zinc-300 focus:ring-1 focus:ring-white focus:outline-none">
+                        <option value="all">All Subscription Plans</option>
+                        <option value="pro">Any Active Pro</option>
+                        <option value="trial">Trial Tier</option>
+                        <option value="monthly">Monthly Tier</option>
+                        <option value="6month">6-Month Tier</option>
+                        <option value="12month">12-Month Tier</option>
+                        <option value="none">Free / None</option>
+                    </select>
+
+                    <select id="filter-role" onchange="handleSearchAndFilter()" class="bg-zinc-900/90 border border-zinc-800 rounded-2xl px-3 py-2.5 text-xs text-zinc-300 focus:ring-1 focus:ring-white focus:outline-none">
+                        <option value="all">All Roles</option>
+                        <option value="admin">Admins Only</option>
+                        <option value="user">Regular Users</option>
+                    </select>
+
+                    <button onclick="resetFilters()" class="px-3 py-2.5 rounded-2xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-xs font-semibold text-zinc-400 hover:text-white transition-all cursor-pointer" title="Reset Filters">
+                        <span class="material-symbols-outlined text-base align-middle">restart_alt</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Users Directory Table -->
+            <div class="overflow-x-auto rounded-2xl border border-zinc-800/80 bg-zinc-950/40">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-zinc-800/90 bg-zinc-900/60 text-zinc-400 uppercase tracking-wider font-semibold text-[10px]">
+                            <th class="py-3.5 px-4">User Profile</th>
+                            <th class="py-3.5 px-4">Role &amp; Status</th>
+                            <th class="py-3.5 px-4">Biometrics / BMI</th>
+                            <th class="py-3.5 px-4">Fitness Protocol</th>
+                            <th class="py-3.5 px-4">Telemetry Records</th>
+                            <th class="py-3.5 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body" class="divide-y divide-zinc-800/50">
+                        <!-- Rendered dynamically -->
+                        <tr>
+                            <td colspan="6" class="py-12 text-center text-zinc-500">
+                                <span class="material-symbols-outlined animate-spin text-2xl mb-2 text-zinc-400 block">sync</span>
+                                Loading FitForge database users...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer Pagination/Count -->
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400 px-1 pt-1">
+                <div>
+                    Showing <span id="filtered-count" class="font-bold text-white font-mono">0</span> of <span id="total-count" class="font-bold text-white font-mono">0</span> registered users
+                </div>
+                <div class="text-[11px] text-zinc-500">
+                    💡 Click <span class="text-zinc-300 font-semibold">Inspect</span> to view full Profile &amp; Progress Analysis data
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ======================================================== -->
+    <!-- COMPREHENSIVE USER INSPECTOR DRAWER (FULL CRUD & TELEMETRY) -->
+    <!-- ======================================================== -->
+    <div id="inspector-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+        <div class="w-full max-w-5xl bg-zinc-950 border border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] my-auto">
+            
+            <!-- Drawer Header -->
+            <div class="px-6 py-4 border-b border-zinc-800 bg-zinc-900/60 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div id="insp-avatar" class="w-11 h-11 rounded-2xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-headline font-bold text-lg text-white">
+                        U
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 id="insp-user-name" class="font-headline font-bold text-lg text-white">User Name</h2>
+                            <span id="insp-role-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-300">USER</span>
+                            <span id="insp-sub-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">PRO ACTIVE</span>
+                        </div>
+                        <p id="insp-user-email" class="text-xs text-zinc-400 font-mono">user@example.com</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="closeInspectorModal()" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white cursor-pointer transition-colors border border-zinc-800">
+                        <span class="material-symbols-outlined text-xl">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="flex border-b border-zinc-800 px-6 bg-zinc-950 gap-2 overflow-x-auto">
+                <button onclick="switchInspectorTab('profile')" id="tab-insp-profile" class="tab-btn active px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 border-transparent transition-all cursor-pointer">
+                    Biometric Profile &amp; Protocol
+                </button>
+                <button onclick="switchInspectorTab('workouts')" id="tab-insp-workouts" class="tab-btn px-4 py-3 text-xs font-semibold text-zinc-400 hover:text-white uppercase tracking-wider border-b-2 border-transparent transition-all cursor-pointer">
+                    Workouts &amp; Progress (<span id="insp-workouts-count">0</span>)
+                </button>
+                <button onclick="switchInspectorTab('nutrition')" id="tab-insp-nutrition" class="tab-btn px-4 py-3 text-xs font-semibold text-zinc-400 hover:text-white uppercase tracking-wider border-b-2 border-transparent transition-all cursor-pointer">
+                    Diet &amp; Nutrition (<span id="insp-nutrition-count">0</span>)
+                </button>
+                <button onclick="switchInspectorTab('scans')" id="tab-insp-scans" class="tab-btn px-4 py-3 text-xs font-semibold text-zinc-400 hover:text-white uppercase tracking-wider border-b-2 border-transparent transition-all cursor-pointer">
+                    AI Body Scans (<span id="insp-scans-count">0</span>)
+                </button>
+            </div>
+
+            <!-- Inspector Tab Contents Container -->
+            <div class="flex-1 overflow-y-auto p-6 space-y-6">
+
+                <!-- TAB 1: BIOMETRIC PROFILE & PROTOCOL -->
+                <div id="insp-content-profile" class="space-y-6">
+                    <form id="insp-profile-form" onsubmit="handleSaveInspectorProfile(event)" class="space-y-6">
+                        
+                        <!-- Account & Credentials Section -->
+                        <div class="glass-card p-5 rounded-2xl border border-zinc-800 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-headline font-bold text-sm text-white flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-zinc-400">badge</span>
+                                    Account Identity &amp; Role
+                                </h3>
+                                <span class="text-[11px] text-zinc-500 font-mono" id="insp-created-at">Created: --</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Full Name</label>
+                                    <input type="text" id="edit-insp-name" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                                    <input type="email" id="edit-insp-email" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">System Role</label>
+                                    <select id="edit-insp-role" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="user">User (Standard Access)</option>
+                                        <option value="admin">Administrator (Root Access)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Biometrics Baseline Section (from profile.html) -->
+                        <div class="glass-card p-5 rounded-2xl border border-zinc-800 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-headline font-bold text-sm text-white flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-cyan-400">monitor_heart</span>
+                                    Biometric Baseline &amp; BMI
+                                </h3>
+                                <div class="flex items-center gap-2 bg-zinc-900 px-3 py-1 rounded-xl border border-zinc-800">
+                                    <span class="text-[11px] text-zinc-400">Live BMI:</span>
+                                    <span id="edit-insp-bmi-val" class="font-bold text-white font-mono">--</span>
+                                    <span id="edit-insp-bmi-badge" class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-zinc-800 text-zinc-300">--</span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Age (Years)</label>
+                                    <input type="number" id="edit-insp-age" min="1" max="120" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Biological Sex</label>
+                                    <select id="edit-insp-sex" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Height (cm)</label>
+                                    <input type="number" id="edit-insp-height" oninput="recalcInspectorBMI()" min="50" max="250" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Weight (kg)</label>
+                                    <input type="number" id="edit-insp-weight" oninput="recalcInspectorBMI()" step="0.1" min="10" max="300" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lifestyle, Fitness & Equipment (from profile.html) -->
+                        <div class="glass-card p-5 rounded-2xl border border-zinc-800 space-y-4">
+                            <h3 class="font-headline font-bold text-sm text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-amber-400">tune</span>
+                                Activity, Protocol Goals &amp; Gear
+                            </h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Occupation</label>
+                                    <input type="text" id="edit-insp-occupation" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Activity Level</label>
+                                    <select id="edit-insp-activityLevel" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="sedentary">Sedentary</option>
+                                        <option value="moderate">Moderately Active</option>
+                                        <option value="high">Highly Active</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Fitness Level</label>
+                                    <select id="edit-insp-fitnessLevel" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="beginner">Beginner</option>
+                                        <option value="intermediate">Intermediate</option>
+                                        <option value="advanced">Advanced</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Location &amp; Duration</label>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <select id="edit-insp-location" class="bg-zinc-900 border border-zinc-800 rounded-xl px-2 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                            <option value="gym">Gym</option>
+                                            <option value="home">Home</option>
+                                        </select>
+                                        <select id="edit-insp-duration" class="bg-zinc-900 border border-zinc-800 rounded-xl px-2 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                            <option value="15">15 min</option>
+                                            <option value="30">30 min</option>
+                                            <option value="45">45 min</option>
+                                            <option value="60">60 min</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Goals Chips Selector -->
+                            <div>
+                                <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">Performance Goals</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="Muscle Gain" class="insp-goal-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Muscle Gain</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="Weight Loss" class="insp-goal-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Weight Loss</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="Endurance" class="insp-goal-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Endurance</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="Flexibility" class="insp-goal-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Flexibility</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Equipment Selector -->
+                            <div>
+                                <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-2">Available Equipment</label>
+                                <div class="grid grid-cols-2 sm:grid-cols-6 gap-2 text-xs">
+                                    <label class="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="bodyweight" class="insp-eq-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Bodyweight</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="dumbbells" class="insp-eq-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Dumbbells</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="barbell" class="insp-eq-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Barbell</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="kettlebell" class="insp-eq-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Kettlebell</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="resistance bands" class="insp-eq-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Bands</span>
+                                    </label>
+                                    <label class="flex items-center gap-1.5 p-2 rounded-xl bg-zinc-900/80 border border-zinc-800 cursor-pointer hover:bg-zinc-800">
+                                        <input type="checkbox" value="pull-up bar" class="insp-eq-cb rounded bg-zinc-950 border-zinc-700">
+                                        <span>Pull-up Bar</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Diet & Nutrition Profile Section -->
+                        <div class="glass-card p-5 rounded-2xl border border-zinc-800 space-y-4">
+                            <h3 class="font-headline font-bold text-sm text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-rose-400">nutrition</span>
+                                Diet Protocol &amp; Caloric Target
+                            </h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Dietary Type</label>
+                                    <select id="edit-insp-dietType" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="non-vegetarian">Non-Vegetarian</option>
+                                        <option value="vegetarian">Vegetarian</option>
+                                        <option value="vegan">Vegan</option>
+                                        <option value="eggetarian">Eggetarian</option>
+                                        <option value="keto">Keto</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Daily Calorie Target (kcal)</label>
+                                    <input type="number" id="edit-insp-dailyCalories" min="500" max="8000" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Budget Tier</label>
+                                    <select id="edit-insp-budget" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="budget">Budget-Friendly</option>
+                                        <option value="mid">Mid Tier</option>
+                                        <option value="premium">Premium Executive</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subscription Management Section -->
+                        <div class="glass-card p-5 rounded-2xl border border-zinc-800 space-y-4">
+                            <h3 class="font-headline font-bold text-sm text-white flex items-center gap-2">
+                                <span class="material-symbols-outlined text-emerald-400">workspace_premium</span>
+                                Membership &amp; Pro Subscription
+                            </h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Subscription Plan</label>
+                                    <select id="edit-insp-subPlan" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="none">Free Tier / None</option>
+                                        <option value="trial">Free Trial</option>
+                                        <option value="monthly">Monthly Pro</option>
+                                        <option value="6month">6-Month Pro</option>
+                                        <option value="12month">12-Month Pro (Annual)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Subscription Status</label>
+                                    <select id="edit-insp-subStatus" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:ring-1 focus:ring-white">
+                                        <option value="none">None</option>
+                                        <option value="active">Active</option>
+                                        <option value="canceled">Canceled</option>
+                                        <option value="expired">Expired</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save & Direct Mutate DB Button -->
+                        <div class="flex items-center justify-end gap-3 pt-2">
+                            <button type="submit" id="save-insp-profile-btn" class="px-6 py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-bold text-xs uppercase tracking-wider transition-all shadow-xl cursor-pointer flex items-center gap-2">
+                                <span class="material-symbols-outlined text-base">save</span>
+                                <span>Save Changes to Database</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- TAB 2: WORKOUTS & PROGRESS (from dashboard.html) -->
+                <div id="insp-content-workouts" class="hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800">
+                        <div>
+                            <h3 class="font-headline font-bold text-white text-sm">Workout Telemetry Stream</h3>
+                            <p class="text-xs text-zinc-400">Review, add, or delete workout sessions for this user.</p>
+                        </div>
+                        <button onclick="openAddWorkoutModal()" class="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-base">add</span>
+                            <span>Add Workout</span>
+                        </button>
+                    </div>
+
+                    <!-- Workouts List -->
+                    <div id="insp-workouts-container" class="space-y-2">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: DIET & NUTRITION (from dashboard.html) -->
+                <div id="insp-content-nutrition" class="hidden space-y-4">
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800">
+                        <div>
+                            <h3 class="font-headline font-bold text-white text-sm">Nutrition &amp; Meal Telemetry</h3>
+                            <p class="text-xs text-zinc-400">Review macronutrients, calories, and recorded food logs.</p>
+                        </div>
+                        <button onclick="openAddNutritionModal()" class="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-400 text-black font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5">
+                            <span class="material-symbols-outlined text-base">add</span>
+                            <span>Add Meal Log</span>
+                        </button>
+                    </div>
+
+                    <!-- Nutrition List -->
+                    <div id="insp-nutrition-container" class="space-y-2">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- TAB 4: AI BODY SCANS -->
+                <div id="insp-content-scans" class="hidden space-y-4">
+                    <div class="bg-zinc-900/60 p-4 rounded-2xl border border-zinc-800">
+                        <h3 class="font-headline font-bold text-white text-sm">AI Biometric Body Scans</h3>
+                        <p class="text-xs text-zinc-400">Visual posture, body symmetry scores, and fitness indicators.</p>
+                    </div>
+
+                    <!-- Scans List -->
+                    <div id="insp-scans-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: CREATE NEW USER PROVISIONING -->
+    <!-- ======================================================== -->
+    <div id="create-user-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-lg bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-5 my-auto shadow-2xl">
+            <div class="flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Database Provisioning</span>
+                    <h3 class="font-headline font-bold text-lg text-white">Create New FitForge User</h3>
+                </div>
+                <button onclick="closeCreateUserModal()" class="p-2 text-zinc-400 hover:text-white rounded-xl bg-zinc-900 border border-zinc-800">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+
+            <form id="create-user-form" onsubmit="handleCreateUserSubmit(event)" class="space-y-4 text-xs">
+                <div>
+                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Full Name</label>
+                    <input type="text" id="new-user-name" required placeholder="e.g. Dhairy Patel" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-white">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Email Address</label>
+                        <input type="email" id="new-user-email" required placeholder="user@example.com" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Password</label>
+                        <input type="password" id="new-user-password" required minlength="6" placeholder="Min 6 chars" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-white">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Role</label>
+                        <select id="new-user-role" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-white">
+                            <option value="user">Regular User</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Subscription Plan</label>
+                        <select id="new-user-sub" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white focus:ring-1 focus:ring-white">
+                            <option value="12month">12-Month Pro (Annual Active)</option>
+                            <option value="6month">6-Month Pro</option>
+                            <option value="monthly">Monthly Pro</option>
+                            <option value="trial">Free Trial</option>
+                            <option value="none">None / Free</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Age</label>
+                        <input type="number" id="new-user-age" value="25" min="1" max="120" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Sex</label>
+                        <select id="new-user-sex" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Height (cm)</label>
+                        <input type="number" id="new-user-height" value="175" min="50" max="250" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Weight (kg)</label>
+                        <input type="number" id="new-user-weight" value="70" min="10" max="300" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+
+                <button type="submit" id="create-user-submit-btn" class="w-full py-3 rounded-full bg-white hover:bg-zinc-200 text-black font-bold uppercase tracking-wider transition-all cursor-pointer shadow-lg mt-2">
+                    Create User in Database
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: RESET PASSWORD DIRECTLY -->
+    <!-- ======================================================== -->
+    <div id="reset-pwd-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-sm bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 class="font-headline font-bold text-base text-white">Direct Password Reset</h3>
+                <button onclick="closeResetPwdModal()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg bg-zinc-900">
+                    <span class="material-symbols-outlined text-base">close</span>
+                </button>
+            </div>
+            <p class="text-xs text-zinc-400">Set a new password directly in the database for <span id="reset-pwd-target-email" class="text-white font-mono font-semibold">user</span>.</p>
+
+            <form id="reset-pwd-form" onsubmit="handleDirectPasswordReset(event)" class="space-y-4 text-xs">
+                <input type="hidden" id="reset-pwd-email">
+                <div>
+                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">New Password</label>
+                    <input type="password" id="reset-pwd-new" required minlength="6" placeholder="Enter new password" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:ring-1 focus:ring-white">
+                </div>
+                <button type="submit" id="reset-pwd-submit-btn" class="w-full py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-bold uppercase tracking-wider transition-all cursor-pointer">
+                    Update Password in DB
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: ADD / EDIT WORKOUT LOG -->
+    <!-- ======================================================== -->
+    <div id="workout-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 id="workout-modal-title" class="font-headline font-bold text-base text-white">Log Workout Session</h3>
+                <button onclick="closeWorkoutModal()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg bg-zinc-900">
+                    <span class="material-symbols-outlined text-base">close</span>
+                </button>
+            </div>
+
+            <form id="workout-form" onsubmit="handleSaveWorkout(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="workout-edit-id">
+                <div>
+                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Workout Name</label>
+                    <input type="text" id="workout-name" required placeholder="e.g. HIIT Strength & Core" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Duration (seconds)</label>
+                        <input type="number" id="workout-duration" required placeholder="1800 (30m)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Calories Burned</label>
+                        <input type="number" id="workout-calories" required placeholder="320" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Steps Count</label>
+                        <input type="number" id="workout-steps" required placeholder="3500" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Distance (meters)</label>
+                        <input type="number" id="workout-distance" required placeholder="2600" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <button type="submit" id="save-workout-btn" class="w-full py-3 rounded-full bg-cyan-400 hover:bg-cyan-300 text-black font-bold uppercase tracking-wider transition-all cursor-pointer mt-2">
+                    Save Workout Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODAL: ADD / EDIT NUTRITION LOG -->
+    <!-- ======================================================== -->
+    <div id="nutrition-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between">
+                <h3 id="nutrition-modal-title" class="font-headline font-bold text-base text-white">Log Nutrition Entry</h3>
+                <button onclick="closeNutritionModal()" class="p-1.5 text-zinc-400 hover:text-white rounded-lg bg-zinc-900">
+                    <span class="material-symbols-outlined text-base">close</span>
+                </button>
+            </div>
+
+            <form id="nutrition-form" onsubmit="handleSaveNutrition(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="nutrition-edit-id">
+                <div>
+                    <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Food / Meal Name</label>
+                    <input type="text" id="nutrition-food" required placeholder="e.g. Grilled Chicken Salad & Quinoa" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Calories (kcal)</label>
+                        <input type="number" id="nutrition-calories" required placeholder="550" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Protein (g)</label>
+                        <input type="number" id="nutrition-protein" value="0" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Carbs (g)</label>
+                        <input type="number" id="nutrition-carbs" value="0" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Fats (g)</label>
+                        <input type="number" id="nutrition-fat" value="0" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white">
+                    </div>
+                </div>
+                <button type="submit" id="save-nutrition-btn" class="w-full py-3 rounded-full bg-rose-400 hover:bg-rose-300 text-black font-bold uppercase tracking-wider transition-all cursor-pointer mt-2">
+                    Save Nutrition Record
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- JAVASCRIPT ENGINE & DATABASE SYNC SCRIPT -->
+    <!-- ======================================================== -->
+    <script>
+        // 1. Authentication Security Gate
+        const userEmail = localStorage.getItem('userEmail');
+        const userRole = localStorage.getItem('userRole');
+
+        if (!userEmail) {
+            window.location.href = 'login.html';
+        } else if (userRole !== 'admin' && userEmail.toLowerCase() !== 'admin@gmail.com') {
+            alert('Restricted: Administrator privileges required to access Root Command Center.');
+            window.location.href = 'dashboard.html';
+        }
+
+        // Global State
+        let allUsers = [];
+        let filteredUsers = [];
+        let activeInspectedUser = null;
+        let activeInspectedUserEmail = null;
+
+        // On Page Load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAdminData();
+        });
+
+        // Fetch Stats and Users in Parallel
+        async function fetchAdminData() {
+            const refreshIcon = document.getElementById('refresh-icon');
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+            try {
+                const [statsRes, usersRes] = await Promise.all([
+                    fetch('/api/admin/stats'),
+                    fetch('/api/admin/users')
+                ]);
+
+                if (statsRes.ok) {
+                    const statsData = await statsRes.json();
+                    renderStats(statsData.stats);
+                }
+
+                if (usersRes.ok) {
+                    const usersData = await usersRes.json();
+                    allUsers = usersData.users || [];
+                    handleSearchAndFilter();
+                } else {
+                    showToast('Failed to fetch database users.', true);
+                }
+            } catch (err) {
+                console.error('Error loading admin database telemetry:', err);
+                showToast('Network error syncing with database.', true);
+            } finally {
+                if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+            }
+        }
+
+        // Render Platform Stats
+        function renderStats(stats) {
+            if (!stats) return;
+            document.getElementById('stat-total-users').textContent = stats.totalUsers || 0;
+            document.getElementById('stat-active-subs').textContent = stats.activeSubscriptions || 0;
+            document.getElementById('stat-total-workouts').textContent = stats.totalWorkouts || 0;
+            document.getElementById('stat-cals-burned').textContent = (stats.totalCaloriesBurned || 0).toLocaleString();
+            document.getElementById('stat-total-nutrition').textContent = stats.totalNutritionLogs || 0;
+            document.getElementById('stat-total-scans').textContent = stats.totalScans || 0;
+
+            const dbText = document.getElementById('db-status-text');
+            if (dbText) {
+                dbText.textContent = stats.dbMode || 'Live Connected';
+            }
+        }
+
+        // Search & Filter Logic
+        function handleSearchAndFilter() {
+            const query = (document.getElementById('search-input').value || '').toLowerCase().trim();
+            const planFilter = document.getElementById('filter-plan').value;
+            const roleFilter = document.getElementById('filter-role').value;
+
+            filteredUsers = allUsers.filter(u => {
+                const nameMatch = (u.name || '').toLowerCase().includes(query);
+                const emailMatch = (u.email || '').toLowerCase().includes(query);
+                const goalsMatch = (u.protocol && u.protocol.goals ? u.protocol.goals.join(' ') : '').toLowerCase().includes(query);
+                const roleMatch = (u.role || '').toLowerCase().includes(query);
+
+                const matchesQuery = !query || nameMatch || emailMatch || goalsMatch || roleMatch;
+
+                // Role Filter
+                let matchesRole = true;
+                if (roleFilter === 'admin') matchesRole = u.role === 'admin' || u.email.toLowerCase() === 'admin@gmail.com';
+                if (roleFilter === 'user') matchesRole = u.role !== 'admin' && u.email.toLowerCase() !== 'admin@gmail.com';
+
+                // Plan Filter
+                let matchesPlan = true;
+                const subPlan = u.subscription?.plan || 'none';
+                const subStatus = u.subscription?.status || 'none';
+
+                if (planFilter === 'pro') {
+                    matchesPlan = (subStatus === 'active' || subStatus === 'canceled') && subPlan !== 'none';
+                } else if (planFilter !== 'all') {
+                    matchesPlan = subPlan === planFilter;
+                }
+
+                return matchesQuery && matchesRole && matchesPlan;
+            });
+
+            document.getElementById('filtered-count').textContent = filteredUsers.length;
+            document.getElementById('total-count').textContent = allUsers.length;
+
+            renderUsersTable(filteredUsers);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-plan').value = 'all';
+            document.getElementById('filter-role').value = 'all';
+            handleSearchAndFilter();
+        }
+
+        // Render Users Table
+        function renderUsersTable(users) {
+            const tbody = document.getElementById('users-table-body');
+            if (!tbody) return;
+
+            if (users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-12 text-center text-zinc-500">
+                            <span class="material-symbols-outlined text-3xl mb-2 text-zinc-600 block">search_off</span>
+                            No matching users found in the database.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const initial = (u.name ? u.name.charAt(0) : (u.email ? u.email.charAt(0) : 'U')).toUpperCase();
+                const isAdmin = u.role === 'admin' || u.email.toLowerCase() === 'admin@gmail.com';
+                const sub = u.subscription || { plan: 'none', status: 'none' };
+                const isPro = (sub.status === 'active' || sub.status === 'canceled') && sub.plan !== 'none';
+                const proto = u.protocol || {};
+
+                // BMI Badge
+                let bmiBadge = `<span class="text-zinc-500 italic">Not set</span>`;
+                if (u.stats.bmi) {
+                    const bmi = parseFloat(u.stats.bmi);
+                    let color = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                    if (bmi < 18.5) color = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                    else if (bmi >= 25 && bmi < 30) color = 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+                    else if (bmi >= 30) color = 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+
+                    bmiBadge = `
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-bold text-white font-mono">${bmi}</span>
+                            <span class="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border ${color}">
+                                ${bmi < 18.5 ? 'Under' : bmi < 25 ? 'Normal' : bmi < 30 ? 'Over' : 'Obese'}
+                            </span>
+                        </div>
+                    `;
+                }
+
+                // Biometrics summary
+                const biometrics = (proto.height && proto.weight) ? 
+                    `${proto.height} cm • ${proto.weight} kg • ${proto.age || '--'}y` : 
+                    `<span class="text-zinc-500 italic">Telemetry unconfigured</span>`;
+
+                // Goals
+                const goalsHtml = (proto.goals && proto.goals.length > 0) ?
+                    proto.goals.slice(0, 2).map(g => `<span class="px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 text-[10px] font-medium">${g}</span>`).join(' ') :
+                    `<span class="text-zinc-500 text-[10px] italic">No goals</span>`;
+
+                return `
+                    <tr class="hover:bg-zinc-900/40 transition-colors">
+                        <!-- User Name & Email -->
+                        <td class="py-3.5 px-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center font-headline font-bold text-sm text-white shrink-0">
+                                    ${initial}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-bold text-white truncate max-w-[150px] sm:max-w-none">${u.name || 'Anonymous User'}</div>
+                                    <div class="text-[11px] text-zinc-400 font-mono truncate max-w-[150px] sm:max-w-none">${u.email}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Role & Subscription -->
+                        <td class="py-3.5 px-4">
+                            <div class="space-y-1">
+                                <div>
+                                    ${isAdmin ? 
+                                        `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">👑 Admin</span>` : 
+                                        `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400 border border-zinc-700">User</span>`
+                                    }
+                                </div>
+                                <div>
+                                    ${isPro ? 
+                                        `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30">${sub.plan} Pro</span>` : 
+                                        `<span class="text-[10px] text-zinc-500">Free Tier</span>`
+                                    }
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Biometrics / BMI -->
+                        <td class="py-3.5 px-4">
+                            <div class="space-y-1">
+                                ${bmiBadge}
+                                <div class="text-[10px] text-zinc-400">${biometrics}</div>
+                            </div>
+                        </td>
+
+                        <!-- Protocol & Goals -->
+                        <td class="py-3.5 px-4">
+                            <div class="space-y-1">
+                                <div class="flex flex-wrap gap-1">${goalsHtml}</div>
+                                <div class="text-[10px] text-zinc-400 capitalize">
+                                    ${proto.fitnessLevel || 'Beginner'} • ${proto.location || 'Gym'} (${proto.duration || 30}m)
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Telemetry Counts -->
+                        <td class="py-3.5 px-4 font-mono text-[11px]">
+                            <div class="flex items-center gap-3">
+                                <span title="Workouts" class="text-cyan-400 font-bold">${u.stats.workoutCount} <span class="text-zinc-600 text-[9px]">WK</span></span>
+                                <span title="Meals" class="text-rose-400 font-bold">${u.stats.nutritionCount} <span class="text-zinc-600 text-[9px]">NUT</span></span>
+                                <span title="Scans" class="text-indigo-400 font-bold">${u.stats.scanCount} <span class="text-zinc-600 text-[9px]">SCN</span></span>
+                            </div>
+                            <div class="text-[10px] text-zinc-500 mt-0.5">
+                                ${u.stats.caloriesBurned.toLocaleString()} kcal burned
+                            </div>
+                        </td>
+
+                        <!-- Action Buttons -->
+                        <td class="py-3.5 px-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <button onclick="openInspectorModal('${u.email}')" class="px-2.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-bold text-[11px] uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1 shadow" title="Inspect Full Telemetry & Manage">
+                                    <span class="material-symbols-outlined text-sm">visibility</span>
+                                    <span>Inspect</span>
+                                </button>
+                                <button onclick="openResetPwdModal('${u.email}')" class="p-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-amber-400 cursor-pointer transition-colors" title="Direct Password Reset">
+                                    <span class="material-symbols-outlined text-base">key</span>
+                                </button>
+                                ${!isAdmin ? `
+                                    <button onclick="confirmDeleteUser('${u.email}')" class="p-1.5 rounded-xl bg-zinc-900 hover:bg-rose-500/20 border border-zinc-800 hover:border-rose-500/30 text-zinc-400 hover:text-rose-400 cursor-pointer transition-colors" title="Delete User">
+                                        <span class="material-symbols-outlined text-base">delete</span>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ========================================================
+        // USER INSPECTOR DRAWER & FULL TELEMETRY VIEWER
+        // ========================================================
+        async function openInspectorModal(email) {
+            activeInspectedUserEmail = email;
+            const modal = document.getElementById('inspector-modal');
+            modal.classList.remove('hidden');
+
+            try {
+                const res = await fetch(`/api/admin/user/${encodeURIComponent(email)}`);
+                if (!res.ok) throw new Error('Failed to load user details.');
+
+                const data = await res.json();
+                activeInspectedUser = data;
+
+                populateInspectorData(data);
+                switchInspectorTab('profile');
+            } catch (err) {
+                console.error('Inspector load error:', err);
+                showToast('Failed to load user data.', true);
+            }
+        }
+
+        function closeInspectorModal() {
+            document.getElementById('inspector-modal').classList.add('hidden');
+            activeInspectedUser = null;
+            activeInspectedUserEmail = null;
+        }
+
+        function switchInspectorTab(tab) {
+            const tabs = ['profile', 'workouts', 'nutrition', 'scans'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-insp-${t}`);
+                const content = document.getElementById(`insp-content-${t}`);
+                if (t === tab) {
+                    btn.classList.add('active');
+                    btn.classList.remove('text-zinc-400');
+                    content.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('active');
+                    btn.classList.add('text-zinc-400');
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        function populateInspectorData(data) {
+            const u = data.user;
+            const proto = u.protocol || {};
+            const diet = u.dietProfile || {};
+            const sub = u.subscription || {};
+
+            // Header info
+            document.getElementById('insp-user-name').textContent = u.name || 'User Profile';
+            document.getElementById('insp-user-email').textContent = u.email;
+            document.getElementById('insp-avatar').textContent = (u.name ? u.name.charAt(0) : 'U').toUpperCase();
+            
+            const isAdmin = u.role === 'admin' || u.email.toLowerCase() === 'admin@gmail.com';
+            const roleBadge = document.getElementById('insp-role-badge');
+            roleBadge.textContent = isAdmin ? '👑 ADMIN' : 'USER';
+            roleBadge.className = isAdmin ? 
+                'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' :
+                'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-400';
+
+            const isPro = (sub.status === 'active' || sub.status === 'canceled') && sub.plan !== 'none';
+            const subBadge = document.getElementById('insp-sub-badge');
+            subBadge.textContent = isPro ? `${(sub.plan || '').toUpperCase()} PRO` : 'FREE TIER';
+            subBadge.className = isPro ?
+                'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30' :
+                'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-zinc-800 text-zinc-500';
+
+            document.getElementById('insp-created-at').textContent = `Created: ${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A'}`;
+
+            // Form inputs (Profile & Protocol)
+            document.getElementById('edit-insp-name').value = u.name || '';
+            document.getElementById('edit-insp-email').value = u.email || '';
+            document.getElementById('edit-insp-role').value = u.role || 'user';
+
+            document.getElementById('edit-insp-age').value = proto.age || '';
+            document.getElementById('edit-insp-sex').value = proto.biologicalSex || 'male';
+            document.getElementById('edit-insp-height').value = proto.height || '';
+            document.getElementById('edit-insp-weight').value = proto.weight || '';
+            recalcInspectorBMI();
+
+            document.getElementById('edit-insp-occupation').value = proto.occupation || '';
+            document.getElementById('edit-insp-activityLevel').value = proto.activityLevel || 'moderate';
+            document.getElementById('edit-insp-fitnessLevel').value = proto.fitnessLevel || 'beginner';
+            document.getElementById('edit-insp-location').value = proto.location || 'gym';
+            document.getElementById('edit-insp-duration').value = proto.duration || '30';
+
+            // Checkboxes (Goals)
+            const goals = proto.goals || [];
+            document.querySelectorAll('.insp-goal-cb').forEach(cb => {
+                cb.checked = goals.includes(cb.value);
+            });
+
+            // Checkboxes (Equipment)
+            const eq = proto.equipment || [];
+            document.querySelectorAll('.insp-eq-cb').forEach(cb => {
+                cb.checked = eq.includes(cb.value);
+            });
+
+            // Diet Profile
+            document.getElementById('edit-insp-dietType').value = diet.dietaryType || 'non-vegetarian';
+            document.getElementById('edit-insp-dailyCalories').value = diet.dailyCalories || 2000;
+            document.getElementById('edit-insp-budget').value = diet.budget || 'mid';
+
+            // Subscription
+            document.getElementById('edit-insp-subPlan').value = sub.plan || 'none';
+            document.getElementById('edit-insp-subStatus').value = sub.status || 'none';
+
+            // Telemetry sub-tabs
+            document.getElementById('insp-workouts-count').textContent = (data.workouts || []).length;
+            document.getElementById('insp-nutrition-count').textContent = (data.nutritionLogs || []).length;
+            document.getElementById('insp-scans-count').textContent = (data.bodyScans || []).length;
+
+            renderInspectorWorkouts(data.workouts || []);
+            renderInspectorNutrition(data.nutritionLogs || []);
+            renderInspectorScans(data.bodyScans || []);
+        }
+
+        function recalcInspectorBMI() {
+            const h = parseFloat(document.getElementById('edit-insp-height').value);
+            const w = parseFloat(document.getElementById('edit-insp-weight').value);
+            const bmiEl = document.getElementById('edit-insp-bmi-val');
+            const badgeEl = document.getElementById('edit-insp-bmi-badge');
+
+            if (h && w && h > 0) {
+                const bmi = (w / ((h / 100) * (h / 100))).toFixed(1);
+                bmiEl.textContent = bmi;
+
+                if (bmi < 18.5) {
+                    badgeEl.textContent = 'Underweight';
+                    badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-500/10 text-amber-400';
+                } else if (bmi < 25) {
+                    badgeEl.textContent = 'Normal';
+                    badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-emerald-500/10 text-emerald-400';
+                } else if (bmi < 30) {
+                    badgeEl.textContent = 'Overweight';
+                    badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-amber-500/10 text-amber-400';
+                } else {
+                    badgeEl.textContent = 'Obese';
+                    badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-rose-500/10 text-rose-400';
+                }
+            } else {
+                bmiEl.textContent = '--';
+                badgeEl.textContent = 'Incomplete';
+                badgeEl.className = 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase bg-zinc-800 text-zinc-500';
+            }
+        }
+
+        // Save Inspector Profile back to DB
+        async function handleSaveInspectorProfile(e) {
+            e.preventDefault();
+            const btn = document.getElementById('save-insp-profile-btn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-base">sync</span> <span>Saving to DB...</span>`;
+
+            const selectedGoals = Array.from(document.querySelectorAll('.insp-goal-cb:checked')).map(cb => cb.value);
+            const selectedEq = Array.from(document.querySelectorAll('.insp-eq-cb:checked')).map(cb => cb.value);
+
+            const payload = {
+                name: document.getElementById('edit-insp-name').value,
+                email: document.getElementById('edit-insp-email').value,
+                role: document.getElementById('edit-insp-role').value,
+                protocol: {
+                    age: Number(document.getElementById('edit-insp-age').value) || null,
+                    biologicalSex: document.getElementById('edit-insp-sex').value,
+                    height: Number(document.getElementById('edit-insp-height').value) || null,
+                    weight: Number(document.getElementById('edit-insp-weight').value) || null,
+                    occupation: document.getElementById('edit-insp-occupation').value,
+                    activityLevel: document.getElementById('edit-insp-activityLevel').value,
+                    fitnessLevel: document.getElementById('edit-insp-fitnessLevel').value,
+                    location: document.getElementById('edit-insp-location').value,
+                    duration: Number(document.getElementById('edit-insp-duration').value) || 30,
+                    goals: selectedGoals,
+                    equipment: selectedEq
+                },
+                dietProfile: {
+                    dietaryType: document.getElementById('edit-insp-dietType').value,
+                    dailyCalories: Number(document.getElementById('edit-insp-dailyCalories').value) || 2000,
+                    budget: document.getElementById('edit-insp-budget').value
+                },
+                subscription: {
+                    plan: document.getElementById('edit-insp-subPlan').value,
+                    status: document.getElementById('edit-insp-subStatus').value
+                }
+            };
+
+            try {
+                const res = await fetch(`/api/admin/user/${encodeURIComponent(activeInspectedUserEmail)}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to update user.');
+
+                showToast('User profile & protocol saved directly to database.');
+                activeInspectedUserEmail = payload.email; // in case email was changed
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Save user error:', err);
+                showToast(err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
+
+        // ========================================================
+        // WORKOUTS TELEMETRY CRUD
+        // ========================================================
+        function renderInspectorWorkouts(workouts) {
+            const container = document.getElementById('insp-workouts-container');
+            if (!container) return;
+
+            if (workouts.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card p-8 rounded-2xl text-center text-zinc-500 border border-zinc-800">
+                        <span class="material-symbols-outlined text-3xl mb-1 text-zinc-600 block">fitness_center</span>
+                        No workout telemetry recorded for this user yet.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = workouts.map(w => {
+                const dateStr = w.date ? new Date(w.date).toLocaleString() : 'N/A';
+                const mins = Math.round((w.duration || 0) / 60);
+
+                return `
+                    <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-zinc-700 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-xl">fitness_center</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-xs">${w.workoutName || 'Workout Session'}</h4>
+                                <div class="flex flex-wrap gap-2 text-[10px] text-zinc-400 mt-0.5">
+                                    <span class="text-cyan-400 font-semibold">${mins} mins</span> • 
+                                    <span class="text-amber-400 font-semibold">${w.calories || 0} kcal</span> • 
+                                    <span>${w.steps || 0} steps</span> • 
+                                    <span>${w.distance || 0}m</span>
+                                </div>
+                                <div class="text-[9px] text-zinc-500 mt-0.5 font-mono">${dateStr}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-center">
+                            <button onclick="editWorkout('${w._id}', '${encodeURIComponent(JSON.stringify(w))}')" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-cyan-400 cursor-pointer" title="Edit Workout">
+                                <span class="material-symbols-outlined text-base">edit</span>
+                            </button>
+                            <button onclick="deleteWorkout('${w._id}')" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-rose-500/20 border border-zinc-800 hover:border-rose-500/30 text-zinc-400 hover:text-rose-400 cursor-pointer" title="Delete Workout">
+                                <span class="material-symbols-outlined text-base">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openAddWorkoutModal() {
+            document.getElementById('workout-modal-title').textContent = 'Log Workout Session';
+            document.getElementById('workout-edit-id').value = '';
+            document.getElementById('workout-name').value = '';
+            document.getElementById('workout-duration').value = '1800';
+            document.getElementById('workout-calories').value = '300';
+            document.getElementById('workout-steps').value = '3500';
+            document.getElementById('workout-distance').value = '2500';
+            document.getElementById('workout-modal').classList.remove('hidden');
+        }
+
+        function editWorkout(id, encoded) {
+            const w = JSON.parse(decodeURIComponent(encoded));
+            document.getElementById('workout-modal-title').textContent = 'Edit Workout Session';
+            document.getElementById('workout-edit-id').value = id;
+            document.getElementById('workout-name').value = w.workoutName || '';
+            document.getElementById('workout-duration').value = w.duration || 0;
+            document.getElementById('workout-calories').value = w.calories || 0;
+            document.getElementById('workout-steps').value = w.steps || 0;
+            document.getElementById('workout-distance').value = w.distance || 0;
+            document.getElementById('workout-modal').classList.remove('hidden');
+        }
+
+        function closeWorkoutModal() {
+            document.getElementById('workout-modal').classList.add('hidden');
+        }
+
+        async function handleSaveWorkout(e) {
+            e.preventDefault();
+            const id = document.getElementById('workout-edit-id').value;
+            const payload = {
+                workoutName: document.getElementById('workout-name').value,
+                duration: Number(document.getElementById('workout-duration').value),
+                calories: Number(document.getElementById('workout-calories').value),
+                steps: Number(document.getElementById('workout-steps').value),
+                distance: Number(document.getElementById('workout-distance').value)
+            };
+
+            try {
+                let res;
+                if (id) {
+                    res = await fetch(`/api/admin/workout/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch(`/api/admin/user/${encodeURIComponent(activeInspectedUserEmail)}/workout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (!res.ok) throw new Error('Failed to save workout.');
+
+                closeWorkoutModal();
+                showToast(id ? 'Workout record updated in database.' : 'New workout added directly to database.');
+                await openInspectorModal(activeInspectedUserEmail);
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Workout save error:', err);
+                showToast(err.message, true);
+            }
+        }
+
+        async function deleteWorkout(id) {
+            if (!confirm('Are you sure you want to delete this workout log from the database?')) return;
+            try {
+                const res = await fetch(`/api/admin/workout/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete workout.');
+                showToast('Workout record deleted from database.');
+                await openInspectorModal(activeInspectedUserEmail);
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Delete workout error:', err);
+                showToast(err.message, true);
+            }
+        }
+
+        // ========================================================
+        // NUTRITION TELEMETRY CRUD
+        // ========================================================
+        function renderInspectorNutrition(logs) {
+            const container = document.getElementById('insp-nutrition-container');
+            if (!container) return;
+
+            if (logs.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card p-8 rounded-2xl text-center text-zinc-500 border border-zinc-800">
+                        <span class="material-symbols-outlined text-3xl mb-1 text-zinc-600 block">restaurant</span>
+                        No nutrition telemetry recorded for this user yet.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = logs.map(n => {
+                const dateStr = n.date ? new Date(n.date).toLocaleString() : 'N/A';
+
+                return `
+                    <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-zinc-700 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-xl">restaurant</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white text-xs">${n.foodName || 'Meal Entry'}</h4>
+                                <div class="flex flex-wrap gap-2 text-[10px] text-zinc-400 mt-0.5">
+                                    <span class="text-rose-400 font-semibold">${n.calories || 0} kcal</span> • 
+                                    <span class="text-emerald-400">P: ${n.protein || 0}g</span> • 
+                                    <span class="text-amber-400">C: ${n.carbs || 0}g</span> • 
+                                    <span class="text-cyan-400">F: ${n.fat || 0}g</span>
+                                </div>
+                                <div class="text-[9px] text-zinc-500 mt-0.5 font-mono">${dateStr}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 self-end sm:self-center">
+                            <button onclick="editNutrition('${n._id}', '${encodeURIComponent(JSON.stringify(n))}')" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-rose-400 cursor-pointer" title="Edit Meal">
+                                <span class="material-symbols-outlined text-base">edit</span>
+                            </button>
+                            <button onclick="deleteNutrition('${n._id}')" class="p-1.5 rounded-lg bg-zinc-900 hover:bg-rose-500/20 border border-zinc-800 hover:border-rose-500/30 text-zinc-400 hover:text-rose-400 cursor-pointer" title="Delete Meal">
+                                <span class="material-symbols-outlined text-base">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openAddNutritionModal() {
+            document.getElementById('nutrition-modal-title').textContent = 'Log Nutrition Entry';
+            document.getElementById('nutrition-edit-id').value = '';
+            document.getElementById('nutrition-food').value = '';
+            document.getElementById('nutrition-calories').value = '450';
+            document.getElementById('nutrition-protein').value = '30';
+            document.getElementById('nutrition-carbs').value = '40';
+            document.getElementById('nutrition-fat').value = '15';
+            document.getElementById('nutrition-modal').classList.remove('hidden');
+        }
+
+        function editNutrition(id, encoded) {
+            const n = JSON.parse(decodeURIComponent(encoded));
+            document.getElementById('nutrition-modal-title').textContent = 'Edit Nutrition Entry';
+            document.getElementById('nutrition-edit-id').value = id;
+            document.getElementById('nutrition-food').value = n.foodName || '';
+            document.getElementById('nutrition-calories').value = n.calories || 0;
+            document.getElementById('nutrition-protein').value = n.protein || 0;
+            document.getElementById('nutrition-carbs').value = n.carbs || 0;
+            document.getElementById('nutrition-fat').value = n.fat || 0;
+            document.getElementById('nutrition-modal').classList.remove('hidden');
+        }
+
+        function closeNutritionModal() {
+            document.getElementById('nutrition-modal').classList.add('hidden');
+        }
+
+        async function handleSaveNutrition(e) {
+            e.preventDefault();
+            const id = document.getElementById('nutrition-edit-id').value;
+            const payload = {
+                foodName: document.getElementById('nutrition-food').value,
+                calories: Number(document.getElementById('nutrition-calories').value),
+                protein: Number(document.getElementById('nutrition-protein').value),
+                carbs: Number(document.getElementById('nutrition-carbs').value),
+                fat: Number(document.getElementById('nutrition-fat').value)
+            };
+
+            try {
+                let res;
+                if (id) {
+                    res = await fetch(`/api/admin/nutrition/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    res = await fetch(`/api/admin/user/${encodeURIComponent(activeInspectedUserEmail)}/nutrition`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (!res.ok) throw new Error('Failed to save nutrition entry.');
+
+                closeNutritionModal();
+                showToast(id ? 'Nutrition log updated in database.' : 'New meal added directly to database.');
+                await openInspectorModal(activeInspectedUserEmail);
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Nutrition save error:', err);
+                showToast(err.message, true);
+            }
+        }
+
+        async function deleteNutrition(id) {
+            if (!confirm('Are you sure you want to delete this meal log from the database?')) return;
+            try {
+                const res = await fetch(`/api/admin/nutrition/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete nutrition entry.');
+                showToast('Nutrition log deleted from database.');
+                await openInspectorModal(activeInspectedUserEmail);
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Delete nutrition error:', err);
+                showToast(err.message, true);
+            }
+        }
+
+        // ========================================================
+        // AI BODY SCANS VIEWER & DELETE
+        // ========================================================
+        function renderInspectorScans(scans) {
+            const container = document.getElementById('insp-scans-container');
+            if (!container) return;
+
+            if (scans.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full glass-card p-8 rounded-2xl text-center text-zinc-500 border border-zinc-800">
+                        <span class="material-symbols-outlined text-3xl mb-1 text-zinc-600 block">body_system</span>
+                        No AI 3D body scans uploaded for this user.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = scans.map(s => {
+                const dateStr = s.date ? new Date(s.date).toLocaleDateString() : 'N/A';
+                return `
+                    <div class="glass-card p-4 rounded-2xl border border-zinc-800/80 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-white flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-indigo-400 text-base">analytics</span>
+                                Scan from ${dateStr}
+                            </span>
+                            <button onclick="deleteBodyScan('${s._id}')" class="p-1 rounded bg-zinc-900 hover:bg-rose-500/20 text-zinc-400 hover:text-rose-400 cursor-pointer" title="Delete Scan">
+                                <span class="material-symbols-outlined text-sm">delete</span>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div class="bg-zinc-900/80 p-2.5 rounded-xl">
+                                <span class="text-[10px] text-zinc-400 block uppercase">Fitness Score</span>
+                                <span class="font-bold text-indigo-400 font-headline text-base">${s.fitnessScore || '--'} / 100</span>
+                            </div>
+                            <div class="bg-zinc-900/80 p-2.5 rounded-xl">
+                                <span class="text-[10px] text-zinc-400 block uppercase">Body Symmetry</span>
+                                <span class="font-bold text-emerald-400 font-headline text-base">${s.bodySymmetry ? s.bodySymmetry + '%' : '--'}</span>
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-zinc-400 space-y-1">
+                            <div>Posture: <span class="text-white font-semibold">${s.posture || 'Normal Alignment'}</span></div>
+                            <div>Calculated BMI: <span class="text-white font-semibold font-mono">${s.bmi || '--'}</span></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function deleteBodyScan(id) {
+            if (!confirm('Are you sure you want to delete this body scan record?')) return;
+            try {
+                const res = await fetch(`/api/admin/bodyscan/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Failed to delete scan.');
+                showToast('Body scan deleted from database.');
+                await openInspectorModal(activeInspectedUserEmail);
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Delete scan error:', err);
+                showToast(err.message, true);
+            }
+        }
+
+        // ========================================================
+        // CREATE USER (ADMIN PROVISIONING)
+        // ========================================================
+        function openCreateUserModal() {
+            document.getElementById('create-user-modal').classList.remove('hidden');
+        }
+
+        function closeCreateUserModal() {
+            document.getElementById('create-user-modal').classList.add('hidden');
+        }
+
+        async function handleCreateUserSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('create-user-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'PROVISIONING USER IN DB...';
+
+            const subPlan = document.getElementById('new-user-sub').value;
+            const payload = {
+                name: document.getElementById('new-user-name').value,
+                email: document.getElementById('new-user-email').value,
+                password: document.getElementById('new-user-password').value,
+                role: document.getElementById('new-user-role').value,
+                protocol: {
+                    age: Number(document.getElementById('new-user-age').value) || 25,
+                    biologicalSex: document.getElementById('new-user-sex').value,
+                    height: Number(document.getElementById('new-user-height').value) || 175,
+                    weight: Number(document.getElementById('new-user-weight').value) || 70,
+                    fitnessLevel: 'intermediate',
+                    activityLevel: 'moderate',
+                    location: 'gym',
+                    duration: 30,
+                    goals: ['Muscle Gain', 'Endurance']
+                },
+                dietProfile: {
+                    dietaryType: 'non-vegetarian',
+                    dailyCalories: 2200
+                },
+                subscription: {
+                    plan: subPlan,
+                    status: subPlan !== 'none' ? 'active' : 'none',
+                    startDate: subPlan !== 'none' ? new Date() : null,
+                    endDate: subPlan !== 'none' ? new Date(Date.now() + 365*24*60*60*1000) : null
+                }
+            };
+
+            try {
+                const res = await fetch('/api/admin/user', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to create user.');
+
+                closeCreateUserModal();
+                showToast(`User ${payload.email} provisioned in database successfully.`);
+                e.target.reset();
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Create user error:', err);
+                showToast(err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // ========================================================
+        // DIRECT PASSWORD RESET MODAL
+        // ========================================================
+        function openResetPwdModal(email) {
+            document.getElementById('reset-pwd-email').value = email;
+            document.getElementById('reset-pwd-target-email').textContent = email;
+            document.getElementById('reset-pwd-new').value = '';
+            document.getElementById('reset-pwd-modal').classList.remove('hidden');
+        }
+
+        function closeResetPwdModal() {
+            document.getElementById('reset-pwd-modal').classList.add('hidden');
+        }
+
+        async function handleDirectPasswordReset(e) {
+            e.preventDefault();
+            const email = document.getElementById('reset-pwd-email').value;
+            const newPassword = document.getElementById('reset-pwd-new').value;
+
+            const btn = document.getElementById('reset-pwd-submit-btn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'UPDATING DB PASSWORD...';
+
+            try {
+                const res = await fetch(`/api/admin/user/${encodeURIComponent(email)}/reset-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newPassword })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to reset password.');
+
+                closeResetPwdModal();
+                showToast(`Password for ${email} updated successfully in database.`);
+            } catch (err) {
+                console.error('Password reset error:', err);
+                showToast(err.message, true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // ========================================================
+        // DELETE USER CASCADE
+        // ========================================================
+        async function confirmDeleteUser(email) {
+            if (!confirm(`Are you sure you want to permanently delete user "${email}"?\n\nThis will remove the user account and all associated workout, nutrition, and body scan records from the database.`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/admin/user/${encodeURIComponent(email)}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to delete user.');
+
+                showToast(`User ${email} and all data removed from database.`);
+                await fetchAdminData();
+            } catch (err) {
+                console.error('Delete user error:', err);
+                showToast(err.message, true);
+            }
+        }
+
+        // ========================================================
+        // LOGOUT & TOAST NOTIFICATIONS
+        // ========================================================
+        function logoutAdmin() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userProtocol');
+            window.location.href = 'login.html';
+        }
+
+        let toastTimer;
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toast-banner');
+            const icon = document.getElementById('toast-icon');
+            const message = document.getElementById('toast-message');
+
+            clearTimeout(toastTimer);
+            message.textContent = msg;
+
+            if (isError) {
+                icon.textContent = 'error';
+                icon.className = 'material-symbols-outlined text-rose-400';
+            } else {
+                icon.textContent = 'check_circle';
+                icon.className = 'material-symbols-outlined text-emerald-400';
+            }
+
+            toast.classList.remove('hidden');
+            toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+    </script>
+</body>
+
+</html>

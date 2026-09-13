@@ -1,681 +1,769 @@
 <!DOCTYPE html>
 <html class="dark" lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>FitForge | Login</title>
-    <meta name="description" content="Access your FitForge elite performance dashboard. Login to your AI-powered fitness coaching platform.">
+    <meta name="description"
+        content="Access your FitForge elite performance dashboard. Login to your AI-powered fitness coaching platform.">
     <link href="https://fonts.googleapis.com" rel="preconnect">
     <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <!-- Google Identity Services script -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script id="tailwind-config">try{
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "on-secondary": "#2d3132",
-                        "surface": "#131313",
-                        "tertiary": "#ffffff",
-                        "error-container": "#93000a",
-                        "on-tertiary-container": "#636465",
-                        "glass-border": "#2B2B2B",
-                        "secondary-fixed-dim": "#c4c7c8",
-                        "tertiary-container": "#e2e2e2",
-                        "surface-variant": "#353534",
-                        "inverse-primary": "#5e5e5f",
-                        "on-primary-fixed": "#1a1c1c",
-                        "surface-container": "#201f1f",
-                        "surface-container-low": "#1c1b1b",
-                        "on-primary": "#2f3131",
-                        "secondary-container": "#464a4b",
-                        "primary-container": "#e3e2e2",
-                        "outline-variant": "#444748",
-                        "inverse-on-surface": "#313030",
-                        "on-tertiary-fixed": "#1a1c1c",
-                        "error": "#ffb4ab",
-                        "surface-container-high": "#2a2a2a",
-                        "outline": "#8e9192",
-                        "secondary-fixed": "#e0e3e4",
-                        "surface-obsidian": "#050505",
-                        "secondary": "#c4c7c8",
-                        "primary": "#ffffff",
-                        "on-primary-container": "#646465",
-                        "tertiary-fixed-dim": "#c6c6c6",
-                        "on-secondary-container": "#b6b9ba",
-                        "on-error-container": "#ffdad6",
-                        "on-secondary-fixed": "#191c1d",
-                        "tertiary-fixed": "#e2e2e2",
-                        "surface-tint": "#c7c6c6",
-                        "on-background": "#e5e2e1",
-                        "accent-silver": "#D9D9D9",
-                        "surface-dim": "#131313",
-                        "surface-bright": "#3a3939",
-                        "primary-fixed": "#e3e2e2",
-                        "on-surface-variant": "#c4c7c8",
-                        "primary-fixed-dim": "#c7c6c6",
-                        "status-error": "#ffb4ab",
-                        "on-secondary-fixed-variant": "#444748",
-                        "on-error": "#690005",
-                        "background": "#131313",
-                        "on-surface": "#e5e2e1",
-                        "on-tertiary": "#2f3131",
-                        "on-tertiary-fixed-variant": "#454747",
-                        "surface-container-lowest": "#0e0e0e",
-                        "inverse-surface": "#e5e2e1",
-                        "surface-container-highest": "#353534",
-                        "on-primary-fixed-variant": "#464747"
+    <script id="tailwind-config">try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        colors: {
+                            "on-secondary": "#2d3132",
+                            "surface": "#131313",
+                            "tertiary": "#ffffff",
+                            "error-container": "#93000a",
+                            "on-tertiary-container": "#636465",
+                            "glass-border": "#2B2B2B",
+                            "secondary-fixed-dim": "#c4c7c8",
+                            "tertiary-container": "#e2e2e2",
+                            "surface-variant": "#353534",
+                            "inverse-primary": "#5e5e5f",
+                            "on-primary-fixed": "#1a1c1c",
+                            "surface-container": "#201f1f",
+                            "surface-container-low": "#1c1b1b",
+                            "on-primary": "#2f3131",
+                            "secondary-container": "#464a4b",
+                            "primary-container": "#e3e2e2",
+                            "outline-variant": "#444748",
+                            "inverse-on-surface": "#313030",
+                            "on-tertiary-fixed": "#1a1c1c",
+                            "error": "#ffb4ab",
+                            "surface-container-high": "#2a2a2a",
+                            "outline": "#8e9192",
+                            "secondary-fixed": "#e0e3e4",
+                            "surface-obsidian": "#050505",
+                            "secondary": "#c4c7c8",
+                            "primary": "#ffffff",
+                            "on-primary-container": "#646465",
+                            "tertiary-fixed-dim": "#c6c6c6",
+                            "on-secondary-container": "#b6b9ba",
+                            "on-error-container": "#ffdad6",
+                            "on-secondary-fixed": "#191c1d",
+                            "tertiary-fixed": "#e2e2e2",
+                            "surface-tint": "#c7c6c6",
+                            "on-background": "#e5e2e1",
+                            "accent-silver": "#D9D9D9",
+                            "surface-dim": "#131313",
+                            "surface-bright": "#3a3939",
+                            "primary-fixed": "#e3e2e2",
+                            "on-surface-variant": "#c4c7c8",
+                            "primary-fixed-dim": "#c7c6c6",
+                            "status-error": "#ffb4ab",
+                            "on-secondary-fixed-variant": "#444748",
+                            "on-error": "#690005",
+                            "background": "#131313",
+                            "on-surface": "#e5e2e1",
+                            "on-tertiary": "#2f3131",
+                            "on-tertiary-fixed-variant": "#454747",
+                            "surface-container-lowest": "#0e0e0e",
+                            "inverse-surface": "#e5e2e1",
+                            "surface-container-highest": "#353534",
+                            "on-primary-fixed-variant": "#464747"
+                        },
+                        borderRadius: {
+                            "DEFAULT": "1rem",
+                            "lg": "2rem",
+                            "xl": "3rem",
+                            "full": "9999px"
+                        },
+                        spacing: {
+                            "margin-mobile": "24px",
+                            "stack-xl": "120px",
+                            "margin-desktop": "80px",
+                            "container-max": "1440px",
+                            "stack-sm": "16px",
+                            "stack-md": "32px",
+                            "margin-tablet": "40px",
+                            "stack-lg": "64px",
+                            "gutter": "32px"
+                        },
+                        fontFamily: {
+                            "label-md": ["Space Grotesk"],
+                            "display-lg": ["Space Grotesk"],
+                            "headline-lg": ["Space Grotesk"],
+                            "body-md": ["Space Grotesk"],
+                            "label-sm": ["Space Grotesk"],
+                            "headline-md": ["Space Grotesk"],
+                            "headline-lg-mobile": ["Space Grotesk"],
+                            "body-lg": ["Space Grotesk"]
+                        },
+                        fontSize: {
+                            "label-md": ["14px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
+                            "display-lg": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }],
+                            "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                            "body-md": ["16px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }],
+                            "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.02em", fontWeight: "500" }],
+                            "headline-md": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "500" }],
+                            "headline-lg-mobile": ["32px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
+                            "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }]
+                        }
                     },
-                    borderRadius: {
-                        "DEFAULT": "1rem",
-                        "lg": "2rem",
-                        "xl": "3rem",
-                        "full": "9999px"
-                    },
-                    spacing: {
-                        "margin-mobile": "24px",
-                        "stack-xl": "120px",
-                        "margin-desktop": "80px",
-                        "container-max": "1440px",
-                        "stack-sm": "16px",
-                        "stack-md": "32px",
-                        "margin-tablet": "40px",
-                        "stack-lg": "64px",
-                        "gutter": "32px"
-                    },
-                    fontFamily: {
-                        "label-md": ["Space Grotesk"],
-                        "display-lg": ["Space Grotesk"],
-                        "headline-lg": ["Space Grotesk"],
-                        "body-md": ["Space Grotesk"],
-                        "label-sm": ["Space Grotesk"],
-                        "headline-md": ["Space Grotesk"],
-                        "headline-lg-mobile": ["Space Grotesk"],
-                        "body-lg": ["Space Grotesk"]
-                    },
-                    fontSize: {
-                        "label-md": ["14px", { lineHeight: "1.2", letterSpacing: "0.05em", fontWeight: "600" }],
-                        "display-lg": ["72px", { lineHeight: "1.1", letterSpacing: "-0.04em", fontWeight: "700" }],
-                        "headline-lg": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
-                        "body-md": ["16px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }],
-                        "label-sm": ["12px", { lineHeight: "1.2", letterSpacing: "0.02em", fontWeight: "500" }],
-                        "headline-md": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "500" }],
-                        "headline-lg-mobile": ["32px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "600" }],
-                        "body-lg": ["18px", { lineHeight: "1.6", letterSpacing: "0em", fontWeight: "400" }]
-                    }
                 },
-            },
-        }
-    }catch(_e){}</script>
+            }
+        } catch (_e) { }</script>
     <style>
         .glass-card {
             background: #1c1b1b;
             border: 1px solid #2B2B2B;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
+
         .input-dark {
             background-color: #0e0e0e;
             border-color: #2B2B2B;
             color: #D9D9D9;
         }
+
         .input-dark:focus {
             border-color: #8e9192;
         }
+
         .btn-primary {
             background-color: #D9D9D9;
             color: #131313;
             transition: all 0.3s ease;
         }
+
         .btn-primary:hover {
             background-color: #ffffff;
             transform: translateY(-1px);
         }
+
         .btn-secondary {
             background-color: #1c1b1b;
             color: #D9D9D9;
             border: 1px solid #2B2B2B;
             transition: all 0.3s ease;
         }
+
         .btn-secondary:hover {
             background-color: #2a2a2a;
         }
     </style>
 </head>
 </head>
-<body class="min-h-screen font-body-md flex items-center justify-center py-6 sm:py-10 px-4 sm:px-6 lg:px-8 overflow-x-hidden relative font-['Space_Grotesk'] bg-surface-dim text-[#e5e2e1]">
 
-<!-- Atmospheric Glow -->
-<div class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+<body
+    class="min-h-screen font-body-md flex items-center justify-center py-6 sm:py-10 px-4 sm:px-6 lg:px-8 overflow-x-hidden relative font-['Space_Grotesk'] bg-surface-dim text-[#e5e2e1]">
 
-<main class="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center z-10 relative">
-    <!-- Left: Value Proposition -->
-    <div class="hidden lg:flex flex-col justify-center h-full pr-4 lg:pr-8">
-        <a href="index.html" class="inline-block mb-6">
-            <img alt="FitForge Logo" class="h-10 w-10 object-contain" src="assets/logo.svg">
-        </a>
-        <h1 class="text-4xl xl:text-5xl font-bold text-[#D9D9D9] mb-4 leading-tight">
-            Welcome <br>
-            <span class="text-on-surface-variant">Back.</span>
-        </h1>
-        <p class="text-base text-on-surface-variant mb-8 max-w-md">
-            Sign in to access your workouts, check your progress, and continue your fitness journey.
-        </p>
-        <div class="space-y-4">
-            <!-- Feature 1 -->
-            <div class="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:border-primary/30 transition-all duration-300">
-                <div class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                    <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 0;">psychology</span>
+    <!-- Atmospheric Glow -->
+    <div
+        class="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none z-0">
+    </div>
+
+    <main class="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center z-10 relative">
+        <!-- Left: Value Proposition -->
+        <div class="hidden lg:flex flex-col justify-center h-full pr-4 lg:pr-8">
+            <a href="index.html" class="inline-block mb-6">
+                <img alt="FitForge Logo" class="h-10 w-10 object-contain" src="assets/logo.svg">
+            </a>
+            <h1 class="text-4xl xl:text-5xl font-bold text-[#D9D9D9] mb-4 leading-tight">
+                Welcome <br>
+                <span class="text-on-surface-variant">Back.</span>
+            </h1>
+            <p class="text-base text-on-surface-variant mb-8 max-w-md">
+                Sign in to access your workouts, check your progress, and continue your fitness journey.
+            </p>
+            <div class="space-y-4">
+                <!-- Feature 1 -->
+                <div
+                    class="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:border-primary/30 transition-all duration-300">
+                    <div
+                        class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+                        <span class="material-symbols-outlined text-primary text-2xl"
+                            style="font-variation-settings: 'FILL' 0;">psychology</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white mb-0.5">Smart Workouts</h3>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Workouts that change dynamically
+                            based on your feedback and progress.</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-sm font-bold text-white mb-0.5">Smart Workouts</h3>
-                    <p class="text-xs text-on-surface-variant leading-relaxed">Workouts that change dynamically based on your feedback and progress.</p>
-                </div>
-            </div>
-            <!-- Feature 2 -->
-            <div class="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:border-primary/30 transition-all duration-300">
-                <div class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
-                    <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 0;">query_stats</span>
-                </div>
-                <div>
-                    <h3 class="text-sm font-bold text-white mb-0.5">Progress Tracking</h3>
-                    <p class="text-xs text-on-surface-variant leading-relaxed">Easy charts to track your workouts, calories, and goals in one place.</p>
+                <!-- Feature 2 -->
+                <div
+                    class="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md hover:border-primary/30 transition-all duration-300">
+                    <div
+                        class="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 shrink-0">
+                        <span class="material-symbols-outlined text-primary text-2xl"
+                            style="font-variation-settings: 'FILL' 0;">query_stats</span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-white mb-0.5">Progress Tracking</h3>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Easy charts to track your workouts,
+                            calories, and goals in one place.</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Right: Login Form -->
-    <div class="w-full max-w-[440px] mx-auto lg:mx-0 lg:ml-auto">
-        <div class="glass-card rounded-3xl p-6 sm:p-8 overflow-hidden">
-            <!-- Logo (mobile) -->
-            <div class="flex justify-center mb-4 relative z-10">
-                <a href="index.html">
-                    <img alt="FitForge Logo" class="h-12 w-12 object-contain brightness-90" src="assets/logo.svg">
-                </a>
-            </div>
-            <div class="text-center mb-5 relative z-10">
-                <h2 class="text-2xl sm:text-3xl font-bold text-[#D9D9D9] mb-1">Welcome Back</h2>
-                <p class="text-sm text-on-surface-variant">Access your profile.</p>
-            </div>
+        <!-- Right: Login Form -->
+        <div class="w-full max-w-[440px] mx-auto lg:mx-0 lg:ml-auto">
+            <div class="glass-card rounded-3xl p-6 sm:p-8 overflow-hidden">
+                <!-- Logo (mobile) -->
+                <div class="flex justify-center mb-4 relative z-10">
+                    <a href="index.html">
+                        <img alt="FitForge Logo" class="h-12 w-12 object-contain brightness-90" src="assets/logo.svg">
+                    </a>
+                </div>
+                <div class="text-center mb-5 relative z-10">
+                    <h2 class="text-2xl sm:text-3xl font-bold text-[#D9D9D9] mb-1">Welcome Back</h2>
+                    <p class="text-sm text-on-surface-variant">Access your profile.</p>
+                </div>
 
-            <!-- Error Container -->
-            <div id="error-container" class="hidden mb-4 p-3 bg-error-container/20 border border-error text-error rounded-DEFAULT text-xs sm:text-sm text-center"></div>
+                <!-- Error Container -->
+                <div id="error-container"
+                    class="hidden mb-4 p-3 bg-error-container/20 border border-error text-error rounded-DEFAULT text-xs sm:text-sm text-center">
+                </div>
 
-            <!-- Wrapper for login components -->
-            <div id="login-container" class="space-y-4">
-                <form id="login-form" class="space-y-4 relative z-10">
-                    <!-- Email Field -->
+                <!-- Wrapper for login components -->
+                <div id="login-container" class="space-y-4">
+                    <form id="login-form" class="space-y-4 relative z-10">
+                        <!-- Email Field -->
+                        <div>
+                            <label
+                                class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider"
+                                for="email">Email Address</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                                    <span class="material-symbols-outlined text-on-surface-variant"
+                                        style="font-size: 20px;">mail</span>
+                                </div>
+                                <input
+                                    class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-0 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white"
+                                    id="email" name="email" placeholder="" required type="email">
+                            </div>
+                        </div>
+                        <!-- Password Field -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label
+                                    class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider"
+                                    for="password">Password</label>
+                                <button id="forgot-link-btn"
+                                    class="text-xs text-[#D9D9D9] hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0"
+                                    type="button">Forgot?</button>
+                            </div>
+                            <div class="relative flex items-center">
+                                <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                                    <span class="material-symbols-outlined text-on-surface-variant"
+                                        style="font-size: 20px;">lock</span>
+                                </div>
+                                <input
+                                    class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-8 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white"
+                                    id="password" name="password" placeholder="" required type="password">
+                                <button type="button" id="toggle-login-password-btn"
+                                    class="absolute inset-y-0 right-0 flex items-center pr-1 text-on-surface-variant hover:text-white transition-colors cursor-pointer bg-transparent border-0">
+                                    <span class="material-symbols-outlined" id="toggle-login-password-icon"
+                                        style="font-size: 20px;">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Submit Button -->
+                        <button id="submit-btn"
+                            class="btn-primary w-full rounded-full py-3 sm:py-3.5 mt-2 text-sm flex justify-center items-center gap-2 uppercase tracking-wider font-bold cursor-pointer"
+                            type="submit">
+                            Login
+                            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                        </button>
+                    </form>
+
+                    <!-- Divider -->
+                    <div class="my-4 flex items-center gap-3 relative z-10">
+                        <div class="flex-1 h-px bg-[#2B2B2B]"></div>
+                        <span class="text-xs text-on-surface-variant uppercase tracking-wider">Or</span>
+                        <div class="flex-1 h-px bg-[#2B2B2B]"></div>
+                    </div>
+
+                    <!-- Google Login -->
+                    <div class="flex flex-col gap-3 w-full mt-2 relative z-10">
+                        <button id="google-login-btn"
+                            class="btn-secondary w-full rounded-full py-2.5 sm:py-3 flex items-center justify-center gap-3 text-sm cursor-pointer">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                    fill="#4285F4"></path>
+                                <path
+                                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                    fill="#34A853"></path>
+                                <path
+                                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                    fill="#FBBC05"></path>
+                                <path
+                                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                    fill="#EA4335"></path>
+                            </svg>
+                            Continue with Google
+                        </button>
+                    </div>
+
+                    <div class="mt-4 text-center relative z-10">
+                        <p class="text-sm text-on-surface-variant">
+                            Don't have an account?
+                            <a class="text-[#D9D9D9] font-bold hover:text-white transition-colors border-b border-[#D9D9D9]/30 hover:border-[#D9D9D9] pb-0.5 ml-1"
+                                href="signup.html">Sign Up</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <form id="forgot-password-form" class="hidden space-y-4 relative z-10">
+                    <div class="text-center mb-5">
+                        <h3 class="text-xl sm:text-2xl font-bold text-[#D9D9D9] mb-1">Reset Password</h3>
+                        <p class="text-xs sm:text-sm text-on-surface-variant">Enter your email and we'll send you a
+                            6-digit verification code.</p>
+                    </div>
                     <div>
-                        <label class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider" for="email">Email Address</label>
+                        <label
+                            class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider"
+                            for="forgot-email">Email Address</label>
                         <div class="relative">
                             <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                                <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">mail</span>
+                                <span class="material-symbols-outlined text-on-surface-variant"
+                                    style="font-size: 20px;">mail</span>
                             </div>
-                            <input class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-0 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white" id="email" name="email" placeholder="" required type="email">
+                            <input
+                                class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-0 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white"
+                                id="forgot-email" name="email" required type="email">
                         </div>
                     </div>
-                    <!-- Password Field -->
+                    <button id="forgot-submit-btn"
+                        class="btn-primary w-full rounded-full py-3 sm:py-3.5 mt-2 text-sm flex justify-center items-center gap-2 uppercase tracking-wider font-bold cursor-pointer"
+                        type="submit">
+                        Send Code
+                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                    </button>
+                    <div class="mt-4 text-center">
+                        <button id="cancel-forgot-btn"
+                            class="text-xs text-[#D9D9D9] hover:text-white transition-colors uppercase tracking-wider cursor-pointer"
+                            type="button">Back to Login</button>
+                    </div>
+                </form>
+
+                <!-- Reset Password Form -->
+                <form id="reset-password-form" class="hidden space-y-4 relative z-10">
+                    <div class="text-center mb-5">
+                        <h3 class="text-xl sm:text-2xl font-bold text-[#D9D9D9] mb-1">New Credentials</h3>
+                        <p class="text-xs sm:text-sm text-on-surface-variant">Enter the code sent to your email and set
+                            a new secure password.</p>
+                    </div>
                     <div>
-                        <div class="flex justify-between items-center mb-1.5">
-                            <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider" for="password">Password</label>
-                            <button id="forgot-link-btn" class="text-xs text-[#D9D9D9] hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0" type="button">Forgot?</button>
+                        <label
+                            class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider"
+                            for="reset-otp">Verification Code</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-on-surface-variant"
+                                    style="font-size: 20px;">pin</span>
+                            </div>
+                            <input
+                                class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-0 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white"
+                                id="reset-otp" name="otp" required type="text" pattern="\d{6}"
+                                placeholder="6-digit OTP">
                         </div>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider"
+                            for="new-password">New Password</label>
                         <div class="relative flex items-center">
                             <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                                <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">lock</span>
+                                <span class="material-symbols-outlined text-on-surface-variant"
+                                    style="font-size: 20px;">lock</span>
                             </div>
-                            <input class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-8 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white" id="password" name="password" placeholder="" required type="password">
-                            <button type="button" id="toggle-login-password-btn" class="absolute inset-y-0 right-0 flex items-center pr-1 text-on-surface-variant hover:text-white transition-colors cursor-pointer bg-transparent border-0">
-                                <span class="material-symbols-outlined" id="toggle-login-password-icon" style="font-size: 20px;">visibility</span>
+                            <input
+                                class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-8 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white"
+                                id="new-password" name="newPassword" required type="password">
+                            <button type="button" id="toggle-new-password-btn"
+                                class="absolute inset-y-0 right-0 flex items-center pr-1 text-on-surface-variant hover:text-white transition-colors cursor-pointer bg-transparent border-0">
+                                <span class="material-symbols-outlined" id="toggle-new-password-icon"
+                                    style="font-size: 20px;">visibility</span>
                             </button>
                         </div>
                     </div>
-                    <!-- Submit Button -->
-                    <button id="submit-btn" class="btn-primary w-full rounded-full py-3 sm:py-3.5 mt-2 text-sm flex justify-center items-center gap-2 uppercase tracking-wider font-bold cursor-pointer" type="submit">
-                        Login
-                        <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+                    <button id="reset-submit-btn"
+                        class="btn-primary w-full rounded-full py-3 sm:py-3.5 mt-2 text-sm flex justify-center items-center gap-2 uppercase tracking-wider font-bold cursor-pointer"
+                        type="submit">
+                        Reset Password
+                        <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span>
                     </button>
+                    <div class="mt-4 text-center">
+                        <button id="cancel-reset-btn"
+                            class="text-xs text-[#D9D9D9] hover:text-white transition-colors uppercase tracking-wider cursor-pointer"
+                            type="button">Back</button>
+                    </div>
                 </form>
-
-                <!-- Divider -->
-                <div class="my-4 flex items-center gap-3 relative z-10">
-                    <div class="flex-1 h-px bg-[#2B2B2B]"></div>
-                    <span class="text-xs text-on-surface-variant uppercase tracking-wider">Or</span>
-                    <div class="flex-1 h-px bg-[#2B2B2B]"></div>
-                </div>
-
-                <!-- Google Login -->
-                <div class="flex flex-col gap-3 w-full mt-2 relative z-10">
-                    <button id="google-login-btn" class="btn-secondary w-full rounded-full py-2.5 sm:py-3 flex items-center justify-center gap-3 text-sm cursor-pointer">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
-                        </svg>
-                        Continue with Google
-                    </button>
-                </div>
-
-                <div class="mt-4 text-center relative z-10">
-                    <p class="text-sm text-on-surface-variant">
-                        Don't have an account?
-                        <a class="text-[#D9D9D9] font-bold hover:text-white transition-colors border-b border-[#D9D9D9]/30 hover:border-[#D9D9D9] pb-0.5 ml-1" href="signup.html">Sign Up</a>
-                    </p>
-                </div>
             </div>
-
-            <!-- Forgot Password Form -->
-            <form id="forgot-password-form" class="hidden space-y-4 relative z-10">
-                <div class="text-center mb-5">
-                    <h3 class="text-xl sm:text-2xl font-bold text-[#D9D9D9] mb-1">Reset Password</h3>
-                    <p class="text-xs sm:text-sm text-on-surface-variant">Enter your email and we'll send you a 6-digit verification code.</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider" for="forgot-email">Email Address</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">mail</span>
-                        </div>
-                        <input class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-0 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white" id="forgot-email" name="email" required type="email">
-                    </div>
-                </div>
-                <button id="forgot-submit-btn" class="btn-primary w-full rounded-full py-3 sm:py-3.5 mt-2 text-sm flex justify-center items-center gap-2 uppercase tracking-wider font-bold cursor-pointer" type="submit">
-                    Send Code
-                    <span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
-                </button>
-                <div class="mt-4 text-center">
-                    <button id="cancel-forgot-btn" class="text-xs text-[#D9D9D9] hover:text-white transition-colors uppercase tracking-wider cursor-pointer" type="button">Back to Login</button>
-                </div>
-            </form>
-
-            <!-- Reset Password Form -->
-            <form id="reset-password-form" class="hidden space-y-4 relative z-10">
-                <div class="text-center mb-5">
-                    <h3 class="text-xl sm:text-2xl font-bold text-[#D9D9D9] mb-1">New Credentials</h3>
-                    <p class="text-xs sm:text-sm text-on-surface-variant">Enter the code sent to your email and set a new secure password.</p>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider" for="reset-otp">Verification Code</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">pin</span>
-                        </div>
-                        <input class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-0 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white" id="reset-otp" name="otp" required type="text" pattern="\d{6}" placeholder="6-digit OTP">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-on-surface-variant mb-1.5 uppercase tracking-wider" for="new-password">New Password</label>
-                    <div class="relative flex items-center">
-                        <div class="absolute inset-y-0 left-0 flex items-center pointer-events-none">
-                            <span class="material-symbols-outlined text-on-surface-variant" style="font-size: 20px;">lock</span>
-                        </div>
-                        <input class="w-full bg-transparent border-0 border-b border-on-surface-variant/40 rounded-none py-2 pl-8 pr-8 text-sm focus:ring-0 text-[#D9D9D9] transition-colors focus:border-white" id="new-password" name="newPassword" required type="password">
-                        <button type="button" id="toggle-new-password-btn" class="absolute inset-y-0 right-0 flex items-center pr-1 text-on-surface-variant hover:text-white transition-colors cursor-pointer bg-transparent border-0">
-                            <span class="material-symbols-outlined" id="toggle-new-password-icon" style="font-size: 20px;">visibility</span>
-                        </button>
-                    </div>
-                </div>
-                <button id="reset-submit-btn" class="btn-primary w-full rounded-full py-3 sm:py-3.5 mt-2 text-sm flex justify-center items-center gap-2 uppercase tracking-wider font-bold cursor-pointer" type="submit">
-                    Reset Password
-                    <span class="material-symbols-outlined" style="font-size: 18px;">lock_open</span>
-                </button>
-                <div class="mt-4 text-center">
-                    <button id="cancel-reset-btn" class="text-xs text-[#D9D9D9] hover:text-white transition-colors uppercase tracking-wider cursor-pointer" type="button">Back</button>
-                </div>
-            </form>
         </div>
-    </div>
-</main>
+    </main>
 
 
 
-<!-- Backend Integration Script -->
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('login-form');
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
-        const submitBtn = document.getElementById('submit-btn');
-        const googleBtn = document.getElementById('google-login-btn');
-        const errorContainer = document.getElementById('error-container');
+    <!-- Backend Integration Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('login-form');
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const submitBtn = document.getElementById('submit-btn');
+            const googleBtn = document.getElementById('google-login-btn');
+            const errorContainer = document.getElementById('error-container');
 
-        // Forgot & Reset Password selectors
-        const loginContainer = document.getElementById('login-container');
-        const forgotForm = document.getElementById('forgot-password-form');
-        const resetForm = document.getElementById('reset-password-form');
-        const forgotLinkBtn = document.getElementById('forgot-link-btn');
-        const cancelForgotBtn = document.getElementById('cancel-forgot-btn');
-        const cancelResetBtn = document.getElementById('cancel-reset-btn');
-        
-        const forgotEmailInput = document.getElementById('forgot-email');
-        const forgotSubmitBtn = document.getElementById('forgot-submit-btn');
-        const resetOtpInput = document.getElementById('reset-otp');
-        const newPasswordInput = document.getElementById('new-password');
-        const resetSubmitBtn = document.getElementById('reset-submit-btn');
+            // Forgot & Reset Password selectors
+            const loginContainer = document.getElementById('login-container');
+            const forgotForm = document.getElementById('forgot-password-form');
+            const resetForm = document.getElementById('reset-password-form');
+            const forgotLinkBtn = document.getElementById('forgot-link-btn');
+            const cancelForgotBtn = document.getElementById('cancel-forgot-btn');
+            const cancelResetBtn = document.getElementById('cancel-reset-btn');
 
-        const toggleLoginPasswordBtn = document.getElementById('toggle-login-password-btn');
-        const toggleLoginPasswordIcon = document.getElementById('toggle-login-password-icon');
-        if (toggleLoginPasswordBtn && passwordInput) {
-            toggleLoginPasswordBtn.addEventListener('click', () => {
-                const isPassword = passwordInput.getAttribute('type') === 'password';
-                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-                toggleLoginPasswordIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
-            });
-        }
+            const forgotEmailInput = document.getElementById('forgot-email');
+            const forgotSubmitBtn = document.getElementById('forgot-submit-btn');
+            const resetOtpInput = document.getElementById('reset-otp');
+            const newPasswordInput = document.getElementById('new-password');
+            const resetSubmitBtn = document.getElementById('reset-submit-btn');
 
-        const toggleNewPasswordBtn = document.getElementById('toggle-new-password-btn');
-        const toggleNewPasswordIcon = document.getElementById('toggle-new-password-icon');
-        if (toggleNewPasswordBtn && newPasswordInput) {
-            toggleNewPasswordBtn.addEventListener('click', () => {
-                const isPassword = newPasswordInput.getAttribute('type') === 'password';
-                newPasswordInput.setAttribute('type', isPassword ? 'text' : 'password');
-                toggleNewPasswordIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
-            });
-        }
-
-        // Form View Swapping
-        forgotLinkBtn.addEventListener('click', () => {
-            errorContainer.classList.add('hidden');
-            loginContainer.classList.add('hidden');
-            forgotForm.classList.remove('hidden');
-        });
-
-        cancelForgotBtn.addEventListener('click', () => {
-            errorContainer.classList.add('hidden');
-            forgotForm.classList.add('hidden');
-            loginContainer.classList.remove('hidden');
-        });
-
-        cancelResetBtn.addEventListener('click', () => {
-            errorContainer.classList.add('hidden');
-            resetForm.classList.add('hidden');
-            forgotForm.classList.remove('hidden');
-        });
-
-        // Request Reset Verification Code (Forgot Password)
-        forgotForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorContainer.classList.add('hidden');
-            forgotSubmitBtn.disabled = true;
-            const originalBtnText = forgotSubmitBtn.innerHTML;
-            forgotSubmitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> SENDING CODE...`;
-
-            try {
-                const response = await fetch('/api/auth/forgot-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: forgotEmailInput.value
-                    })
+            const toggleLoginPasswordBtn = document.getElementById('toggle-login-password-btn');
+            const toggleLoginPasswordIcon = document.getElementById('toggle-login-password-icon');
+            if (toggleLoginPasswordBtn && passwordInput) {
+                toggleLoginPasswordBtn.addEventListener('click', () => {
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    toggleLoginPasswordIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
                 });
+            }
 
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server returned non-JSON response. Please restart your backend server (npm start) to apply the new routes.");
-                }
+            const toggleNewPasswordBtn = document.getElementById('toggle-new-password-btn');
+            const toggleNewPasswordIcon = document.getElementById('toggle-new-password-icon');
+            if (toggleNewPasswordBtn && newPasswordInput) {
+                toggleNewPasswordBtn.addEventListener('click', () => {
+                    const isPassword = newPasswordInput.getAttribute('type') === 'password';
+                    newPasswordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                    toggleNewPasswordIcon.textContent = isPassword ? 'visibility_off' : 'visibility';
+                });
+            }
 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Failed to request password reset.');
+            // Form View Swapping
+            forgotLinkBtn.addEventListener('click', () => {
+                errorContainer.classList.add('hidden');
+                loginContainer.classList.add('hidden');
+                forgotForm.classList.remove('hidden');
+            });
 
-                if (data.note) {
-                    alert(`${data.message}\n\nNote: ${data.note}`);
-                } else {
-                    alert(data.message);
-                }
-
+            cancelForgotBtn.addEventListener('click', () => {
+                errorContainer.classList.add('hidden');
                 forgotForm.classList.add('hidden');
-                resetForm.classList.remove('hidden');
-                resetForm.dataset.email = forgotEmailInput.value;
-            } catch (err) {
-                errorContainer.textContent = err.message;
-                errorContainer.classList.remove('hidden');
-            } finally {
-                forgotSubmitBtn.disabled = false;
-                forgotSubmitBtn.innerHTML = originalBtnText;
-            }
-        });
-
-        // Submit Reset Password (Verify Code & Update)
-        resetForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorContainer.classList.add('hidden');
-            resetSubmitBtn.disabled = true;
-            const originalBtnText = resetSubmitBtn.innerHTML;
-            resetSubmitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> RESETTING...`;
-
-            const email = resetForm.dataset.email;
-            if (!email) {
-                errorContainer.textContent = "Email reference missing. Please try requesting a code again.";
-                errorContainer.classList.remove('hidden');
-                resetSubmitBtn.disabled = false;
-                resetSubmitBtn.innerHTML = originalBtnText;
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/auth/reset-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: email,
-                        otp: resetOtpInput.value,
-                        newPassword: newPasswordInput.value
-                    })
-                });
-
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server returned non-JSON response. Please restart your backend server (npm start).");
-                }
-
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Failed to reset password.');
-
-                alert("Password reset successfully! Please log in with your new credentials.");
-                
-                resetForm.classList.add('hidden');
                 loginContainer.classList.remove('hidden');
-                
-                // Clear fields
-                forgotEmailInput.value = '';
-                resetOtpInput.value = '';
-                newPasswordInput.value = '';
-            } catch (err) {
-                errorContainer.textContent = err.message;
-                errorContainer.classList.remove('hidden');
-            } finally {
-                resetSubmitBtn.disabled = false;
-                resetSubmitBtn.innerHTML = originalBtnText;
-            }
-        });
+            });
 
+            cancelResetBtn.addEventListener('click', () => {
+                errorContainer.classList.add('hidden');
+                resetForm.classList.add('hidden');
+                forgotForm.classList.remove('hidden');
+            });
 
+            // Request Reset Verification Code (Forgot Password)
+            forgotForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorContainer.classList.add('hidden');
+                forgotSubmitBtn.disabled = true;
+                const originalBtnText = forgotSubmitBtn.innerHTML;
+                forgotSubmitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> SENDING CODE...`;
 
-        // 1. Password login form handler
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorContainer.classList.add('hidden');
-            submitBtn.disabled = true;
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHENTICATING...`;
+                try {
+                    const response = await fetch('/api/auth/forgot-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: forgotEmailInput.value
+                        })
+                    });
 
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: emailInput.value,
-                        password: passwordInput.value
-                    })
-                });
+                    const contentType = response.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        throw new Error("Server returned non-JSON response. Please restart your backend server (npm start) to apply the new routes.");
+                    }
 
-                const contentType = response.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("Server returned non-JSON response. Please restart your backend server (npm start).");
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to request password reset.');
+
+                    if (data.note) {
+                        alert(`${data.message}\n\nNote: ${data.note}`);
+                    } else {
+                        alert(data.message);
+                    }
+
+                    forgotForm.classList.add('hidden');
+                    resetForm.classList.remove('hidden');
+                    resetForm.dataset.email = forgotEmailInput.value;
+                } catch (err) {
+                    errorContainer.textContent = err.message;
+                    errorContainer.classList.remove('hidden');
+                } finally {
+                    forgotSubmitBtn.disabled = false;
+                    forgotSubmitBtn.innerHTML = originalBtnText;
+                }
+            });
+
+            // Submit Reset Password (Verify Code & Update)
+            resetForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorContainer.classList.add('hidden');
+                resetSubmitBtn.disabled = true;
+                const originalBtnText = resetSubmitBtn.innerHTML;
+                resetSubmitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> RESETTING...`;
+
+                const email = resetForm.dataset.email;
+                if (!email) {
+                    errorContainer.textContent = "Email reference missing. Please try requesting a code again.";
+                    errorContainer.classList.remove('hidden');
+                    resetSubmitBtn.disabled = false;
+                    resetSubmitBtn.innerHTML = originalBtnText;
+                    return;
                 }
 
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Failed to authenticate.');
+                try {
+                    const response = await fetch('/api/auth/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: email,
+                            otp: resetOtpInput.value,
+                            newPassword: newPasswordInput.value
+                        })
+                    });
 
-                localStorage.setItem('userEmail', data.email);
-                localStorage.setItem('userName', data.name);
-                window.location.href = 'dashboard.html';
-            } catch (err) {
-                errorContainer.textContent = err.message;
-                errorContainer.classList.remove('hidden');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
-            }
-        });
+                    const contentType = response.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        throw new Error("Server returned non-JSON response. Please restart your backend server (npm start).");
+                    }
 
-        // 2. Google OAuth Integration & Mock Handler
-        let googleClientId = '';
-        let tokenClient;
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to reset password.');
 
-        function initGoogleTokenClient() {
-            if (tokenClient || !googleClientId || !window.google) return;
-            try {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: googleClientId,
-                    scope: 'profile email',
-                    callback: async (tokenResponse) => {
-                        if (tokenResponse && tokenResponse.access_token) {
-                            try {
-                                googleBtn.disabled = true;
-                                googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> CONNECTING...`;
-                                const gRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`);
-                                const gUser = await gRes.json();
-                                await handleGoogleAuth(gUser.email, gUser.name);
-                            } catch (err) {
-                                console.error('Google profile fetch error:', err);
-                                googleBtn.disabled = false;
-                                googleBtn.innerHTML = `Continue with Google`;
-                                alert('Failed to retrieve profile info from Google.');
+                    alert("Password reset successfully! Please log in with your new credentials.");
+
+                    resetForm.classList.add('hidden');
+                    loginContainer.classList.remove('hidden');
+
+                    // Clear fields
+                    forgotEmailInput.value = '';
+                    resetOtpInput.value = '';
+                    newPasswordInput.value = '';
+                } catch (err) {
+                    errorContainer.textContent = err.message;
+                    errorContainer.classList.remove('hidden');
+                } finally {
+                    resetSubmitBtn.disabled = false;
+                    resetSubmitBtn.innerHTML = originalBtnText;
+                }
+            });
+
+
+
+            // 1. Password login form handler
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                errorContainer.classList.add('hidden');
+                submitBtn.disabled = true;
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHENTICATING...`;
+
+                try {
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: emailInput.value,
+                            password: passwordInput.value
+                        })
+                    });
+
+                    const contentType = response.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        throw new Error("Server returned non-JSON response. Please restart your backend server (npm start).");
+                    }
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to authenticate.');
+
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('userName', data.name);
+                    const role = data.role || (data.email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user');
+                    localStorage.setItem('userRole', role);
+
+                    if (data.redirect === 'admin.html' || role === 'admin' || data.email.toLowerCase() === 'admin@gmail.com') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                } catch (err) {
+                    errorContainer.textContent = err.message;
+                    errorContainer.classList.remove('hidden');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+
+            // 2. Google OAuth Integration & Mock Handler
+            let googleClientId = '';
+            let tokenClient;
+
+            function initGoogleTokenClient() {
+                if (tokenClient || !googleClientId || !window.google) return;
+                try {
+                    tokenClient = google.accounts.oauth2.initTokenClient({
+                        client_id: googleClientId,
+                        scope: 'profile email',
+                        callback: async (tokenResponse) => {
+                            if (tokenResponse && tokenResponse.access_token) {
+                                try {
+                                    googleBtn.disabled = true;
+                                    googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> CONNECTING...`;
+                                    const gRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`);
+                                    const gUser = await gRes.json();
+                                    await handleGoogleAuth(gUser.email, gUser.name);
+                                } catch (err) {
+                                    console.error('Google profile fetch error:', err);
+                                    googleBtn.disabled = false;
+                                    googleBtn.innerHTML = `Continue with Google`;
+                                    alert('Failed to retrieve profile info from Google.');
+                                }
                             }
                         }
-                    }
-                });
-            } catch (err) {
-                console.error('Failed to initialize Google OAuth:', err);
-            }
-        }
-
-        fetch('/api/auth/google-config')
-            .then(res => res.json())
-            .then(data => {
-                googleClientId = data.googleClientId;
-                initGoogleTokenClient();
-                if (googleClientId && !window.google) {
-                    const waitForGoogle = setInterval(() => {
-                        if (window.google) {
-                            clearInterval(waitForGoogle);
-                            initGoogleTokenClient();
-                        }
-                    }, 100);
-                    setTimeout(() => clearInterval(waitForGoogle), 10000);
+                    });
+                } catch (err) {
+                    console.error('Failed to initialize Google OAuth:', err);
                 }
-            })
-            .catch(err => console.error('Failed to load Google configuration:', err));
+            }
 
-        window.addEventListener('load', () => initGoogleTokenClient());
+            fetch('/api/auth/google-config')
+                .then(res => res.json())
+                .then(data => {
+                    googleClientId = data.googleClientId;
+                    initGoogleTokenClient();
+                    if (googleClientId && !window.google) {
+                        const waitForGoogle = setInterval(() => {
+                            if (window.google) {
+                                clearInterval(waitForGoogle);
+                                initGoogleTokenClient();
+                            }
+                        }, 100);
+                        setTimeout(() => clearInterval(waitForGoogle), 10000);
+                    }
+                })
+                .catch(err => console.error('Failed to load Google configuration:', err));
 
-        async function loginWithGoogle() {
-            try {
+            window.addEventListener('load', () => initGoogleTokenClient());
+
+            async function loginWithGoogle() {
+                try {
+                    errorContainer.classList.add('hidden');
+                    googleBtn.disabled = true;
+                    const originalBtnText = googleBtn.innerHTML;
+                    googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> INITIALIZING...`;
+
+                    // 1. Fetch Client ID if we don't have it
+                    if (!googleClientId) {
+                        const res = await fetch('/api/auth/google-config');
+                        if (!res.ok) throw new Error('Failed to retrieve Google OAuth configuration.');
+                        const data = await res.json();
+                        googleClientId = data.googleClientId;
+                    }
+
+                    if (!googleClientId) {
+                        throw new Error('Google Sign-In is not configured on the server.');
+                    }
+
+                    // 2. Load Google SDK if not present
+                    if (!window.google) {
+                        // Try to wait for it first in case it's still loading
+                        for (let i = 0; i < 20; i++) {
+                            if (window.google) break;
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
+                    }
+
+                    if (!window.google) {
+                        throw new Error('Google Identity Services library failed to load. Please check your internet connection or disable any ad-blockers.');
+                    }
+
+                    // 3. Initialize token client if not yet done
+                    if (!tokenClient) {
+                        initGoogleTokenClient();
+                    }
+
+                    if (!tokenClient) {
+                        throw new Error('Failed to initialize Google Sign-In client.');
+                    }
+
+                    // 4. Request token
+                    tokenClient.requestAccessToken();
+
+                    // Restore button
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = originalBtnText;
+
+                } catch (err) {
+                    console.error('Google Sign-In error:', err);
+                    errorContainer.textContent = err.message;
+                    errorContainer.classList.remove('hidden');
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = 'Continue with Google';
+                }
+            }
+
+            googleBtn.addEventListener('click', loginWithGoogle);
+
+            async function handleGoogleAuth(email, name) {
                 errorContainer.classList.add('hidden');
                 googleBtn.disabled = true;
                 const originalBtnText = googleBtn.innerHTML;
-                googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> INITIALIZING...`;
+                googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHORIZING...`;
 
-                // 1. Fetch Client ID if we don't have it
-                if (!googleClientId) {
-                    const res = await fetch('/api/auth/google-config');
-                    if (!res.ok) throw new Error('Failed to retrieve Google OAuth configuration.');
-                    const data = await res.json();
-                    googleClientId = data.googleClientId;
-                }
+                try {
+                    const response = await fetch('/api/auth/google', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, name })
+                    });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.error || 'Failed to authenticate via Google.');
 
-                if (!googleClientId) {
-                    throw new Error('Google Sign-In is not configured on the server.');
-                }
+                    localStorage.setItem('userEmail', data.email);
+                    localStorage.setItem('userName', data.name);
 
-                // 2. Load Google SDK if not present
-                if (!window.google) {
-                    // Try to wait for it first in case it's still loading
-                    for (let i = 0; i < 20; i++) {
-                        if (window.google) break;
-                        await new Promise(resolve => setTimeout(resolve, 100));
+                    if (data.isNewUser) {
+                        localStorage.removeItem('userProtocol');
+                        window.location.href = 'protocol.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
                     }
+                } catch (err) {
+                    errorContainer.textContent = err.message;
+                    errorContainer.classList.remove('hidden');
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = originalBtnText;
                 }
-
-                if (!window.google) {
-                    throw new Error('Google Identity Services library failed to load. Please check your internet connection or disable any ad-blockers.');
-                }
-
-                // 3. Initialize token client if not yet done
-                if (!tokenClient) {
-                    initGoogleTokenClient();
-                }
-
-                if (!tokenClient) {
-                    throw new Error('Failed to initialize Google Sign-In client.');
-                }
-
-                // 4. Request token
-                tokenClient.requestAccessToken();
-
-                // Restore button
-                googleBtn.disabled = false;
-                googleBtn.innerHTML = originalBtnText;
-
-            } catch (err) {
-                console.error('Google Sign-In error:', err);
-                errorContainer.textContent = err.message;
-                errorContainer.classList.remove('hidden');
-                googleBtn.disabled = false;
-                googleBtn.innerHTML = 'Continue with Google';
             }
-        }
-
-        googleBtn.addEventListener('click', loginWithGoogle);
-
-        async function handleGoogleAuth(email, name) {
-            errorContainer.classList.add('hidden');
-            googleBtn.disabled = true;
-            const originalBtnText = googleBtn.innerHTML;
-            googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHORIZING...`;
-
-            try {
-                const response = await fetch('/api/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, name })
-                });
-                const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'Failed to authenticate via Google.');
-
-                localStorage.setItem('userEmail', data.email);
-                localStorage.setItem('userName', data.name);
-
-                if (data.isNewUser) {
-                    localStorage.removeItem('userProtocol');
-                    window.location.href = 'protocol.html';
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
-            } catch (err) {
-                errorContainer.textContent = err.message;
-                errorContainer.classList.remove('hidden');
-                googleBtn.disabled = false;
-                googleBtn.innerHTML = originalBtnText;
-            }
-        }
-    });
-</script>
+        });
+    </script>
 
 </body>
+
 </html>
