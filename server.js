@@ -215,21 +215,45 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Database Connection
-mongoose.connect(MONGODB_URI, {
-  serverSelectionTimeoutMS: 15000,
-  connectTimeoutMS: 15000,
-  family: 4
-})
-  .then(() => {
+// Database Connection Handler (Serverless & Standalone compatible)
+let dbConnPromise = null;
+
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) {
     useMockDb = false;
-    console.log('🟢 Connected to MongoDB Atlas Cloud Database successfully!');
-  })
-  .catch((err) => {
-    console.error('🔴 MongoDB Connection Error:', err);
-    console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
-    useMockDb = true;
-  });
+    return;
+  }
+  if (!dbConnPromise) {
+    dbConnPromise = mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
+      family: 4
+    }).then(() => {
+      useMockDb = false;
+      console.log('🟢 Connected to MongoDB Atlas Cloud Database successfully!');
+      if (typeof ensureAdminUser === 'function') {
+        ensureAdminUser();
+      }
+    }).catch((err) => {
+      console.error('🔴 MongoDB Connection Error:', err.message || err);
+      console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
+      dbConnPromise = null;
+      useMockDb = true;
+    });
+  }
+  await dbConnPromise;
+}
+
+// Start initial connection
+connectDB();
+
+// Middleware to ensure DB connection is ready before handling API requests (critical for Vercel Serverless)
+app.use(async (req, res, next) => {
+  if (req.path && req.path.startsWith('/api')) {
+    await connectDB();
+  }
+  next();
+});
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
@@ -388,8 +412,7 @@ async function ensureAdminUser() {
   }
 }
 
-// Ensure admin on initial startup
-setTimeout(ensureAdminUser, 1000);
+// Admin user is verified upon DB connection
 
 async function findUserOrMock(email) {
   if (!email) return null;
