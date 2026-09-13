@@ -37,9 +37,33 @@
     }
   }
 
+  function setupAdminNav() {
+    const role = localStorage.getItem('userRole');
+    const email = localStorage.getItem('userEmail');
+    if (role === 'admin' || (email && email.toLowerCase() === 'admin@gmail.com')) {
+      const navs = document.querySelectorAll('aside nav, #sidebar-nav nav');
+      navs.forEach(nav => {
+        if (!nav.querySelector('.admin-nav-item')) {
+          const adminLink = document.createElement('a');
+          adminLink.className = 'admin-nav-item flex items-center gap-4 px-4 py-3 rounded-lg text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 transition-all duration-300 font-bold';
+          adminLink.href = 'admin.html';
+          adminLink.innerHTML = `
+            <span class="material-symbols-outlined text-emerald-400">admin_panel_settings</span>
+            <span class="font-body-md text-body-md tracking-tight">Admin Portal</span>
+          `;
+          nav.insertBefore(adminLink, nav.firstChild);
+        }
+      });
+    }
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkSubscription);
+    document.addEventListener('DOMContentLoaded', () => {
+      checkSubscription();
+      setupAdminNav();
+    });
   } else {
     checkSubscription();
+    setupAdminNav();
   }
 })();

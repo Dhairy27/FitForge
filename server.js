@@ -10,13 +10,13 @@ function cleanAndParseJson(rawText) {
   if (matchObj && matchObj[0]) {
     try {
       return JSON.parse(matchObj[0]);
-    } catch (e) {}
+    } catch (e) { }
   }
   const matchArr = str.match(/\[[\s\S]*\]/);
   if (matchArr && matchArr[0]) {
     try {
       return JSON.parse(matchArr[0]);
-    } catch (e) {}
+    } catch (e) { }
   }
   return JSON.parse(str);
 }
@@ -68,7 +68,7 @@ class MockModel {
     if (!mockDb[collectionName]) {
       mockDb[collectionName] = [];
     }
-    
+
     const modelName = this.constructor.modelName;
     if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
       this.date = new Date();
@@ -90,25 +90,42 @@ class MockModel {
     const list = mockDb[collectionName] || [];
     const found = list.find(item => {
       for (let key in query) {
-        if (item[key] !== query[key]) return false;
+        if (key === '_id' || key === 'id') {
+          if (String(item._id) !== String(query[key])) return false;
+        } else if (item[key] !== query[key]) {
+          return false;
+        }
       }
       return true;
     });
     return found ? new this(found) : null;
   }
-  static find(query) {
+  static find(query = {}) {
     const collectionName = this.modelName.toLowerCase() + 's';
     const list = mockDb[collectionName] || [];
     const found = list.filter(item => {
       for (let key in query) {
-        if (item[key] !== query[key]) return false;
+        if (key === '_id' || key === 'id') {
+          if (String(item._id) !== String(query[key])) return false;
+        } else if (item[key] !== query[key]) {
+          return false;
+        }
       }
       return true;
     });
     return makeChainable(found.map(item => new this(item)));
   }
+  static async findById(id) {
+    return this.findOne({ _id: id });
+  }
+  static async findByIdAndUpdate(id, update, options) {
+    return this.findOneAndUpdate({ _id: id }, update, options);
+  }
+  static async findByIdAndDelete(id) {
+    return this.findOneAndDelete({ _id: id });
+  }
   static async findOneAndUpdate(query, update, options) {
-    const doc = await this.findOne(query);
+    let doc = await this.findOne(query);
     if (!doc) {
       if (options && options.upsert) {
         const newDoc = new this({ ...query, ...(update.$set || update) });
@@ -129,13 +146,24 @@ class MockModel {
     }
     return doc;
   }
+  static async deleteOne(query) {
+    return this.findOneAndDelete(query);
+  }
+  static async countDocuments(query = {}) {
+    const list = await this.find(query);
+    return list.length;
+  }
   static async deleteMany(query) {
     const collectionName = this.modelName.toLowerCase() + 's';
     mockDb[collectionName] = (mockDb[collectionName] || []).filter(item => {
       for (let key in query) {
-        if (item[key] !== query[key]) return true;
+        if (key === '_id' || key === 'id') {
+          if (String(item._id) === String(query[key])) return false;
+        } else if (item[key] === query[key]) {
+          return false;
+        }
       }
-      return false;
+      return true;
     });
     return { deletedCount: 1 };
   }
@@ -172,7 +200,7 @@ const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/fitforge';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dhairy:2336@clothy.4mh44a5.mongodb.net/fitforge?appName=clothy';
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -187,67 +215,52 @@ app.use((err, req, res, next) => {
   next();
 });
 
-// Database Connection
-const dns = require('dns');
+// Database Connection Handler (Serverless & Standalone compatible)
+let dbConnPromise = null;
 
-// Use Google DNS to resolve SRV records (local ISP DNS may block SRV queries)
-dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
-
-// Extract host to test reachability
-let dbHost = '';
-let isSrv = false;
-if (MONGODB_URI.startsWith('mongodb+srv://')) {
-  dbHost = MONGODB_URI.split('@')[1]?.split('/')[0] || '';
-  isSrv = true;
-} else if (MONGODB_URI.startsWith('mongodb://')) {
-  const parts = MONGODB_URI.split('@')[1] || MONGODB_URI.split('//')[1];
-  dbHost = parts?.split('/')[0]?.split(':')[0] || '';
-}
-
-const handleReachabilityResult = (dnsErr) => {
-  if (dnsErr) {
-    console.error('🔴 DNS Lookup Failed for host:', dbHost, dnsErr);
-    console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
-    console.log('👉 All features are fully functional. No setup required!\n');
-    useMockDb = true;
-  } else {
-    // Suppress background connection error events from crashing the node process
-    mongoose.connection.on('error', (err) => {
-      if (useMockDb) return;
-      console.log('⚠️ Database connection lost. Operating in offline mock database mode.', err);
-    });
-
-    mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 8000,
-      family: 4
-    })
-      .then(() => console.log('🟢 Connected to MongoDB Atlas successfully!'))
-      .catch((err) => {
-        console.error('🔴 MongoDB Connection Error:', err);
-        console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
-        console.log('👉 All features are fully functional. No setup required!\n');
-        useMockDb = true;
-      });
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) {
+    useMockDb = false;
+    return;
   }
-};
-
-// Perform DNS check to see if database host is reachable (support SRV lookup for mongodb+srv://)
-if (isSrv) {
-  dns.resolveSrv('_mongodb._tcp.' + dbHost, (dnsErr) => {
-    handleReachabilityResult(dnsErr);
-  });
-} else {
-  dns.lookup(dbHost, (dnsErr) => {
-    handleReachabilityResult(dnsErr);
-  });
+  if (!dbConnPromise) {
+    dbConnPromise = mongoose.connect(MONGODB_URI, {
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
+      family: 4
+    }).then(() => {
+      useMockDb = false;
+      console.log('🟢 Connected to MongoDB Atlas Cloud Database successfully!');
+      if (typeof ensureAdminUser === 'function') {
+        ensureAdminUser();
+      }
+    }).catch((err) => {
+      console.error('🔴 MongoDB Connection Error:', err.message || err);
+      console.log('\nℹ️ Running in Offline Mode (In-Memory Database active).');
+      dbConnPromise = null;
+      useMockDb = true;
+    });
+  }
+  await dbConnPromise;
 }
+
+// Start initial connection
+connectDB();
+
+// Middleware to ensure DB connection is ready before handling API requests (critical for Vercel Serverless)
+app.use(async (req, res, next) => {
+  if (req.path && req.path.startsWith('/api')) {
+    await connectDB();
+  }
+  next();
+});
 
 // Schemas & Models
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' },
   protocol: {
     age: { type: Number },
     biologicalSex: { type: String },
@@ -336,6 +349,71 @@ const bodyScanSchema = new mongoose.Schema({
 
 const BodyScan = mongoose.model('BodyScan', bodyScanSchema);
 
+async function ensureAdminUser() {
+  try {
+    const adminEmail = 'admin@gmail.com';
+    let admin = await User.findOne({ email: adminEmail });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('Admin@123', salt);
+
+    if (!admin) {
+      admin = new User({
+        name: 'System Admin',
+        email: adminEmail,
+        password: hashedPassword,
+        role: 'admin',
+        protocol: {
+          age: 30,
+          biologicalSex: 'male',
+          height: 180,
+          weight: 76,
+          occupation: 'System Administrator',
+          activityLevel: 'high',
+          goals: ['Muscle Gain', 'Endurance', 'Flexibility'],
+          location: 'gym',
+          equipment: ['dumbbells', 'barbell', 'pull-up bar', 'kettlebell'],
+          duration: 45,
+          fitnessLevel: 'advanced'
+        },
+        dietProfile: {
+          dietaryType: 'non-vegetarian',
+          allergies: [],
+          healthConditions: [],
+          budget: 'premium',
+          dailyCalories: 2600
+        },
+        subscription: {
+          plan: '12month',
+          status: 'active',
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        }
+      });
+      await admin.save();
+      console.log('👑 Admin user initialized (admin@gmail.com / Admin@123)');
+    } else {
+      let modified = false;
+      if (admin.role !== 'admin') {
+        admin.role = 'admin';
+        modified = true;
+      }
+      const match = await bcrypt.compare('Admin@123', admin.password);
+      if (!match) {
+        admin.password = hashedPassword;
+        modified = true;
+      }
+      if (modified) {
+        await admin.save();
+      }
+      console.log('👑 Admin user verified (admin@gmail.com / Admin@123)');
+    }
+  } catch (err) {
+    console.error('Error ensuring admin user:', err.message);
+  }
+}
+
+// Admin user is verified upon DB connection
+
 async function findUserOrMock(email) {
   if (!email) return null;
   const normalized = email.toLowerCase();
@@ -423,17 +501,43 @@ app.post('/api/auth/login', async (req, res) => {
       user = await User.findOne({ email: normalizedEmail });
     }
 
+    // Special auto-seed for admin if logging in as admin@gmail.com with Admin@123
+    if (normalizedEmail === 'admin@gmail.com' && password === 'Admin@123') {
+      if (!user) {
+        await ensureAdminUser();
+        user = await User.findOne({ email: normalizedEmail });
+      }
+    }
+
     if (!user) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
 
     // Validate password
-    const isMatch = await bcrypt.compare(password, user.password);
+    let isMatch = await bcrypt.compare(password, user.password);
+    
+    // Safety check for admin password
+    if (!isMatch && normalizedEmail === 'admin@gmail.com' && password === 'Admin@123') {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash('Admin@123', salt);
+      user.role = 'admin';
+      await user.save();
+      isMatch = true;
+    }
+
     if (!isMatch) {
       return res.status(400).json({ error: 'Invalid email or password.' });
     }
 
-    res.status(200).json({ message: 'Access granted.', email: user.email, name: user.name });
+    const isAdmin = user.role === 'admin' || normalizedEmail === 'admin@gmail.com';
+
+    res.status(200).json({
+      message: 'Access granted.',
+      email: user.email,
+      name: user.name,
+      role: isAdmin ? 'admin' : (user.role || 'user'),
+      redirect: isAdmin ? 'admin.html' : 'dashboard.html'
+    });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: error.message || 'Failed to process login.' });
@@ -2302,15 +2406,15 @@ function resolveNutritionForMeal(items) {
 
     // Initial base values per 100g from the AI
     let basePer100 = {
-      calories: Number(item.caloriesPer100g !== undefined ? item.caloriesPer100g : (item.calories / (grams/100) || 150)),
-      protein: Number(item.proteinPer100g !== undefined ? item.proteinPer100g : (item.protein / (grams/100) || 5)),
-      carbs: Number(item.carbsPer100g !== undefined ? item.carbsPer100g : (item.carbs / (grams/100) || 20)),
-      fat: Number(item.fatPer100g !== undefined ? item.fatPer100g : (item.fat / (grams/100) || 5)),
-      fiber: Number(item.fiberPer100g !== undefined ? item.fiberPer100g : (item.fiber / (grams/100) || 1)),
-      sugar: Number(item.sugarPer100g !== undefined ? item.sugarPer100g : (item.sugar / (grams/100) || 1)),
-      sodium: Number(item.sodiumPer100g !== undefined ? item.sodiumPer100g : (item.sodium / (grams/100) || 100)),
-      cholesterol: Number(item.cholesterolPer100g !== undefined ? item.cholesterolPer100g : (item.cholesterol / (grams/100) || 0)),
-      potassium: Number(item.potassiumPer100g !== undefined ? item.potassiumPer100g : (item.potassium / (grams/100) || 100))
+      calories: Number(item.caloriesPer100g !== undefined ? item.caloriesPer100g : (item.calories / (grams / 100) || 150)),
+      protein: Number(item.proteinPer100g !== undefined ? item.proteinPer100g : (item.protein / (grams / 100) || 5)),
+      carbs: Number(item.carbsPer100g !== undefined ? item.carbsPer100g : (item.carbs / (grams / 100) || 20)),
+      fat: Number(item.fatPer100g !== undefined ? item.fatPer100g : (item.fat / (grams / 100) || 5)),
+      fiber: Number(item.fiberPer100g !== undefined ? item.fiberPer100g : (item.fiber / (grams / 100) || 1)),
+      sugar: Number(item.sugarPer100g !== undefined ? item.sugarPer100g : (item.sugar / (grams / 100) || 1)),
+      sodium: Number(item.sodiumPer100g !== undefined ? item.sodiumPer100g : (item.sodium / (grams / 100) || 100)),
+      cholesterol: Number(item.cholesterolPer100g !== undefined ? item.cholesterolPer100g : (item.cholesterol / (grams / 100) || 0)),
+      potassium: Number(item.potassiumPer100g !== undefined ? item.potassiumPer100g : (item.potassium / (grams / 100) || 100))
     };
 
     // Override with local database if match exists
@@ -3236,7 +3340,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
       recommendations: {
         bestTimeToEat: "Lunch or Post-workout",
         alternatives: ["Switch to complex carbs", "Increase protein toppings"],
-        portionAdvice: `Keep serving weight around ${items.reduce((sum, i)=>sum+(i.estimatedGrams||150),0)}g`,
+        portionAdvice: `Keep serving weight around ${items.reduce((sum, i) => sum + (i.estimatedGrams || 150), 0)}g`,
         waterRecommendation: "Drink 250ml water",
         workoutRecommendation: `Burn ${resolved.totalCalories} kcal through active movement`,
         foodsToPairWith: ["Leafy salad greens", "Water with lemon slice"]
@@ -3856,14 +3960,14 @@ app.delete('/api/user/account', async (req, res) => {
       return res.status(400).json({ error: 'User email is required.' });
     }
     const normalizedEmail = email.toLowerCase();
-    
+
     // Delete user profile
     await User.findOneAndDelete({ email: normalizedEmail });
-    
+
     // Delete associated logs
     await Workout.deleteMany({ email: normalizedEmail });
     await NutritionLog.deleteMany({ email: normalizedEmail });
-    
+
     res.status(200).json({ message: "Account and associated data deleted successfully." });
   } catch (error) {
     console.error("Delete user account error:", error);
@@ -3941,6 +4045,516 @@ app.delete('/api/bodyscan', async (req, res) => {
   }
 });
 
+// ==========================================
+// ADMIN DASHBOARD & DATABASE MANAGEMENT APIS
+// ==========================================
+
+// 1. Get Platform Stats & System Overview
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    let users = [], workouts = [], nutritionLogs = [], bodyScans = [];
+    try {
+      [users, workouts, nutritionLogs, bodyScans] = await Promise.all([
+        User.find({}),
+        Workout.find({}),
+        NutritionLog.find({}),
+        BodyScan.find({})
+      ]);
+    } catch (err) {
+      useMockDb = true;
+      [users, workouts, nutritionLogs, bodyScans] = await Promise.all([
+        User.find({}),
+        Workout.find({}),
+        NutritionLog.find({}),
+        BodyScan.find({})
+      ]);
+    }
+
+    const totalUsers = users.length;
+    const activeSubscriptions = users.filter(u => u.subscription && u.subscription.status === 'active').length;
+    const totalWorkouts = workouts.length;
+    const totalCaloriesBurned = workouts.reduce((sum, w) => sum + (Number(w.calories) || 0), 0);
+    const totalNutritionLogs = nutritionLogs.length;
+    const totalScans = bodyScans.length;
+
+    // Plan distribution
+    const planDistribution = {
+      none: users.filter(u => !u.subscription || u.subscription.plan === 'none').length,
+      trial: users.filter(u => u.subscription && u.subscription.plan === 'trial').length,
+      monthly: users.filter(u => u.subscription && u.subscription.plan === 'monthly').length,
+      '6month': users.filter(u => u.subscription && u.subscription.plan === '6month').length,
+      '12month': users.filter(u => u.subscription && u.subscription.plan === '12month').length,
+    };
+
+    res.json({
+      success: true,
+      stats: {
+        totalUsers,
+        activeSubscriptions,
+        totalWorkouts,
+        totalCaloriesBurned,
+        totalNutritionLogs,
+        totalScans,
+        planDistribution,
+        dbMode: useMockDb ? 'Local In-Memory Mode' : 'MongoDB Atlas Online'
+      }
+    });
+  } catch (error) {
+    console.error('Admin stats error:', error);
+    res.status(500).json({ error: error.message || 'Failed to fetch platform stats.' });
+  }
+});
+
+// 2. Get All Users with Summary & Telemetry Counts
+app.get('/api/admin/users', async (req, res) => {
+  try {
+    let users = [], workouts = [], nutritionLogs = [], bodyScans = [];
+    try {
+      [users, workouts, nutritionLogs, bodyScans] = await Promise.all([
+        User.find({}),
+        Workout.find({}),
+        NutritionLog.find({}),
+        BodyScan.find({})
+      ]);
+    } catch (err) {
+      useMockDb = true;
+      [users, workouts, nutritionLogs, bodyScans] = await Promise.all([
+        User.find({}),
+        Workout.find({}),
+        NutritionLog.find({}),
+        BodyScan.find({})
+      ]);
+    }
+
+    const formattedUsers = users.map(u => {
+      const email = (u.email || '').toLowerCase();
+      const userWorkouts = workouts.filter(w => (w.email || '').toLowerCase() === email);
+      const userNutrition = nutritionLogs.filter(n => (n.email || '').toLowerCase() === email);
+      const userScans = bodyScans.filter(s => (s.email || '').toLowerCase() === email);
+      
+      const burned = userWorkouts.reduce((acc, w) => acc + (Number(w.calories) || 0), 0);
+      const consumed = userNutrition.reduce((acc, n) => acc + (Number(n.calories) || 0), 0);
+
+      let bmi = null;
+      if (u.protocol && u.protocol.height && u.protocol.weight) {
+        const hM = u.protocol.height / 100;
+        bmi = (u.protocol.weight / (hM * hM)).toFixed(1);
+      }
+
+      return {
+        id: u._id,
+        name: u.name,
+        email: u.email,
+        role: u.role || (u.email === 'admin@gmail.com' ? 'admin' : 'user'),
+        subscription: u.subscription || { plan: 'none', status: 'none' },
+        protocol: u.protocol || {},
+        dietProfile: u.dietProfile || {},
+        workoutPlan: u.workoutPlan || null,
+        dietPlan: u.dietPlan || null,
+        createdAt: u.createdAt,
+        updatedAt: u.updatedAt,
+        stats: {
+          workoutCount: userWorkouts.length,
+          nutritionCount: userNutrition.length,
+          scanCount: userScans.length,
+          caloriesBurned: burned,
+          caloriesConsumed: consumed,
+          bmi: bmi
+        }
+      };
+    });
+
+    res.json({ success: true, users: formattedUsers });
+  } catch (error) {
+    console.error('Admin get users error:', error);
+    res.status(500).json({ error: error.message || 'Failed to retrieve users.' });
+  }
+});
+
+// 3. Get Single User Deep Profile & Full Telemetry History
+app.get('/api/admin/user/:email', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase().trim();
+    let user, workouts, nutritionLogs, bodyScans;
+
+    try {
+      user = await User.findOne({ email });
+      workouts = await Workout.find({ email }).sort({ date: -1 });
+      nutritionLogs = await NutritionLog.find({ email }).sort({ date: -1 });
+      bodyScans = await BodyScan.find({ email }).sort({ date: -1 });
+    } catch (err) {
+      useMockDb = true;
+      user = await User.findOne({ email });
+      workouts = await Workout.find({ email }).sort({ date: -1 });
+      nutritionLogs = await NutritionLog.find({ email }).sort({ date: -1 });
+      bodyScans = await BodyScan.find({ email }).sort({ date: -1 });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.json({
+      success: true,
+      user,
+      workouts: workouts || [],
+      nutritionLogs: nutritionLogs || [],
+      bodyScans: bodyScans || []
+    });
+  } catch (error) {
+    console.error('Admin get single user error:', error);
+    res.status(500).json({ error: error.message || 'Failed to retrieve user details.' });
+  }
+});
+
+// 4. Create New User (Admin Direct Provisioning)
+app.post('/api/admin/user', async (req, res) => {
+  try {
+    const { name, email, password, role, protocol, dietProfile, subscription } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    let existing = await User.findOne({ email: normalizedEmail });
+    if (existing) {
+      return res.status(400).json({ error: 'A user already exists with this email address.' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const newUser = new User({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      role: role === 'admin' ? 'admin' : 'user',
+      protocol: protocol || {},
+      dietProfile: dietProfile || { dietaryType: 'non-vegetarian', dailyCalories: 2000 },
+      subscription: subscription || { plan: 'none', status: 'none' }
+    });
+
+    try {
+      await newUser.save();
+    } catch (err) {
+      useMockDb = true;
+      await newUser.save();
+    }
+
+    res.status(201).json({ success: true, message: 'User created successfully.', user: newUser });
+  } catch (error) {
+    console.error('Admin create user error:', error);
+    res.status(500).json({ error: error.message || 'Failed to create user.' });
+  }
+});
+
+// 5. Update User Profile, Protocol, Diet, Subscription & Role
+app.put('/api/admin/user/:email', async (req, res) => {
+  try {
+    const originalEmail = req.params.email.toLowerCase().trim();
+    const { name, email, role, password, protocol, dietProfile, subscription } = req.body;
+
+    let user;
+    try {
+      user = await User.findOne({ email: originalEmail });
+    } catch (err) {
+      useMockDb = true;
+      user = await User.findOne({ email: originalEmail });
+    }
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (name) user.name = name.trim();
+    if (role) user.role = role;
+
+    // Handle email rename cascade across logs
+    if (email && email.toLowerCase().trim() !== originalEmail) {
+      const newEmail = email.toLowerCase().trim();
+      const existing = await User.findOne({ email: newEmail });
+      if (existing && String(existing._id) !== String(user._id)) {
+        return res.status(400).json({ error: 'Another user is already using this new email.' });
+      }
+      user.email = newEmail;
+
+      // Update associated workouts, nutrition logs, scans
+      await Promise.all([
+        Workout.deleteMany ? null : null,
+        Workout.find({ email: originalEmail }).then(async (wks) => {
+          for (const w of wks) { w.email = newEmail; await w.save(); }
+        }),
+        NutritionLog.find({ email: originalEmail }).then(async (nts) => {
+          for (const n of nts) { n.email = newEmail; await n.save(); }
+        }),
+        BodyScan.find({ email: originalEmail }).then(async (scs) => {
+          for (const s of scs) { s.email = newEmail; await s.save(); }
+        })
+      ]);
+    }
+
+    if (password && password.trim()) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password.trim(), salt);
+    }
+
+    if (protocol) {
+      user.protocol = {
+        ...(user.protocol || {}),
+        ...protocol
+      };
+    }
+
+    if (dietProfile) {
+      user.dietProfile = {
+        ...(user.dietProfile || {}),
+        ...dietProfile
+      };
+    }
+
+    if (subscription) {
+      user.subscription = {
+        ...(user.subscription || {}),
+        ...subscription
+      };
+    }
+
+    await user.save();
+    res.json({ success: true, message: 'User updated successfully in database.', user });
+  } catch (error) {
+    console.error('Admin update user error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update user.' });
+  }
+});
+
+// 6. Delete User and Cascade All Telemetry Logs
+app.delete('/api/admin/user/:email', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase().trim();
+
+    if (email === 'admin@gmail.com') {
+      return res.status(400).json({ error: 'Primary system admin user cannot be deleted.' });
+    }
+
+    try {
+      await Promise.all([
+        User.findOneAndDelete({ email }),
+        Workout.deleteMany({ email }),
+        NutritionLog.deleteMany({ email }),
+        BodyScan.deleteMany({ email })
+      ]);
+    } catch (err) {
+      useMockDb = true;
+      await Promise.all([
+        User.findOneAndDelete({ email }),
+        Workout.deleteMany({ email }),
+        NutritionLog.deleteMany({ email }),
+        BodyScan.deleteMany({ email })
+      ]);
+    }
+
+    res.json({ success: true, message: `User ${email} and all telemetry data deleted successfully.` });
+  } catch (error) {
+    console.error('Admin delete user error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete user.' });
+  }
+});
+
+// 7. Reset User Password Directly
+app.post('/api/admin/user/:email/reset-password', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase().trim();
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    }
+
+    let user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ success: true, message: `Password for ${email} has been updated successfully.` });
+  } catch (error) {
+    console.error('Admin reset password error:', error);
+    res.status(500).json({ error: error.message || 'Failed to reset password.' });
+  }
+});
+
+// 8. Add Workout for User
+app.post('/api/admin/user/:email/workout', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase().trim();
+    const { workoutName, duration, steps, distance, calories, date } = req.body;
+
+    const workout = new Workout({
+      email,
+      workoutName: workoutName || 'Custom Session',
+      duration: Number(duration) || 0,
+      steps: Number(steps) || 0,
+      distance: Number(distance) || 0,
+      calories: Number(calories) || 0,
+      date: date ? new Date(date) : new Date()
+    });
+
+    try {
+      await workout.save();
+    } catch (err) {
+      useMockDb = true;
+      await workout.save();
+    }
+
+    res.status(201).json({ success: true, message: 'Workout recorded.', workout });
+  } catch (error) {
+    console.error('Admin add workout error:', error);
+    res.status(500).json({ error: error.message || 'Failed to add workout.' });
+  }
+});
+
+// 9. Update Workout
+app.put('/api/admin/workout/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { workoutName, duration, steps, distance, calories, date } = req.body;
+
+    let workout = await Workout.findById(id);
+    if (!workout) {
+      workout = await Workout.findOne({ _id: id });
+    }
+    if (!workout) return res.status(404).json({ error: 'Workout not found.' });
+
+    if (workoutName) workout.workoutName = workoutName;
+    if (duration !== undefined) workout.duration = Number(duration);
+    if (steps !== undefined) workout.steps = Number(steps);
+    if (distance !== undefined) workout.distance = Number(distance);
+    if (calories !== undefined) workout.calories = Number(calories);
+    if (date) workout.date = new Date(date);
+
+    await workout.save();
+    res.json({ success: true, message: 'Workout updated.', workout });
+  } catch (error) {
+    console.error('Admin update workout error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update workout.' });
+  }
+});
+
+// 10. Delete Workout
+app.delete('/api/admin/workout/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    let deleted;
+    try {
+      deleted = await Workout.findOneAndDelete({ _id: id });
+    } catch (err) {
+      useMockDb = true;
+      deleted = await Workout.findOneAndDelete({ _id: id });
+    }
+    res.json({ success: true, message: 'Workout deleted.', deleted });
+  } catch (error) {
+    console.error('Admin delete workout error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete workout.' });
+  }
+});
+
+// 11. Add Nutrition Log for User
+app.post('/api/admin/user/:email/nutrition', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase().trim();
+    const { foodName, calories, protein, carbs, fat, fiber, sugar, sodium, date } = req.body;
+
+    const log = new NutritionLog({
+      email,
+      foodName: foodName || 'Manual Entry',
+      calories: Number(calories) || 0,
+      protein: Number(protein) || 0,
+      carbs: Number(carbs) || 0,
+      fat: Number(fat) || 0,
+      fiber: Number(fiber) || 0,
+      sugar: Number(sugar) || 0,
+      sodium: Number(sodium) || 0,
+      date: date ? new Date(date) : new Date()
+    });
+
+    try {
+      await log.save();
+    } catch (err) {
+      useMockDb = true;
+      await log.save();
+    }
+
+    res.status(201).json({ success: true, message: 'Nutrition log saved.', log });
+  } catch (error) {
+    console.error('Admin add nutrition error:', error);
+    res.status(500).json({ error: error.message || 'Failed to add nutrition log.' });
+  }
+});
+
+// 12. Update Nutrition Log
+app.put('/api/admin/nutrition/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { foodName, calories, protein, carbs, fat, fiber, sugar, sodium, date } = req.body;
+
+    let log = await NutritionLog.findById(id);
+    if (!log) log = await NutritionLog.findOne({ _id: id });
+    if (!log) return res.status(404).json({ error: 'Nutrition log not found.' });
+
+    if (foodName) log.foodName = foodName;
+    if (calories !== undefined) log.calories = Number(calories);
+    if (protein !== undefined) log.protein = Number(protein);
+    if (carbs !== undefined) log.carbs = Number(carbs);
+    if (fat !== undefined) log.fat = Number(fat);
+    if (fiber !== undefined) log.fiber = Number(fiber);
+    if (sugar !== undefined) log.sugar = Number(sugar);
+    if (sodium !== undefined) log.sodium = Number(sodium);
+    if (date) log.date = new Date(date);
+
+    await log.save();
+    res.json({ success: true, message: 'Nutrition log updated.', log });
+  } catch (error) {
+    console.error('Admin update nutrition error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update nutrition log.' });
+  }
+});
+
+// 13. Delete Nutrition Log
+app.delete('/api/admin/nutrition/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    let deleted;
+    try {
+      deleted = await NutritionLog.findOneAndDelete({ _id: id });
+    } catch (err) {
+      useMockDb = true;
+      deleted = await NutritionLog.findOneAndDelete({ _id: id });
+    }
+    res.json({ success: true, message: 'Nutrition log deleted.', deleted });
+  } catch (error) {
+    console.error('Admin delete nutrition error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete nutrition log.' });
+  }
+});
+
+// 14. Delete Body Scan
+app.delete('/api/admin/bodyscan/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    let deleted;
+    try {
+      deleted = await BodyScan.findOneAndDelete({ _id: id });
+    } catch (err) {
+      useMockDb = true;
+      deleted = await BodyScan.findOneAndDelete({ _id: id });
+    }
+    res.json({ success: true, message: 'Body scan deleted.', deleted });
+  } catch (error) {
+    console.error('Admin delete body scan error:', error);
+    res.status(500).json({ error: error.message || 'Failed to delete body scan.' });
+  }
+});
+
 // Serve Static Frontend files from root
 // Disable caching for HTML files so updates are immediately visible
 app.use((req, res, next) => {
@@ -3951,7 +4565,7 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.join(__dirname)));
 
-// Fallback to signup page if non-matching HTML
+// Fallback to index page if non-matching HTML
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -3963,5 +4577,6 @@ module.exports = app;
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`🟢 Server is running at http://localhost:${PORT}`);
+    ensureAdminUser();
   });
 }
