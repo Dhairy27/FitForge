@@ -21,13 +21,16 @@ function cleanAndParseJson(rawText) {
   return JSON.parse(str);
 }
 
+const aiPlannerEngine = require('./ai-planner-engine.js');
+
 let useMockDb = false;
 
 const mockDb = {
   users: [],
   workouts: [],
   nutritionlogs: [],
-  bodyscans: []
+  bodyscans: [],
+  masterplans: []
 };
 
 function makeChainable(arr) {
@@ -167,6 +170,26 @@ class MockModel {
     });
     return { deletedCount: 1 };
   }
+  static async updateMany(query, update) {
+    const collectionName = this.modelName.toLowerCase() + 's';
+    const list = mockDb[collectionName] || [];
+    let count = 0;
+    list.forEach(item => {
+      let matches = true;
+      for (let key in query) {
+        if (item[key] !== query[key]) {
+          matches = false;
+          break;
+        }
+      }
+      if (matches) {
+        const setUpdate = update.$set || update;
+        Object.assign(item, setUpdate);
+        count++;
+      }
+    });
+    return { modifiedCount: count };
+  }
 }
 
 const originalModel = mongoose.model;
@@ -304,6 +327,9 @@ const workoutSchema = new mongoose.Schema({
   steps: { type: Number, required: true },
   distance: { type: Number, required: true }, // in meters
   calories: { type: Number },
+  setsCompleted: { type: Number, default: 0 },
+  exercisesCompleted: { type: Number, default: 0 },
+  volumeLifted: { type: Number, default: 0 },
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
@@ -348,6 +374,53 @@ const bodyScanSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const BodyScan = mongoose.model('BodyScan', bodyScanSchema);
+
+const masterPlanSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  planId: { type: String, required: true },
+  headline: { type: String },
+  summary: { type: String },
+  dailyTarget: {
+    bmr: Number,
+    tdee: Number,
+    calories: Number,
+    protein: Number,
+    carbs: Number,
+    fat: Number,
+    waterLiters: Number,
+    burnTarget: Object
+  },
+  burnTarget: { type: Object, default: null },
+  aiReasoning: {
+    calorieReasoning: String,
+    macroReasoning: String,
+    mealReasoning: String,
+    workoutReasoning: String,
+    burnReasoning: String,
+    adaptationNotes: String
+  },
+  schedule: { type: Array, default: [] },
+  adherence: {
+    mealsCompleted: { type: Number, default: 0 },
+    mealsTotal: { type: Number, default: 5 },
+    workoutsCompleted: { type: Number, default: 0 },
+    workoutsTotal: { type: Number, default: 1 },
+    overallScore: { type: Number, default: 0 }
+  },
+  userProfileSnapshot: Object,
+  progressiveAdaptation: {
+    weekNumber: { type: Number, default: 1 },
+    weightChangeKg: { type: Number, default: 0 },
+    previousWeight: Number,
+    currentWeight: Number,
+    notes: String
+  },
+  active: { type: Boolean, default: true },
+  seed: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+
+const MasterPlan = mongoose.model('MasterPlan', masterPlanSchema);
 
 async function ensureAdminUser() {
   try {
@@ -3358,294 +3431,558 @@ app.post('/api/analyze-text-food', async (req, res) => {
 // 5. AI MASTER PLANNER & ADAPTIVE ENGINE
 // ==========================================
 
-// 5a. Generate AI Master Plan based on Protocol Data
+// 5a. Generate AI Master Plan based o// 5a. Generate AI Master Plan based on Protocol Data
 app.post('/api/ai/generate-plan', async (req, res) => {
   try {
-    const { email, protocol } = req.body;
-    let userProtocol = protocol;
-
-    if (!userProtocol && email) {
-      const user = await User.findOne({ email: email.toLowerCase() });
-      if (user && user.protocol) userProtocol = user.protocol;
+    const { email, protocol, seed, forceNew, burnGoal } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "User email is required." });
     }
 
-    const p = userProtocol || {};
-    const age = p.age || 25;
-    const sex = p.biologicalSex || 'Male';
-    const weight = p.weight || 75;
-    const height = p.height || 175;
-    const goal = (p.goals && p.goals[0]) || 'Overall Fitness & Muscle Building';
-    const activity = p.activityLevel || 'Moderate';
-    const equip = (p.equipment && p.equipment.length) ? p.equipment.join(', ') : 'Dumbbells, Bodyweight';
-    const fitnessLevel = p.fitnessLevel || 'Intermediate';
+    const user = await User.findOne({ email: email.toLowerCase() });
+    const userProtocol = {
+      ...(user?.protocol || {}),
+      ...(protocol || {}),
+      dietaryType: user?.dietProfile?.dietaryType || 'non-vegetarian',
+      allergies: user?.dietProfile?.allergies || [],
+      healthConditions: user?.dietProfile?.healthConditions || []
+    };
 
-    const systemPrompt = `You are FitForge's Master AI Engine. Generate an integrated 24-hour daily protocol (workouts + nutrition + hydration + recovery) strictly tailored for this user:
-    - Age: ${age}, Sex: ${sex}, Weight: ${weight}kg, Height: ${height}cm
-    - Goal: ${goal}
-    - Fitness Level: ${fitnessLevel}, Activity Level: ${activity}
-    - Available Equipment: ${equip}
+    // Calculate seed to vary plans across regenerations
+    const existingCount = await MasterPlan.countDocuments({ email: email.toLowerCase() });
+    const planSeed = typeof seed === 'number' ? seed : (existingCount + (forceNew ? 1 : 0));
 
-    Construct a complete daily schedule with morning workout, afternoon/evening workout or cardio, breakfast, lunch, dinner, snacks, and recovery.
-    Return ONLY a JSON object with this exact format (no markdown codeblocks):
-    {
-      "headline": "AI Dynamic Master Protocol",
-      "summary": "Customized routine based on ${goal} using ${equip}.",
-      "dailyTarget": {
-        "calories": 2200,
-        "protein": 160,
-        "carbs": 210,
-        "fat": 65,
-        "waterLiters": 3.5
-      },
-      "schedule": [
-        {
-          "id": "blk-1",
-          "time": "07:00 AM",
-          "type": "workout",
-          "title": "Morning Strength & Kinetic Drive",
-          "description": "Hypertrophy session targeting primary muscle groups",
-          "status": "scheduled",
-          "details": {
-            "durationMins": 45,
-            "targetCalories": 380,
-            "exercises": [
-              { "name": "Barbell Squat / Goblet Squat", "sets": 4, "reps": "10-12", "restSecs": 60 },
-              { "name": "Dumbbell Bench Press", "sets": 4, "reps": "10", "restSecs": 60 },
-              { "name": "Plank Core Hold", "sets": 3, "reps": "45s", "restSecs": 45 }
-            ]
-          }
-        },
-        {
-          "id": "blk-2",
-          "time": "08:30 AM",
-          "type": "meal",
-          "title": "Anabolic Breakfast Protocol",
-          "description": "High-protein morning refueling meal",
-          "status": "scheduled",
-          "details": {
-            "mealType": "Breakfast",
-            "suggestedMeal": "Oatmeal with Whey Protein, Almonds & Banana",
-            "targetCalories": 550,
-            "protein": 42,
-            "carbs": 65,
-            "fat": 14,
-            "photoRequired": true,
-            "ingredients": ["100g Rolled Oats", "1 Scoop Whey", "15g Almonds", "1 Medium Banana"]
-          }
-        },
-        {
-          "id": "blk-3",
-          "time": "01:00 PM",
-          "type": "meal",
-          "title": "Precision Lunch Matrix",
-          "description": "Balanced macronutrient mid-day power meal",
-          "status": "scheduled",
-          "details": {
-            "mealType": "Lunch",
-            "suggestedMeal": "Grilled Chicken Breast with Quinoa & Steamed Broccoli",
-            "targetCalories": 650,
-            "protein": 52,
-            "carbs": 60,
-            "fat": 15,
-            "photoRequired": true,
-            "ingredients": ["180g Chicken Breast", "150g Quinoa", "100g Broccoli", "1 tbsp Olive Oil"]
-          }
-        },
-        {
-          "id": "blk-4",
-          "time": "04:30 PM",
-          "type": "workout",
-          "title": "Afternoon Cardio & Agility Finisher",
-          "description": "High intensity metabolic rate amplifier",
-          "status": "scheduled",
-          "details": {
-            "durationMins": 30,
-            "targetCalories": 280,
-            "exercises": [
-              { "name": "Kettlebell / Dumbbell Swings", "sets": 4, "reps": "15", "restSecs": 45 },
-              { "name": "Bodyweight Burpees", "sets": 3, "reps": "12", "restSecs": 45 },
-              { "name": "Mountain Climbers", "sets": 3, "reps": "45s", "restSecs": 30 }
-            ]
-          }
-        },
-        {
-          "id": "blk-5",
-          "time": "07:30 PM",
-          "type": "meal",
-          "title": "Recovery Dinner Protocol",
-          "description": "Lean protein and fiber dense dinner",
-          "status": "scheduled",
-          "details": {
-            "mealType": "Dinner",
-            "suggestedMeal": "Baked Salmon / Tofu with Sweet Potato & Mixed Salad",
-            "targetCalories": 600,
-            "protein": 45,
-            "carbs": 50,
-            "fat": 20,
-            "photoRequired": true,
-            "ingredients": ["180g Salmon/Tofu", "150g Sweet Potato", "Mixed Greens"]
-          }
-        },
-        {
-          "id": "blk-6",
-          "time": "09:30 PM",
-          "type": "recovery",
-          "title": "Nocturnal Regeneration & Mobility",
-          "description": "Deep breathing, hydration check, and tissue repair",
-          "status": "scheduled",
-          "details": {
-            "durationMins": 15,
-            "waterCheck": "Ensure 3.5L daily total reached",
-            "mobility": ["Child's Pose (60s)", "Cobra Stretch (60s)", "Hamstring Stretch (60s)"]
-          }
-        }
-      ]
-    }`;
+    // Generate precision scientific master plan with calorie burn calibration
+    let generatedPlan = aiPlannerEngine.buildMasterPlan(userProtocol, planSeed, burnGoal);
+    generatedPlan.email = email.toLowerCase();
+    generatedPlan.seed = planSeed;
+    if (generatedPlan.dailyTarget?.burnTarget) {
+      generatedPlan.burnTarget = generatedPlan.dailyTarget.burnTarget;
+    }
 
+    // Optional: Enhance phrasing & motivation with Gemini AI if key is present
     if (process.env.GEMINI_API_KEY) {
       try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        const geminiPrompt = `You are FitForge's AI Master Sports Scientist and Dietitian.
+Refine and personalize the wording, meal descriptions, and motivational recovery notes for this user's protocol:
+- User: ${userProtocol.biologicalSex || 'Male'}, ${userProtocol.age || 25}y, ${userProtocol.weight || 75}kg, ${userProtocol.height || 175}cm
+- Goal: ${userProtocol.goals?.[0] || 'Overall Fitness'}
+- Diet: ${userProtocol.dietaryType} (Allergies: ${userProtocol.allergies?.join(', ') || 'None'})
+- Target Calories: ${generatedPlan.dailyTarget.calories} kcal (Protein: ${generatedPlan.dailyTarget.protein}g, Carbs: ${generatedPlan.dailyTarget.carbs}g, Fat: ${generatedPlan.dailyTarget.fat}g)
+
+Current calibrated structure:
+${JSON.stringify({
+  headline: generatedPlan.headline,
+  summary: generatedPlan.summary,
+  aiReasoning: generatedPlan.aiReasoning
+})}
+
+Respond ONLY with a JSON object updating 'headline', 'summary', and 'aiReasoning' (calorieReasoning, macroReasoning, mealReasoning, workoutReasoning, adaptationNotes). Keep all target numbers, calories, and macros identical.`;
+
+        const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: systemPrompt }] }],
+            contents: [{ parts: [{ text: geminiPrompt }] }],
             generationConfig: { responseMimeType: "application/json" }
           })
         });
 
-        if (response.ok) {
-          const resData = await response.json();
-          const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (geminiRes.ok) {
+          const geminiData = await geminiRes.json();
+          const txt = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (txt) {
             const parsed = cleanAndParseJson(txt);
-            return res.status(200).json(parsed);
+            if (parsed.headline) generatedPlan.headline = parsed.headline;
+            if (parsed.summary) generatedPlan.summary = parsed.summary;
+            if (parsed.aiReasoning) {
+              generatedPlan.aiReasoning = {
+                ...generatedPlan.aiReasoning,
+                ...parsed.aiReasoning
+              };
+            }
           }
         }
-      } catch (err) {
-        console.error("Gemini AI plan generation error:", err);
+      } catch (gemErr) {
+        console.log("Gemini personalization skipped, using precision algorithmic plan:", gemErr.message);
       }
     }
 
-    // Smart Fallback Plan Generator
-    const fallbackPlan = {
-      headline: "AI Master Daily Protocol",
-      summary: `Tailored protocol for ${goal} using ${equip}. Calibrated to your ${weight}kg biometric profile.`,
-      dailyTarget: {
-        calories: Math.round(weight * 28),
-        protein: Math.round(weight * 2.1),
-        carbs: Math.round(weight * 3.0),
-        fat: Math.round(weight * 0.8),
-        waterLiters: 3.5
-      },
-      schedule: [
-        {
-          id: "blk-1",
-          time: "07:00 AM",
-          type: "workout",
-          title: "Morning Strength & Kinetic Drive",
-          description: "Hypertrophy session targeting primary muscle groups",
-          status: "scheduled",
-          details: {
-            durationMins: 45,
-            targetCalories: 380,
-            exercises: [
-              { name: "Barbell / Dumbbell Squats", sets: 4, reps: "10-12", restSecs: 60 },
-              { name: "Push-ups / Bench Press", sets: 4, reps: "12", restSecs: 60 },
-              { name: "Plank Core Hold", sets: 3, reps: "60s", restSecs: 45 }
-            ]
-          }
-        },
-        {
-          id: "blk-2",
-          time: "08:30 AM",
-          type: "meal",
-          title: "Anabolic Breakfast Protocol",
-          description: "High-protein morning refueling meal",
-          status: "scheduled",
-          details: {
-            mealType: "Breakfast",
-            suggestedMeal: "Oatmeal with Whey Protein & Almonds",
-            targetCalories: 550,
-            protein: 42,
-            carbs: 65,
-            fat: 14,
-            photoRequired: true,
-            ingredients: ["100g Oats", "1 Scoop Whey", "15g Almonds", "1 Banana"]
-          }
-        },
-        {
-          id: "blk-3",
-          time: "01:00 PM",
-          type: "meal",
-          title: "Precision Lunch Matrix",
-          description: "Balanced macronutrient mid-day power meal",
-          status: "scheduled",
-          details: {
-            mealType: "Lunch",
-            suggestedMeal: "Grilled Chicken Breast with Quinoa & Broccoli",
-            targetCalories: 650,
-            protein: 52,
-            carbs: 60,
-            fat: 15,
-            photoRequired: true,
-            ingredients: ["180g Chicken Breast", "150g Quinoa", "100g Broccoli"]
-          }
-        },
-        {
-          id: "blk-4",
-          time: "04:30 PM",
-          type: "workout",
-          title: "Afternoon Agility & Metabolic Finisher",
-          description: "High intensity metabolic rate amplifier",
-          status: "scheduled",
-          details: {
-            durationMins: 30,
-            targetCalories: 280,
-            exercises: [
-              { name: "Dumbbell Kettlebell Swings", sets: 4, reps: "15", restSecs: 45 },
-              { name: "Bodyweight Burpees", sets: 3, reps: "12", restSecs: 45 },
-              { name: "Mountain Climbers", sets: 3, reps: "45s", restSecs: 30 }
-            ]
-          }
-        },
-        {
-          id: "blk-5",
-          time: "07:30 PM",
-          type: "meal",
-          title: "Recovery Dinner Protocol",
-          description: "Lean protein and fiber dense dinner",
-          status: "scheduled",
-          details: {
-            mealType: "Dinner",
-            suggestedMeal: "Baked Fish/Tofu with Sweet Potato & Salad",
-            targetCalories: 600,
-            protein: 45,
-            carbs: 50,
-            fat: 20,
-            photoRequired: true,
-            ingredients: ["180g Fish/Tofu", "150g Sweet Potato", "Mixed Greens"]
-          }
-        },
-        {
-          id: "blk-6",
-          time: "09:30 PM",
-          type: "recovery",
-          title: "Nocturnal Regeneration & Mobility",
-          description: "Deep breathing, hydration check, and tissue repair",
-          status: "scheduled",
-          details: {
-            durationMins: 15,
-            waterCheck: "Ensure 3.5L daily total reached",
-            mobility: ["Child's Pose (60s)", "Cobra Stretch (60s)", "Hamstring Stretch (60s)"]
-          }
-        }
-      ]
-    };
+    // Deactivate previous active plans for this user
+    await MasterPlan.updateMany({ email: email.toLowerCase() }, { active: false });
 
-    return res.status(200).json(fallbackPlan);
+    // Save newly generated plan in MongoDB
+    const planDoc = new MasterPlan({
+      ...generatedPlan,
+      email: email.toLowerCase(),
+      active: true
+    });
+    await planDoc.save();
+
+    return res.status(200).json(planDoc);
   } catch (error) {
     console.error("Generate AI plan error:", error);
     res.status(500).json({ error: "Failed to generate AI master plan." });
+  }
+});
+
+// 5b. Get Active AI Master Plan
+app.get('/api/ai/plan/active', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    let plan = await MasterPlan.findOne({ email: email.toLowerCase(), active: true });
+    if (!plan) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase() }).sort({ createdAt: -1 });
+    }
+
+    if (!plan) {
+      // Auto-initialize plan from user protocol
+      const user = await User.findOne({ email: email.toLowerCase() });
+      const userProtocol = {
+        ...(user?.protocol || {}),
+        dietaryType: user?.dietProfile?.dietaryType || 'non-vegetarian',
+        allergies: user?.dietProfile?.allergies || [],
+        healthConditions: user?.dietProfile?.healthConditions || []
+      };
+
+      const initialPlan = aiPlannerEngine.buildMasterPlan(userProtocol, 0);
+      initialPlan.email = email.toLowerCase();
+      initialPlan.active = true;
+
+      const newDoc = new MasterPlan(initialPlan);
+      await newDoc.save();
+      return res.status(200).json(newDoc);
+    }
+
+    return res.status(200).json(plan);
+  } catch (error) {
+    console.error("Fetch active plan error:", error);
+    res.status(500).json({ error: "Failed to fetch active master plan." });
+  }
+});
+
+// 5b-2. Get Calorie Burn Recommendation
+app.get('/api/ai/burn-recommendation', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    const userProtocol = {
+      ...(user?.protocol || {}),
+      dietaryType: user?.dietProfile?.dietaryType || 'non-vegetarian',
+      allergies: user?.dietProfile?.allergies || [],
+      healthConditions: user?.dietProfile?.healthConditions || []
+    };
+
+    const recommendation = aiPlannerEngine.recommendCalorieBurnTarget(userProtocol);
+    return res.status(200).json(recommendation);
+  } catch (error) {
+    console.error("Burn recommendation error:", error);
+    res.status(500).json({ error: "Failed to calculate burn recommendation." });
+  }
+});
+
+// 5c. Get Historical Saved Plans
+app.get('/api/ai/plans/history', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    const plans = await MasterPlan.find({ email: email.toLowerCase() })
+      .sort({ createdAt: -1 })
+      .limit(10);
+
+    return res.status(200).json({ plans });
+  } catch (error) {
+    console.error("Fetch plans history error:", error);
+    res.status(500).json({ error: "Failed to fetch plan history." });
+  }
+});
+
+// 5d. Restore Historical Plan
+app.post('/api/ai/plan/restore', async (req, res) => {
+  try {
+    const { email, planId } = req.body;
+    if (!email || !planId) return res.status(400).json({ error: "Email and planId are required." });
+
+    await MasterPlan.updateMany({ email: email.toLowerCase() }, { active: false });
+    const restored = await MasterPlan.findOneAndUpdate(
+      { email: email.toLowerCase(), planId: planId },
+      { active: true },
+      { new: true }
+    );
+
+    if (!restored) return res.status(404).json({ error: "Plan not found." });
+    return res.status(200).json(restored);
+  } catch (error) {
+    console.error("Restore plan error:", error);
+    res.status(500).json({ error: "Failed to restore historical plan." });
+  }
+});
+
+// 5e. Complete/Toggle Block and Track Adherence
+app.post('/api/ai/plan/complete-block', async (req, res) => {
+  try {
+    const { email, planId, blockId, status = 'completed' } = req.body;
+    if (!email || !blockId) return res.status(400).json({ error: "Email and blockId are required." });
+
+    let plan = null;
+    if (planId) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase(), planId });
+    }
+    if (!plan) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase(), active: true });
+    }
+    if (!plan) return res.status(404).json({ error: "Plan not found." });
+
+    const block = plan.schedule.find(b => b.id === blockId);
+    if (block) {
+      block.status = status;
+    }
+
+    // Recalculate adherence metrics
+    const meals = plan.schedule.filter(b => b.type === 'meal');
+    const workouts = plan.schedule.filter(b => b.type === 'workout');
+    const allActionable = plan.schedule.filter(b => ['meal', 'workout', 'recovery', 'wakeup', 'sleep', 'hydration'].includes(b.type));
+
+    const mealsCompleted = meals.filter(m => m.status === 'completed').length;
+    const workoutsCompleted = workouts.filter(w => w.status === 'completed').length;
+    const totalCompleted = allActionable.filter(b => b.status === 'completed').length;
+
+    const overallScore = allActionable.length > 0
+      ? Math.round((totalCompleted / allActionable.length) * 100)
+      : 0;
+
+    plan.adherence = {
+      mealsCompleted,
+      mealsTotal: meals.length,
+      workoutsCompleted,
+      workoutsTotal: workouts.length,
+      overallScore
+    };
+
+    // Log to workout or nutrition history if completed
+    if (status === 'completed' && block) {
+      if (block.type === 'workout') {
+        try {
+          const workoutDoc = new Workout({
+            email: email.toLowerCase(),
+            workoutName: block.title,
+            duration: (block.details?.durationMins || 45) * 60,
+            steps: 3000,
+            distance: 2000,
+            calories: block.details?.targetCalories || 300,
+            date: new Date()
+          });
+          await workoutDoc.save();
+        } catch (e) { }
+      } else if (block.type === 'meal') {
+        try {
+          const nutDoc = new NutritionLog({
+            email: email.toLowerCase(),
+            foodName: block.details?.suggestedMeal || block.title,
+            calories: block.details?.targetCalories || 400,
+            protein: block.details?.protein || 25,
+            carbs: block.details?.carbs || 45,
+            fat: block.details?.fat || 12,
+            date: new Date()
+          });
+          await nutDoc.save();
+        } catch (e) { }
+      }
+    }
+
+    await plan.save();
+    return res.status(200).json(plan);
+  } catch (error) {
+    console.error("Complete block error:", error);
+    res.status(500).json({ error: "Failed to update block completion status." });
+  }
+});
+
+// 5e2. Complete Guided Workout Session and Persist Stats
+app.post('/api/ai/workout/session-complete', async (req, res) => {
+  try {
+    const { 
+      email, 
+      planId, 
+      blockId, 
+      workoutName, 
+      durationSeconds = 1800, 
+      caloriesBurned = 250, 
+      setsCompleted = 0, 
+      exercisesCompleted = 0, 
+      volumeLifted = 0,
+      exercisesSummary = []
+    } = req.body;
+
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    // 1. Save to Workout collection
+    const workoutDoc = new Workout({
+      email: email.toLowerCase(),
+      workoutName: workoutName || 'AI Guided Workout Session',
+      duration: Math.max(60, Number(durationSeconds) || 1800),
+      steps: Math.round((Number(durationSeconds) || 1800) / 60 * 95),
+      distance: Math.round(((Number(durationSeconds) || 1800) / 60 * 95) * 0.75),
+      calories: Math.max(10, Math.round(Number(caloriesBurned) || 250)),
+      setsCompleted: Number(setsCompleted) || 0,
+      exercisesCompleted: Number(exercisesCompleted) || 0,
+      volumeLifted: Math.round(Number(volumeLifted) || 0),
+      date: new Date()
+    });
+    await workoutDoc.save();
+
+    // 2. Update MasterPlan schedule block if exists
+    let plan = null;
+    if (planId) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase(), planId });
+    }
+    if (!plan) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase(), active: true });
+    }
+
+    if (plan) {
+      let block = null;
+      if (blockId) {
+        block = plan.schedule.find(b => b.id === blockId);
+      }
+      if (!block) {
+        // find first pending workout block
+        block = plan.schedule.find(b => b.type === 'workout' && b.status !== 'completed');
+      }
+
+      if (block) {
+        block.status = 'completed';
+        if (!block.details) block.details = {};
+        block.details.actuals = {
+          durationSeconds: Number(durationSeconds) || 1800,
+          caloriesBurned: Math.round(Number(caloriesBurned) || 250),
+          setsCompleted: Number(setsCompleted) || 0,
+          exercisesCompleted: Number(exercisesCompleted) || 0,
+          volumeLifted: Math.round(Number(volumeLifted) || 0),
+          completedAt: new Date(),
+          exercisesSummary
+        };
+      }
+
+      // Recalculate adherence
+      const meals = plan.schedule.filter(b => b.type === 'meal');
+      const workouts = plan.schedule.filter(b => b.type === 'workout');
+      const allActionable = plan.schedule.filter(b => ['meal', 'workout', 'recovery', 'wakeup', 'sleep', 'hydration'].includes(b.type));
+      const mealsCompleted = meals.filter(m => m.status === 'completed').length;
+      const workoutsCompleted = workouts.filter(w => w.status === 'completed').length;
+      const totalCompleted = allActionable.filter(b => b.status === 'completed').length;
+      const overallScore = allActionable.length > 0 ? Math.round((totalCompleted / allActionable.length) * 100) : 0;
+
+      plan.adherence = {
+        mealsCompleted,
+        mealsTotal: meals.length,
+        workoutsCompleted,
+        workoutsTotal: workouts.length,
+        overallScore
+      };
+
+      await plan.save();
+    }
+
+    // Dynamic recovery recommendation based on intensity and volume
+    const recoveryBlueprint = {
+      waterMl: Math.min(1200, Math.max(500, Math.round(volumeLifted > 5000 ? 1000 : 750))),
+      proteinGrams: Math.round(25 + Math.min(20, (setsCompleted * 1.2))),
+      stretches: [
+        "Light walking cooldown (3-5 minutes)",
+        "Static hamstring and glute stretch (45s per side)",
+        "Thoracic spine foam roll or child's pose (60s)"
+      ],
+      nextSessionWindow: "Tomorrow at your scheduled training time. Sleep target: 7.5 - 8.5 hours."
+    };
+
+    return res.status(200).json({
+      success: true,
+      message: "Guided workout session successfully recorded!",
+      workout: workoutDoc,
+      plan,
+      recoveryBlueprint
+    });
+  } catch (error) {
+    console.error("Session complete error:", error);
+    res.status(500).json({ error: "Failed to persist guided workout session." });
+  }
+});
+
+// 5e3. Get Exercise Alternatives for dynamic mid-workout swap
+app.get('/api/ai/workout/exercise-alternatives', async (req, res) => {
+  try {
+    const { exerciseName, reason = 'equipment', equipment = 'gym', fitnessLevel = 'intermediate' } = req.query;
+    if (!exerciseName) return res.status(400).json({ error: "exerciseName query parameter is required." });
+
+    const alternatives = aiPlannerEngine.findExerciseAlternatives(exerciseName, reason, equipment, fitnessLevel);
+    return res.status(200).json({ success: true, exerciseName, reason, alternatives });
+  } catch (error) {
+    console.error("Exercise alternatives error:", error);
+    res.status(500).json({ error: "Failed to fetch exercise alternatives." });
+  }
+});
+
+// 5e4. Replace Exercise in Active Master Plan
+app.post('/api/ai/workout/replace-exercise', async (req, res) => {
+  try {
+    const { email, planId, blockId, exerciseIndex, replacementName, reason = 'equipment' } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    if (exerciseIndex === undefined || exerciseIndex === null) {
+      return res.status(400).json({ error: "exerciseIndex is required." });
+    }
+
+    let plan = null;
+    if (planId) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase(), planId });
+    }
+    if (!plan) {
+      plan = await MasterPlan.findOne({ email: email.toLowerCase(), active: true });
+    }
+    if (!plan) return res.status(404).json({ error: "Active plan not found." });
+
+    let block = null;
+    if (blockId) {
+      block = plan.schedule.find(b => b.id === blockId);
+    }
+    if (!block) {
+      block = plan.schedule.find(b => b.type === 'workout');
+    }
+    if (!block || !block.details || !Array.isArray(block.details.exercises)) {
+      return res.status(404).json({ error: "Workout block or exercises array not found." });
+    }
+
+    const idx = Number(exerciseIndex);
+    if (idx < 0 || idx >= block.details.exercises.length) {
+      return res.status(400).json({ error: "Invalid exercise index." });
+    }
+
+    const currentEx = block.details.exercises[idx];
+    const equip = plan.protocol?.workoutLocation || 'gym';
+    const level = plan.protocol?.fitnessLevel || 'intermediate';
+
+    let selectedReplacement = null;
+
+    if (replacementName) {
+      const alts = aiPlannerEngine.findExerciseAlternatives(currentEx.name, reason, equip, level);
+      selectedReplacement = alts.find(a => a.name.toLowerCase() === replacementName.toLowerCase());
+      
+      if (!selectedReplacement) {
+        const lib = aiPlannerEngine.EXERCISE_LIBRARY || {};
+        for (const loc of Object.keys(lib)) {
+          for (const lvl of Object.keys(lib[loc] || {})) {
+            for (const cat of Object.keys(lib[loc][lvl] || {})) {
+              const match = (lib[loc][lvl][cat] || []).find(e => e.name.toLowerCase() === replacementName.toLowerCase());
+              if (match) {
+                selectedReplacement = match;
+                break;
+              }
+            }
+            if (selectedReplacement) break;
+          }
+          if (selectedReplacement) break;
+        }
+      }
+    }
+
+    if (!selectedReplacement) {
+      const alts = aiPlannerEngine.findExerciseAlternatives(currentEx.name, reason, equip, level);
+      if (alts.length > 0) {
+        selectedReplacement = alts[0];
+      }
+    }
+
+    if (!selectedReplacement) {
+      return res.status(404).json({ error: "No suitable replacement exercise found." });
+    }
+
+    const updatedEx = {
+      ...currentEx,
+      name: selectedReplacement.name,
+      targetMuscles: selectedReplacement.targetMuscles || currentEx.targetMuscles,
+      sets: selectedReplacement.sets || currentEx.sets,
+      reps: selectedReplacement.reps || currentEx.reps,
+      recommendedWeight: selectedReplacement.recommendedWeight || currentEx.recommendedWeight,
+      durationMins: selectedReplacement.durationMins || currentEx.durationMins,
+      restDurationSeconds: selectedReplacement.restDurationSeconds || currentEx.restDurationSeconds,
+      caloriesBurnEstimate: selectedReplacement.caloriesBurnEstimate || currentEx.caloriesBurnEstimate,
+      startPosition: selectedReplacement.startPosition || currentEx.startPosition,
+      movementPath: selectedReplacement.movementPath || currentEx.movementPath,
+      commonMistakes: selectedReplacement.commonMistakes || currentEx.commonMistakes,
+      breathingInstructions: selectedReplacement.breathingInstructions || currentEx.breathingInstructions,
+      safetyInstructions: selectedReplacement.safetyInstructions || currentEx.safetyInstructions,
+      postureCheckpoints: selectedReplacement.postureCheckpoints || currentEx.postureCheckpoints,
+      muscleActivationCues: selectedReplacement.muscleActivationCues || currentEx.muscleActivationCues,
+      injuryPreventionTips: selectedReplacement.injuryPreventionTips || currentEx.injuryPreventionTips,
+      visualType: selectedReplacement.visualType || currentEx.visualType,
+      alternatives: selectedReplacement.alternatives || currentEx.alternatives,
+      swappedFrom: currentEx.name,
+      swapReason: reason
+    };
+
+    block.details.exercises[idx] = updatedEx;
+    plan.markModified('schedule');
+    await plan.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Replaced "${currentEx.name}" with "${updatedEx.name}".`,
+      replacedExercise: updatedEx,
+      plan
+    });
+  } catch (error) {
+    console.error("Replace exercise error:", error);
+    res.status(500).json({ error: "Failed to replace exercise." });
+  }
+});
+
+
+// 5f. Progressive Adaptation Endpoint
+app.post('/api/ai/plan/progressive-adapt', async (req, res) => {
+  try {
+    const { email, planId, checkInData } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+
+    let currentPlan = null;
+    if (planId) {
+      currentPlan = await MasterPlan.findOne({ email: email.toLowerCase(), planId });
+    }
+    if (!currentPlan) {
+      currentPlan = await MasterPlan.findOne({ email: email.toLowerCase(), active: true });
+    }
+    if (!currentPlan) return res.status(404).json({ error: "Current plan not found." });
+
+    const adapted = aiPlannerEngine.runProgressiveAdaptation(
+      currentPlan.toObject ? currentPlan.toObject() : currentPlan,
+      checkInData || {}
+    );
+    if (!adapted) return res.status(500).json({ error: "Failed to compute progressive adaptation." });
+
+    if (checkInData?.currentWeight) {
+      await User.findOneAndUpdate(
+        { email: email.toLowerCase() },
+        { $set: { "protocol.weight": Number(checkInData.currentWeight) } }
+      );
+    }
+
+    await MasterPlan.updateMany({ email: email.toLowerCase() }, { active: false });
+
+    const newPlanDoc = new MasterPlan({
+      ...adapted,
+      email: email.toLowerCase(),
+      active: true
+    });
+    await newPlanDoc.save();
+
+    return res.status(200).json(newPlanDoc);
+  } catch (error) {
+    console.error("Progressive adaptation error:", error);
+    res.status(500).json({ error: "Failed to run progressive adaptation." });
   }
 });
 
