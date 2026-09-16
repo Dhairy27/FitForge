@@ -107,6 +107,67 @@
             background: #2B2B2B;
             border-radius: 3px;
         }
+
+        /* Guided Workout Custom Animations */
+        @keyframes breathPulse {
+            0%, 100% { transform: scale(1); opacity: 0.75; box-shadow: 0 0 10px rgba(16, 185, 129, 0.2); }
+            50% { transform: scale(1.12); opacity: 1; box-shadow: 0 0 25px rgba(16, 185, 129, 0.6); }
+        }
+        .animate-breath {
+            animation: breathPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes kineticMotion {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(14px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-kinetic-squat {
+            animation: kineticMotion 2.8s ease-in-out infinite;
+        }
+
+        @keyframes kineticBench {
+            0% { transform: translateY(-16px); }
+            50% { transform: translateY(10px); }
+            100% { transform: translateY(-16px); }
+        }
+        .animate-kinetic-bench {
+            animation: kineticBench 2.5s ease-in-out infinite;
+        }
+
+        @keyframes kineticDeadlift {
+            0% { transform: translateY(16px); }
+            45% { transform: translateY(-10px); }
+            55% { transform: translateY(-10px); }
+            100% { transform: translateY(16px); }
+        }
+        .animate-kinetic-deadlift {
+            animation: kineticDeadlift 3.2s ease-in-out infinite;
+        }
+
+        @keyframes kineticCardio {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 1; filter: drop-shadow(0 0 12px rgba(244, 63, 94, 0.7)); }
+        }
+        .animate-kinetic-cardio {
+            animation: kineticCardio 1.4s ease-in-out infinite;
+        }
+
+        .rest-ring-circle {
+            transition: stroke-dashoffset 0.85s linear, stroke 0.3s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        @keyframes recoveryBreathing {
+            0% { transform: scale(0.82); opacity: 0.7; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+            33.3% { transform: scale(1.22); opacity: 1; box-shadow: 0 0 45px rgba(16, 185, 129, 0.55); }
+            50% { transform: scale(1.22); opacity: 0.95; box-shadow: 0 0 35px rgba(16, 185, 129, 0.45); }
+            100% { transform: scale(0.82); opacity: 0.7; box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+        }
+        .animate-recovery-breathing {
+            animation: recoveryBreathing 12s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
     </style>
 </head>
 
@@ -135,7 +196,7 @@
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-primary font-bold bg-white/10 transition-all duration-300 active:scale-95"
                 href="planner.html">
-                <span class="material-symbols-outlined">auto_awesome</span>
+                <span class="material-symbols-outlined text-purple-400">auto_awesome</span>
                 <span class="font-body-md text-body-md tracking-tight text-white font-bold">AI Planner</span>
             </a>
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
@@ -180,58 +241,187 @@
                 </button>
                 <div class="flex items-center gap-3">
                     <span class="material-symbols-outlined text-purple-400 text-2xl">auto_awesome</span>
-                    <h2 class="font-headline-md text-headline-md text-primary font-bold">AI Master Day Planner</h2>
+                    <div>
+                        <h2 class="font-headline-md text-headline-md text-primary font-bold">AI Master Day Planner</h2>
+                        <span class="text-[10px] text-secondary font-mono hidden sm:inline">Mifflin-St Jeor Precision Protocol</span>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="btn-generate-ai-plan" onclick="generateAIMasterPlan()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)]">
-                    <span class="material-symbols-outlined text-sm">sync</span>
-                    Regenerate AI Plan
+            <div class="flex items-center gap-2 sm:gap-3">
+                <button onclick="openBurnGoalModal()" class="px-3.5 py-2 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">local_fire_department</span>
+                    <span class="hidden md:inline">Burn Target</span>
                 </button>
-                <a href="profile.html" class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                <button onclick="openPlanHistoryModal()" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-secondary hover:text-white border border-white/10 font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">history</span>
+                    <span class="hidden md:inline">Plan History</span>
+                </button>
+                <button onclick="openProgressiveAdaptModal()" class="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer">
+                    <span class="material-symbols-outlined text-sm">trending_up</span>
+                    <span class="hidden md:inline">Weekly Check-in</span>
+                </button>
+                <button id="btn-generate-ai-plan" onclick="openBurnGoalModal()" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(139,92,246,0.3)]">
+                    <span class="material-symbols-outlined text-sm">sync</span>
+                    <span>Regenerate Plan</span>
+                </button>
+                <a href="profile.html" class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 ml-1">
                     <span class="material-symbols-outlined text-2xl">account_circle</span>
                 </a>
             </div>
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-4 md:px-12 py-stack-lg flex-1 space-y-8">
+        <div class="px-4 md:px-12 py-stack-lg flex-1 space-y-6">
 
             <!-- Hero Banner: Protocol Telemetry & Target Summary -->
-            <section class="glass-card p-8 rounded-[2rem] border-glass-border relative overflow-hidden flex flex-col lg:flex-row justify-between gap-6 items-start lg:items-center">
+            <section class="glass-card p-6 sm:p-8 rounded-[2rem] border-glass-border relative overflow-hidden flex flex-col xl:flex-row justify-between gap-6 items-start xl:items-center">
                 <div class="absolute -right-10 -top-10 w-64 h-64 bg-purple-500/10 blur-[90px] rounded-full pointer-events-none"></div>
-                <div class="space-y-2 z-10">
-                    <div class="flex items-center gap-3">
+                <div class="space-y-3 z-10 max-w-xl">
+                    <div class="flex flex-wrap items-center gap-2.5">
                         <span class="px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5">
                             <span class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span>
-                            Gemini AI Protocol Linked
+                            Mifflin-St Jeor Validated Protocol
                         </span>
-                        <span id="user-protocol-tag" class="text-xs text-secondary/60 font-mono">Loading protocol...</span>
+                        <span id="user-protocol-tag" class="text-xs text-secondary/70 font-mono">Loading protocol telemetry...</span>
                     </div>
-                    <h1 id="ai-plan-headline" class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-white">AI Dynamic Master Protocol</h1>
-                    <p id="ai-plan-summary" class="text-xs sm:text-sm text-secondary max-w-xl leading-relaxed">Synthesizing your biometric protocol data into an adaptive 24-hour workout, nutrition, and recovery schedule.</p>
+                    <h1 id="ai-plan-headline" class="font-headline text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white">AI Dynamic Master Protocol</h1>
+                    <p id="ai-plan-summary" class="text-xs sm:text-sm text-secondary leading-relaxed">Synthesizing your biometric profile data into an adaptive 24-hour workout, nutrition, and recovery schedule.</p>
+                    
+                    <!-- Core Protocol Burn & Progress Telemetry Badges -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        <div class="px-3 py-1.5 rounded-xl bg-purple-500/10 border border-purple-500/20 text-xs font-mono flex items-center gap-1.5 text-purple-300">
+                            <span class="material-symbols-outlined text-sm text-purple-400">restaurant</span>
+                            <span>Target Intake: <strong id="hero-badge-intake" class="text-white">-- kcal</strong></span>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs font-mono flex items-center gap-1.5 text-amber-300 cursor-pointer hover:bg-amber-500/20 transition-all" onclick="openBurnGoalModal()" title="Click to adjust burn target">
+                            <span class="material-symbols-outlined text-sm text-amber-400">local_fire_department</span>
+                            <span>Burn Goal: <strong id="hero-badge-burn" class="text-white">-- kcal/day</strong></span>
+                            <span class="material-symbols-outlined text-xs opacity-60">edit</span>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono flex items-center gap-1.5 text-emerald-300">
+                            <span class="material-symbols-outlined text-sm text-emerald-400">trending_down</span>
+                            <span>Weekly Progress: <strong id="hero-badge-progress" class="text-white">-- kg/wk</strong></span>
+                        </div>
+                        <div class="px-3 py-1.5 rounded-xl bg-sky-500/10 border border-sky-500/20 text-xs font-mono flex items-center gap-1.5 text-sky-300">
+                            <span class="material-symbols-outlined text-sm text-sky-400">footprint</span>
+                            <span>Step Target: <strong id="hero-badge-steps" class="text-white">-- steps</strong></span>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Daily Target Macro Counters -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto z-10">
-                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
-                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Target Calories</span>
-                        <span id="target-cals" class="text-lg font-bold text-white font-headline">2,200 kcal</span>
+                <!-- Biometric Telemetry & Target Metric Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full xl:w-auto z-10">
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Mifflin BMR</span>
+                        <span id="telemetry-bmr" class="text-base font-bold text-white font-headline">-- kcal</span>
                     </div>
-                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
-                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Protein Target</span>
-                        <span id="target-protein" class="text-lg font-bold text-emerald-400 font-headline">160 g</span>
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Active TDEE</span>
+                        <span id="telemetry-tdee" class="text-base font-bold text-purple-400 font-headline">-- kcal</span>
                     </div>
-                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Daily Intake</span>
+                        <span id="target-cals" class="text-base font-bold text-white font-headline">-- kcal</span>
+                    </div>
+                    <div class="bg-white/5 border border-amber-500/20 p-3 rounded-2xl text-center cursor-pointer hover:bg-amber-500/10 transition-all" onclick="openBurnGoalModal()" title="Calibrate Burn Target">
+                        <span class="text-[9px] uppercase tracking-wider text-amber-400 block font-semibold mb-1 flex items-center justify-center gap-1">
+                            <span class="material-symbols-outlined text-xs">local_fire_department</span> Active Burn
+                        </span>
+                        <span id="telemetry-burn" class="text-base font-bold text-amber-400 font-headline">-- kcal</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Target Protein</span>
+                        <span id="target-protein" class="text-base font-bold text-emerald-400 font-headline">-- g</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
                         <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Carbs / Fats</span>
-                        <span id="target-carbs-fats" class="text-lg font-bold text-sky-400 font-headline">210g / 65g</span>
+                        <span id="target-carbs-fats" class="text-base font-bold text-sky-400 font-headline">--g / --g</span>
                     </div>
-                    <div class="bg-white/5 border border-white/5 p-3.5 rounded-2xl text-center">
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Est. Progress</span>
+                        <span id="telemetry-progress" class="text-base font-bold text-emerald-400 font-headline">-- kg/wk</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/5 p-3 rounded-2xl text-center">
                         <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Hydration</span>
-                        <span id="target-water" class="text-lg font-bold text-amber-400 font-headline">3.5 Liters</span>
+                        <span id="target-water" class="text-base font-bold text-sky-400 font-headline">-- L</span>
                     </div>
                 </div>
             </section>
+
+            <!-- Protocol Adherence & Metric Progress Bar -->
+            <div class="glass-card p-4 sm:p-5 rounded-2xl border-glass-border flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-purple-400 text-xl">fact_check</span>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Daily Protocol Adherence</h4>
+                        <p class="text-xs text-secondary">Real-time completion tracking synchronized with database</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-secondary">Meals Logged:</span>
+                        <span id="adherence-meals-badge" class="font-bold font-mono text-amber-400 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">0 / 5</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-secondary">Workouts:</span>
+                        <span id="adherence-workouts-badge" class="font-bold font-mono text-emerald-400 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">0 / 1</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-28 sm:w-36 bg-white/5 rounded-full h-2.5 overflow-hidden border border-white/10">
+                            <div id="adherence-progress-bar" class="bg-gradient-to-r from-purple-500 via-sky-400 to-emerald-400 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <span id="adherence-percentage-text" class="text-xs font-bold text-white font-mono min-w-[36px]">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Scientific Reasoning Accordion Card -->
+            <div class="glass-card p-5 rounded-2xl border-glass-border space-y-3">
+                <button onclick="toggleAIReasoningDrawer()" class="w-full flex items-center justify-between text-left cursor-pointer bg-transparent border-0">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-purple-400 text-xl">psychology</span>
+                        <div>
+                            <span class="text-sm font-bold text-white font-headline block sm:inline">AI Scientific Prescription Rationale</span>
+                            <span class="text-[10px] sm:ml-2 px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 font-mono">Biometric Alignment</span>
+                        </div>
+                    </div>
+                    <span id="ai-reasoning-toggle-icon" class="material-symbols-outlined text-secondary transition-transform text-xl">expand_more</span>
+                </button>
+                <div id="ai-reasoning-content" class="hidden pt-3 border-t border-white/5 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-secondary leading-relaxed">
+                    <div class="space-y-1.5 p-3.5 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-white font-bold block flex items-center gap-1.5 text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span> Caloric Balance (Mifflin-St Jeor)
+                        </span>
+                        <p id="reasoning-calories" class="text-secondary/90">Analyzing biometric telemetry...</p>
+                    </div>
+                    <div class="space-y-1.5 p-3.5 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-white font-bold block flex items-center gap-1.5 text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Macronutrient Distribution
+                        </span>
+                        <p id="reasoning-macros" class="text-secondary/90">Calibrating optimal protein and glycogen targets...</p>
+                    </div>
+                    <div class="space-y-1.5 p-3.5 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-white font-bold block flex items-center gap-1.5 text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Indian Nutrition & Allergy Protocol
+                        </span>
+                        <p id="reasoning-meals" class="text-secondary/90">Filtering allergens and assembling practical Indian meal options...</p>
+                    </div>
+                    <div class="space-y-1.5 p-3.5 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-white font-bold block flex items-center gap-1.5 text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> Kinetic Training & Progressive Overload
+                        </span>
+                        <p id="reasoning-workouts" class="text-secondary/90">Formulating periodized volume and movements...</p>
+                    </div>
+                    <div class="space-y-1.5 p-3.5 bg-white/5 rounded-xl border border-white/5 md:col-span-2">
+                        <span class="text-white font-bold block flex items-center gap-1.5 text-[11px]">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Calorie Burn & Kinetic Strategy
+                        </span>
+                        <p id="reasoning-burn" class="text-secondary/90">Calibrating active caloric expenditure and training intensity...</p>
+                    </div>
+                </div>
+            </div>
 
             <!-- Adaptive Alert / Notification Box -->
             <div id="ai-adaptation-banner" class="hidden glass-card p-4 rounded-2xl border-purple-500/30 bg-purple-500/10 flex items-center justify-between gap-4">
@@ -239,22 +429,22 @@
                     <span class="material-symbols-outlined text-purple-400 text-2xl">published_with_changes</span>
                     <div>
                         <h4 id="adaptation-title" class="text-sm font-bold text-white">AI Adaptive Update Triggered</h4>
-                        <p id="adaptation-msg" class="text-xs text-secondary opacity-90">Workout & meal targets dynamically recalculated based on your latest activity.</p>
+                        <p id="adaptation-msg" class="text-xs text-secondary opacity-90">Workout & meal targets dynamically recalculated based on your latest telemetry.</p>
                     </div>
                 </div>
-                <button onclick="dismissAdaptationBanner()" class="text-xs text-secondary hover:text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10">Dismiss</button>
+                <button onclick="dismissAdaptationBanner()" class="text-xs text-secondary hover:text-white px-3 py-1 bg-white/5 rounded-lg border border-white/10 cursor-pointer">Dismiss</button>
             </div>
 
             <!-- Master Daily Schedule Timeline -->
-            <section class="space-y-6">
+            <section class="space-y-4">
                 <div class="flex justify-between items-center">
                     <div>
-                        <h3 class="font-headline text-xl font-bold text-white tracking-tight">Today's Master Schedule</h3>
-                        <p class="text-xs text-secondary">Gemini AI synchronized 24-hour protocol workflow</p>
+                        <h3 class="font-headline text-xl font-bold text-white tracking-tight">Today's 24-Hour Master Schedule</h3>
+                        <p class="text-xs text-secondary">Chronological workout, 5-meal nutrition, hydration, and circadian sleep blocks</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                        <span class="text-xs text-secondary">Real-Time Sync Active</span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs text-secondary">Database Synchronized</span>
                     </div>
                 </div>
 
@@ -269,6 +459,269 @@
             </section>
         </div>
     </main>
+
+    <!-- CALORIE BURN GOAL SELECTION MODAL -->
+    <div id="burn-goal-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-xl glass-card p-6 sm:p-7 rounded-3xl border-glass-border space-y-5 relative max-h-[92vh] flex flex-col my-auto">
+            <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-amber-400 text-lg">local_fire_department</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white font-headline">Calorie Burn Target & Strategy</h3>
+                        <p class="text-xs text-secondary">Set your daily active expenditure or let AI calculate the optimal target</p>
+                    </div>
+                </div>
+                <button onclick="closeBurnGoalModal()" class="text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+
+            <!-- Strategy Option Selector (Tabs) -->
+            <div class="grid grid-cols-2 gap-2 p-1 bg-white/5 rounded-2xl border border-white/5">
+                <button id="btn-tab-recommend" type="button" onclick="selectBurnTab('recommend')" class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer bg-purple-600 text-white shadow-lg">
+                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                    <span>Option B: Recommend for Me</span>
+                </button>
+                <button id="btn-tab-custom" type="button" onclick="selectBurnTab('custom')" class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer bg-transparent text-secondary hover:text-white">
+                    <span class="material-symbols-outlined text-sm">tune</span>
+                    <span>Option A: I Know My Target</span>
+                </button>
+            </div>
+
+            <!-- TAB CONTENT: RECOMMENDATION (Option B) -->
+            <div id="tab-content-recommend" class="space-y-4 overflow-y-auto pr-1">
+                <div class="p-4 rounded-2xl bg-gradient-to-br from-purple-500/10 via-amber-500/5 to-emerald-500/10 border border-purple-500/20 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                            Scientifically Calibrated
+                        </span>
+                        <span id="rec-burn-goal-badge" class="text-xs text-secondary font-mono">Calibrating...</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span id="rec-burn-val" class="text-3xl font-black text-amber-400 font-headline">450</span>
+                        <span class="text-xs text-secondary font-mono">kcal active burn / day</span>
+                    </div>
+                    <p id="rec-burn-rationale" class="text-xs text-secondary/90 leading-relaxed">
+                        Analyzing your biometric profile (Age, Gender, Weight, Goal, Fitness Level) to determine a safe and sustainable expenditure target.
+                    </p>
+                </div>
+
+                <!-- Recommended Plan Blueprint Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs">
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Target Intake</span>
+                        <span id="rec-intake-val" class="text-sm font-bold text-white font-mono">-- kcal</span>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Est. Progress</span>
+                        <span id="rec-progress-val" class="text-sm font-bold text-emerald-400 font-mono">-- kg/wk</span>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Workout Intensity</span>
+                        <span id="rec-intensity-val" class="text-sm font-bold text-amber-300 font-mono">Moderate</span>
+                    </div>
+                    <div class="p-3 bg-white/5 rounded-xl border border-white/5">
+                        <span class="text-[9px] uppercase tracking-wider text-secondary block font-semibold mb-1">Daily Step Goal</span>
+                        <span id="rec-steps-val" class="text-sm font-bold text-sky-400 font-mono">10,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: CUSTOM INPUT (Option A) -->
+            <div id="tab-content-custom" class="hidden space-y-4 overflow-y-auto pr-1">
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-xs font-semibold text-secondary">Enter Daily Calorie Burn Target</label>
+                        <span class="text-[10px] text-secondary font-mono">Target: <strong id="custom-burn-display-val" class="text-amber-400">500</strong> kcal</span>
+                    </div>
+                    <div class="relative flex items-center">
+                        <input type="number" id="custom-burn-input" min="150" max="1500" step="25" value="500" oninput="onCustomBurnInputChange(this.value)" class="w-full bg-white/5 border border-glass-border rounded-xl px-4 py-3 text-white font-mono text-xl focus:border-amber-400 focus:outline-none pr-24" />
+                        <span class="absolute right-4 text-xs font-bold text-amber-400 font-mono">kcal / day</span>
+                    </div>
+                    <!-- Range Slider -->
+                    <input type="range" id="custom-burn-slider" min="150" max="1200" step="25" value="500" oninput="onCustomBurnSliderChange(this.value)" class="w-full accent-amber-400 cursor-pointer" />
+                    <div class="flex justify-between text-[10px] text-secondary font-mono px-1">
+                        <span>150 kcal (Light)</span>
+                        <span>450 kcal (Standard)</span>
+                        <span>800 kcal (High)</span>
+                        <span>1200 kcal (Extreme)</span>
+                    </div>
+                </div>
+
+                <!-- Quick Preset Chips -->
+                <div class="space-y-1.5">
+                    <span class="text-[11px] text-secondary block font-semibold">Quick Presets:</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="setCustomBurnValue(300)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-secondary hover:text-white border border-white/5 transition-all cursor-pointer">300 kcal (Sedentary)</button>
+                        <button type="button" onclick="setCustomBurnValue(450)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-secondary hover:text-white border border-white/5 transition-all cursor-pointer">450 kcal (Moderate)</button>
+                        <button type="button" onclick="setCustomBurnValue(600)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-secondary hover:text-white border border-white/5 transition-all cursor-pointer">600 kcal (Athletic)</button>
+                        <button type="button" onclick="setCustomBurnValue(750)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-secondary hover:text-white border border-white/5 transition-all cursor-pointer">750 kcal (Aggressive)</button>
+                        <button type="button" onclick="setCustomBurnValue(900)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-secondary hover:text-white border border-white/5 transition-all cursor-pointer">900 kcal (Peak)</button>
+                    </div>
+                </div>
+
+                <!-- Real-Time Impact Blueprint -->
+                <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-2 text-xs">
+                    <span class="text-white font-bold flex items-center gap-1.5 text-[11px]">
+                        <span class="material-symbols-outlined text-sm text-emerald-400">speed</span>
+                        Projected Weekly Biometric Impact
+                    </span>
+                    <div class="grid grid-cols-2 gap-2 text-secondary font-mono text-[11px]">
+                        <div class="p-2 bg-black/30 rounded-lg">
+                            <span class="text-[9px] uppercase text-secondary/70 block">Weekly Weight Shift</span>
+                            <strong id="custom-impact-weight" class="text-emerald-400 text-xs">-- kg / week</strong>
+                        </div>
+                        <div class="p-2 bg-black/30 rounded-lg">
+                            <span class="text-[9px] uppercase text-secondary/70 block">Cardio Duration</span>
+                            <strong id="custom-impact-cardio" class="text-sky-300 text-xs">-- mins</strong>
+                        </div>
+                        <div class="p-2 bg-black/30 rounded-lg">
+                            <span class="text-[9px] uppercase text-secondary/70 block">Daily Step Milestone</span>
+                            <strong id="custom-impact-steps" class="text-amber-300 text-xs">-- steps</strong>
+                        </div>
+                        <div class="p-2 bg-black/30 rounded-lg">
+                            <span class="text-[9px] uppercase text-secondary/70 block">Workout Intensity</span>
+                            <strong id="custom-impact-intensity" class="text-purple-300 text-xs">Moderate</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safety Warning Notice Box -->
+                <div id="custom-safety-alert" class="p-3 rounded-xl border text-xs leading-relaxed transition-all hidden">
+                    <div class="flex items-start gap-2">
+                        <span id="safety-alert-icon" class="material-symbols-outlined text-base shrink-0 mt-0.5">warning</span>
+                        <span id="safety-alert-text">Target validation alert</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="border-t border-white/5 pt-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                <button type="button" onclick="skipAndUseRecommendedBurn()" class="text-xs text-secondary hover:text-white cursor-pointer bg-transparent border-0 underline sm:no-underline sm:hover:underline">
+                    Skip & Auto-Calculate
+                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <button type="button" onclick="closeBurnGoalModal()" class="flex-1 sm:flex-initial px-4 py-2.5 bg-white/5 hover:bg-white/10 text-secondary hover:text-white rounded-xl text-xs font-bold transition-all cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="button" id="btn-apply-burn-goal" onclick="applyBurnGoalAndGenerate()" class="flex-1 sm:flex-initial px-5 py-2.5 bg-gradient-to-r from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white rounded-xl text-xs font-bold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(245,158,11,0.3)] flex items-center justify-center gap-2 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">bolt</span>
+                        <span>Apply & Generate</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MULTI-STAGE ANIMATED LOADING EXPERIENCE MODAL -->
+    <div id="ai-loading-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-8 rounded-3xl border-glass-border text-center space-y-6 relative overflow-hidden">
+            <div class="absolute -right-16 -top-16 w-44 h-44 bg-purple-500/20 blur-[60px] rounded-full pointer-events-none"></div>
+            
+            <div class="relative flex items-center justify-center">
+                <div class="w-20 h-20 rounded-full border-4 border-white/10 border-t-purple-500 animate-spin flex items-center justify-center"></div>
+                <span class="material-symbols-outlined text-2xl text-purple-400 absolute">auto_awesome</span>
+            </div>
+
+            <div class="space-y-1">
+                <h3 class="font-headline text-xl font-bold text-white">Synthesizing AI Master Plan</h3>
+                <p id="loading-stage-label" class="text-xs text-secondary font-mono">Initializing biometric calculations...</p>
+            </div>
+
+            <!-- Stepped Progress Indicators -->
+            <div class="space-y-2.5 text-left text-xs text-secondary">
+                <div id="load-step-1" class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 transition-all">
+                    <span class="step-icon material-symbols-outlined text-sm text-purple-400">pending</span>
+                    <span class="flex-1">Mifflin-St Jeor BMR & TDEE Biometric Telemetry</span>
+                </div>
+                <div id="load-step-2" class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 transition-all">
+                    <span class="step-icon material-symbols-outlined text-sm text-secondary/40">pending</span>
+                    <span class="flex-1">5-Meal Indian Nutrition & Allergy Filter Matrix</span>
+                </div>
+                <div id="load-step-3" class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 transition-all">
+                    <span class="step-icon material-symbols-outlined text-sm text-secondary/40">pending</span>
+                    <span class="flex-1">Periodized Kinetic Training & Movement Splits</span>
+                </div>
+                <div id="load-step-4" class="flex items-center gap-2.5 p-2 rounded-xl bg-white/5 transition-all">
+                    <span class="step-icon material-symbols-outlined text-sm text-secondary/40">pending</span>
+                    <span class="flex-1">24-Hour Hydration, Sleep & Recovery Protocol</span>
+                </div>
+            </div>
+
+            <!-- Percentage Bar -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between text-[11px] font-mono text-secondary">
+                    <span>Protocol Calibration</span>
+                    <span id="loading-percent-text" class="text-purple-400 font-bold">0%</span>
+                </div>
+                <div class="w-full bg-white/5 rounded-full h-2 overflow-hidden border border-white/10">
+                    <div id="loading-progress-bar" class="bg-gradient-to-r from-purple-500 to-emerald-400 h-full rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLAN HISTORY MODAL -->
+    <div id="plan-history-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-xl glass-card p-6 rounded-3xl border-glass-border space-y-4 relative max-h-[85vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-purple-400">history</span>
+                    <h3 class="text-lg font-bold text-white font-headline">Saved Plan History</h3>
+                </div>
+                <button onclick="closePlanHistoryModal()" class="text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                    <span class="material-symbols-outlined text-xl">close</span>
+                </button>
+            </div>
+            <p class="text-xs text-secondary">View and restore previous master plans generated for your profile.</p>
+
+            <div id="plan-history-list" class="space-y-3 overflow-y-auto flex-1 pr-1">
+                <div class="p-8 text-center text-xs text-secondary">Loading saved plans...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROGRESSIVE ADAPTATION MODAL -->
+    <div id="adaptation-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeProgressiveAdaptModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-emerald-400">trending_up</span>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white font-headline">Weekly Check-In & Adaptation</h3>
+                    <p class="text-xs text-secondary">Recalibrate caloric targets based on weekly trend</p>
+                </div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-secondary font-semibold mb-1">Current Body Weight (kg)</label>
+                    <input type="number" id="adapt-current-weight" step="0.1" class="w-full bg-white/5 border border-glass-border rounded-xl px-4 py-2.5 text-white font-mono focus:border-emerald-400 focus:outline-none" placeholder="e.g. 74.5" />
+                </div>
+                <div>
+                    <label class="block text-secondary font-semibold mb-1">Weekly Energy, Hunger & Adherence Feedback</label>
+                    <select id="adapt-feedback" class="w-full bg-[#131313] border border-glass-border rounded-xl px-4 py-2.5 text-white focus:border-emerald-400 focus:outline-none">
+                        <option value="on-track">On Track - Steady energy & comfortable adherence</option>
+                        <option value="plateau">Plateaued - Weight unchanged despite solid adherence</option>
+                        <option value="losing_fast">Losing Weight Too Fast - Experiencing mild weakness</option>
+                        <option value="gaining_fast">Gaining Weight Too Fast - Exceeding hypertrophy target</option>
+                        <option value="fatigued">Fatigued - Muscle soreness & recovery taking longer</option>
+                    </select>
+                </div>
+            </div>
+
+            <button id="btn-submit-adaptation" onclick="submitProgressiveAdaptation()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-full uppercase tracking-wider transition-all cursor-pointer">
+                Recalibrate Protocol with AI
+            </button>
+        </div>
+    </div>
 
     <!-- MEAL PHOTO VERIFICATION MODAL -->
     <div id="meal-photo-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
@@ -301,6 +754,330 @@
         </div>
     </div>
 
+    <!-- 1. CLEAN GUIDED WORKOUT EXECUTION MODAL (MINIMAL & ZERO CLUTTER) -->
+    <div id="guided-workout-modal" class="hidden fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-2xl flex flex-col overflow-y-auto">
+        <!-- Minimal Top Header -->
+        <header class="sticky top-0 z-20 bg-[#050505]/80 backdrop-blur-md border-b border-white/10 px-4 sm:px-6 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="confirmExitWorkout()" class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-secondary hover:text-white transition-all cursor-pointer" title="Exit Workout">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+                <div class="truncate">
+                    <span id="gw-header-phase" class="text-[10px] font-bold uppercase tracking-widest text-emerald-400 font-mono">Exercise 1 of 4</span>
+                    <h2 id="gw-header-title" class="text-xs sm:text-sm font-semibold text-secondary truncate max-w-[200px] sm:max-w-md">Upper Body</h2>
+                </div>
+            </div>
+
+            <!-- Simple Timer Counter -->
+            <div class="px-3 py-1 rounded-xl bg-white/5 border border-white/10 flex items-center gap-1.5 text-white font-mono text-xs">
+                <span class="material-symbols-outlined text-sm text-emerald-400">timer</span>
+                <span id="gw-timer-session">00:00</span>
+            </div>
+        </header>
+
+        <!-- Minimal Progress Line Across Top -->
+        <div class="w-full h-1 bg-white/5">
+            <div id="gw-progress-line" class="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-300" style="width: 0%;"></div>
+        </div>
+
+        <!-- Main Minimal Stage (Centered, No Clutter) -->
+        <div class="max-w-xl mx-auto w-full p-4 sm:p-6 flex-1 flex flex-col justify-center">
+            
+            <!-- A. ACTIVE SET INTERFACE -->
+            <div id="gw-mode-active-set" class="glass-card p-6 sm:p-8 rounded-3xl border-glass-border space-y-6">
+                <!-- Top Status Line -->
+                <div class="flex items-center justify-between">
+                    <span id="gw-current-set-label" class="text-xs font-bold uppercase tracking-widest text-emerald-400 font-mono">
+                        Set 1 of 4 • 3 Sets Remaining
+                    </span>
+                    <button type="button" onclick="openExerciseInfoModal(gwSession ? gwSession.blockId : null, gwSession ? gwSession.currentExIdx : 0)" class="text-xs text-secondary hover:text-white flex items-center gap-1 py-1 px-2.5 rounded-lg bg-white/5 border border-white/5 hover:border-white/15 transition-all cursor-pointer">
+                        <span class="material-symbols-outlined text-sm text-purple-400">info</span>
+                        <span>Form & Tips</span>
+                    </button>
+                </div>
+
+                <!-- Current Exercise Name & Muscle -->
+                <div class="text-center sm:text-left space-y-1">
+                    <h1 id="gw-ex-title" class="text-2xl sm:text-3xl font-extrabold text-white font-headline">
+                        Barbell Bench Press
+                    </h1>
+                    <p id="gw-ex-muscle-simple" class="text-xs text-secondary/80 font-mono">Chest & Triceps</p>
+                </div>
+
+                <!-- Live Metrics: Reps, Weight & Set Timer -->
+                <div class="grid grid-cols-3 gap-2.5 p-3.5 rounded-2xl bg-white/5 border border-white/5 text-center">
+                    <div>
+                        <span class="text-[10px] text-secondary uppercase font-mono block">Reps</span>
+                        <div class="flex items-center justify-center gap-1.5 mt-0.5">
+                            <button onclick="adjustTargetReps(-1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-xs cursor-pointer">-</button>
+                            <span id="gw-target-reps-val" class="text-base sm:text-lg font-bold font-mono text-white">10</span>
+                            <button onclick="adjustTargetReps(1)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-xs cursor-pointer">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-secondary uppercase font-mono block">Weight</span>
+                        <div class="flex items-center justify-center gap-1.5 mt-0.5">
+                            <button onclick="adjustTargetWeight(-2.5)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-xs cursor-pointer">-</button>
+                            <span id="gw-target-weight-val" class="text-xs sm:text-sm font-bold font-mono text-emerald-400 truncate max-w-[55px]">60 kg</span>
+                            <button onclick="adjustTargetWeight(2.5)" class="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-xs cursor-pointer">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-secondary uppercase font-mono block">Set Time</span>
+                        <span id="gw-timer-set" class="text-base sm:text-lg font-black font-mono text-white block mt-0.5">00:00</span>
+                    </div>
+                </div>
+
+                <!-- Next Exercise Preview (Clean Minimal Preview) -->
+                <div id="gw-next-preview" class="p-3 rounded-2xl bg-white/5 border border-white/5 text-xs text-secondary flex items-center justify-center gap-2 font-mono">
+                    <span class="material-symbols-outlined text-sm text-purple-400">arrow_forward</span>
+                    <span>Next Exercise:</span>
+                    <strong id="gw-next-name" class="text-white truncate">Incline Dumbbell Press</strong>
+                </div>
+
+                <!-- Giant Complete Set Button -->
+                <button id="gw-btn-complete-set" onclick="completeCurrentSet()" class="w-full py-4 sm:py-5 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-base sm:text-lg rounded-2xl uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-center gap-3 cursor-pointer transform hover:scale-[1.01] active:scale-[0.99]">
+                    <span class="material-symbols-outlined text-2xl font-bold">check_circle</span>
+                    Complete Set & Begin Recovery
+                </button>
+
+                <!-- Clean Utility Controls -->
+                <div class="grid grid-cols-4 gap-2 pt-1">
+                    <button id="gw-btn-pause" onclick="togglePauseWorkout()" class="py-2.5 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-secondary hover:text-white border border-white/10 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer">
+                        <span id="gw-pause-icon" class="material-symbols-outlined text-sm">pause</span>
+                        <span id="gw-pause-text">Pause</span>
+                    </button>
+                    <button onclick="openExerciseReplaceModal()" class="py-2.5 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-secondary hover:text-white border border-white/10 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">swap_horiz</span>
+                        <span>Swap</span>
+                    </button>
+                    <button onclick="skipCurrentExercise()" class="py-2.5 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-secondary hover:text-white border border-white/10 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">skip_next</span>
+                        <span>Skip</span>
+                    </button>
+                    <button onclick="confirmFinishEarly()" class="py-2.5 px-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-[11px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer">
+                        <span class="material-symbols-outlined text-sm">flag</span>
+                        <span>Finish</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- B. BREATHING-BASED REST & SIMPLE RECOVERY SCREEN -->
+            <div id="gw-mode-rest" class="hidden glass-card p-6 sm:p-8 rounded-3xl border-emerald-500/30 bg-gradient-to-b from-emerald-500/5 to-transparent space-y-6 text-center">
+                <div class="space-y-1">
+                    <span id="gw-rest-pill" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-block font-mono">
+                        Recovery Breathing
+                    </span>
+                    <h2 id="gw-rest-heading" class="text-xl sm:text-2xl font-bold text-white font-headline">Deep Recovery Breaths</h2>
+                    <p id="gw-rest-coach-msg" class="text-xs text-secondary">Inhale 4 counts • Hold 2 counts • Exhale 6 counts</p>
+                </div>
+
+                <!-- Breathing Circle Animation -->
+                <div class="relative w-52 h-52 sm:w-60 sm:h-60 mx-auto flex items-center justify-center my-4">
+                    <!-- Glowing Expanding & Contracting Circle -->
+                    <div class="absolute inset-0 rounded-full bg-emerald-500/15 border border-emerald-500/30 animate-recovery-breathing flex items-center justify-center"></div>
+                    
+                    <!-- Center Cadence Indicator -->
+                    <div class="relative z-10 text-center space-y-1">
+                        <span id="gw-breath-phase" class="text-xs sm:text-sm font-black font-mono uppercase tracking-widest text-emerald-300 block">
+                            INHALE (4s)
+                        </span>
+                        <span id="gw-breath-count-text" class="text-4xl sm:text-5xl font-extrabold font-mono text-white block">
+                            6
+                        </span>
+                        <span id="gw-breath-label" class="text-[10px] uppercase font-mono tracking-widest text-secondary block">
+                            Breaths Remaining
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Next Exercise Preview (Calming, Clean) -->
+                <div id="gw-rest-next-preview" class="p-3 rounded-2xl bg-white/5 border border-white/5 text-xs text-secondary text-center font-mono">
+                    <span class="text-secondary/70">Next Up:</span>
+                    <strong id="gw-rest-next-name" class="text-white ml-1">Incline Dumbbell Press</strong>
+                </div>
+
+                <!-- Quick Rest Controls -->
+                <div class="flex items-center justify-center gap-3">
+                    <button onclick="addBreaths(2)" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-xs uppercase tracking-wider border border-white/10 transition-all cursor-pointer flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-sm">air</span>
+                        +2 Breaths
+                    </button>
+                    <button id="gw-btn-skip-rest" onclick="skipRestAndStartNextSet()" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                        <span class="material-symbols-outlined text-sm font-bold">play_arrow</span>
+                        <span id="gw-skip-rest-btn-label">Start Next Set</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- 2. EXERCISE REPLACEMENT MODAL -->
+    <div id="exercise-replace-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-xl glass-card p-6 sm:p-7 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeExerciseReplaceModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-purple-400 uppercase tracking-widest">AI Movement Adaptation</span>
+                <h3 class="text-xl font-bold text-white font-headline">Swap Exercise</h3>
+                <p id="gw-replace-subtitle" class="text-xs text-secondary">Select an alternative that suits your equipment or comfort level.</p>
+            </div>
+
+            <!-- Reason Selector Filter Pills -->
+            <div class="flex flex-wrap gap-2 justify-center">
+                <button type="button" onclick="selectReplaceReason('equipment')" id="btn-reason-equip" class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer bg-purple-600 text-white border-purple-500">
+                    Missing Equipment
+                </button>
+                <button type="button" onclick="selectReplaceReason('injury')" id="btn-reason-injury" class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer bg-white/5 text-secondary border-white/10 hover:text-white">
+                    Joint / Pain Concern
+                </button>
+                <button type="button" onclick="selectReplaceReason('regression')" id="btn-reason-regression" class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer bg-white/5 text-secondary border-white/10 hover:text-white">
+                    Too Difficult (Easier)
+                </button>
+                <button type="button" onclick="selectReplaceReason('progression')" id="btn-reason-progression" class="px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer bg-white/5 text-secondary border-white/10 hover:text-white">
+                    Too Easy (Harder)
+                </button>
+            </div>
+
+            <!-- Alternatives List Container -->
+            <div id="gw-alternatives-container" class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+                <p class="text-xs text-secondary text-center py-4">Loading smart alternatives...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. WORKOUT COMPLETION SUMMARY MODAL -->
+    <div id="workout-summary-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-lg glass-card p-6 sm:p-8 rounded-3xl border-emerald-500/30 space-y-6 relative bg-gradient-to-b from-emerald-500/10 to-transparent">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 rounded-3xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400">
+                    <span class="material-symbols-outlined text-3xl">trophy</span>
+                </div>
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest font-mono">Session Victorious</span>
+                <h3 class="text-2xl sm:text-3xl font-extrabold text-white font-headline">Workout Crushed! 🔥</h3>
+                <p id="gw-summary-congrats" class="text-xs text-secondary leading-relaxed">
+                    Great discipline. Your session metrics have been integrated into your Master Protocol.
+                </p>
+            </div>
+
+            <!-- Stats Highlight Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div class="p-3 rounded-2xl bg-white/5 border border-white/5 text-center">
+                    <span class="text-[10px] text-secondary font-mono uppercase block">Duration</span>
+                    <span id="gw-sum-time" class="text-base sm:text-lg font-black font-mono text-white">45m</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-center">
+                    <span class="text-[10px] text-amber-300 font-mono uppercase block">Burned</span>
+                    <span id="gw-sum-calories" class="text-base sm:text-lg font-black font-mono text-amber-400">320 kcal</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-center">
+                    <span class="text-[10px] text-sky-300 font-mono uppercase block">Volume</span>
+                    <span id="gw-sum-volume" class="text-base sm:text-lg font-black font-mono text-sky-400">6,400 kg</span>
+                </div>
+                <div class="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+                    <span class="text-[10px] text-emerald-300 font-mono uppercase block">Sets Done</span>
+                    <span id="gw-sum-sets" class="text-base sm:text-lg font-black font-mono text-emerald-400">16</span>
+                </div>
+            </div>
+
+            <!-- AI Recovery Blueprint Box -->
+            <div class="p-4 rounded-2xl bg-purple-500/5 border border-purple-500/20 space-y-2.5 text-xs">
+                <div class="flex items-center gap-2 text-purple-300 font-bold">
+                    <span class="material-symbols-outlined text-base">self_improvement</span>
+                    <span>AI Post-Workout Recovery Blueprint</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-secondary font-mono text-[11px]">
+                    <div class="p-2 rounded-xl bg-white/5">
+                        <span>💧 Water:</span>
+                        <strong id="gw-sum-water" class="text-sky-300 ml-1">750 ml</strong>
+                    </div>
+                    <div class="p-2 rounded-xl bg-white/5">
+                        <span>🥩 Post-Protein:</span>
+                        <strong id="gw-sum-protein" class="text-emerald-300 ml-1">35g</strong>
+                    </div>
+                </div>
+                <div id="gw-sum-stretches" class="text-secondary/90 space-y-1 text-[11px] pt-1">
+                    <p>• Hamstring & Chest door-frame stretch (45s)</p>
+                    <p>• Thoracic spine rotational release (60s)</p>
+                </div>
+            </div>
+
+            <!-- Return Action Button -->
+            <button onclick="closeWorkoutSummaryModal()" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-sm rounded-full uppercase tracking-wider transition-all shadow-[0_0_25px_rgba(16,185,129,0.35)] cursor-pointer">
+                Complete & Return to Master Protocol
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. EXERCISE DETAILS MODAL (ON-DEMAND FORM, MISTAKES, TIPS & VISUAL) -->
+    <div id="exercise-info-modal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-lg glass-card p-6 sm:p-7 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeExerciseInfoModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+
+            <!-- Header -->
+            <div class="space-y-1 pr-6">
+                <span id="ex-info-muscle" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
+                    Target Muscles
+                </span>
+                <h3 id="ex-info-name" class="text-xl sm:text-2xl font-bold text-white font-headline">
+                    Barbell Bench Press
+                </h3>
+                <p id="ex-info-meta" class="text-xs text-secondary font-mono">
+                    4 Sets × 10 Reps • ~8 mins duration
+                </p>
+            </div>
+
+            <!-- Kinetic Visual Demonstration -->
+            <div class="w-full h-44 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-center overflow-hidden">
+                <div id="ex-info-visualizer" class="w-full h-full flex items-center justify-center"></div>
+            </div>
+
+            <!-- Form & Tips List -->
+            <div class="space-y-3 text-xs">
+                <!-- Correct Form -->
+                <div class="p-3.5 rounded-2xl bg-white/5 border border-white/5 space-y-1.5">
+                    <div class="flex items-center gap-1.5 text-emerald-400 font-bold uppercase text-[11px] font-mono">
+                        <span class="material-symbols-outlined text-sm">check_circle</span> Correct Form Execution
+                    </div>
+                    <ul id="ex-info-form" class="space-y-1 text-secondary/90 leading-relaxed list-disc pl-4">
+                        <li>Maintain core tension and controlled eccentric descent.</li>
+                    </ul>
+                </div>
+
+                <!-- Common Mistakes -->
+                <div class="p-3.5 rounded-2xl bg-rose-500/5 border border-rose-500/15 space-y-1">
+                    <div class="flex items-center gap-1.5 text-rose-400 font-bold uppercase text-[11px] font-mono">
+                        <span class="material-symbols-outlined text-sm">warning</span> Common Mistakes to Avoid
+                    </div>
+                    <p id="ex-info-mistakes" class="text-rose-300/90 leading-relaxed pl-1">
+                        Avoid rushing reps or sacrificing spinal neutrality.
+                    </p>
+                </div>
+
+                <!-- Key Pro Tips -->
+                <div class="p-3.5 rounded-2xl bg-purple-500/5 border border-purple-500/15 space-y-1">
+                    <div class="flex items-center gap-1.5 text-purple-300 font-bold uppercase text-[11px] font-mono">
+                        <span class="material-symbols-outlined text-sm">lightbulb</span> Key Form & Safety Tips
+                    </div>
+                    <p id="ex-info-tips" class="text-purple-200/90 leading-relaxed pl-1">
+                        Focus on the mind-muscle connection.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="closeExerciseInfoModal()" class="w-full py-3 bg-white/10 hover:bg-white/15 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer">
+                Got it, Back to Workout
+            </button>
+        </div>
+    </div>
+
     <!-- SCRIPT ENGINE -->
     <script>
         let userEmail = localStorage.getItem('userEmail');
@@ -308,6 +1085,7 @@
         let selectedMealBlockId = null;
         let selectedMealBase64 = null;
         let selectedMealMime = 'image/jpeg';
+        let userProtocolCache = {};
 
         document.addEventListener('DOMContentLoaded', () => {
             if (!userEmail) {
@@ -326,21 +1104,53 @@
             }
         }
 
+        function toggleAIReasoningDrawer() {
+            const content = document.getElementById('ai-reasoning-content');
+            const icon = document.getElementById('ai-reasoning-toggle-icon');
+            if (content) {
+                const isHidden = content.classList.contains('hidden');
+                if (isHidden) {
+                    content.classList.remove('hidden');
+                    icon.style.transform = 'rotate(180deg)';
+                } else {
+                    content.classList.add('hidden');
+                    icon.style.transform = 'rotate(0deg)';
+                }
+            }
+        }
+
         async function loadUserProtocolAndPlan() {
-            let p = {};
             try {
                 const res = await fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`);
                 if (res.ok) {
                     const data = await res.json();
-                    p = data.protocol || {};
+                    userProtocolCache = data.protocol || {};
                 }
             } catch (err) {
                 console.error("Protocol fetch error:", err);
             }
 
+            const p = userProtocolCache;
             const goalStr = (p.goals && p.goals[0]) || 'Overall Fitness';
             document.getElementById('user-protocol-tag').textContent = `${p.biologicalSex || 'Male'}, ${p.age || 25}y | ${p.weight || 75}kg | Goal: ${goalStr}`;
 
+            // Check MongoDB active plan first
+            try {
+                const activeRes = await fetch(`/api/ai/plan/active?email=${encodeURIComponent(userEmail)}`);
+                if (activeRes.ok) {
+                    const plan = await activeRes.json();
+                    if (plan && plan.schedule && plan.schedule.length > 0) {
+                        currentMasterPlan = plan;
+                        localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                        renderMasterPlan(currentMasterPlan);
+                        return;
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching active plan from server:", err);
+            }
+
+            // Fallback to local cache if offline
             const cached = localStorage.getItem('fitforge_ai_master_plan_' + userEmail);
             if (cached) {
                 try {
@@ -350,34 +1160,301 @@
                 } catch (e) {}
             }
 
-            await generateAIMasterPlan(p);
+            // If no plan exists, generate initial plan
+            await generateAIMasterPlan(false);
         }
 
-        async function generateAIMasterPlan(protocolData = null) {
+        async function animateLoadingSteps(onComplete) {
+            const modal = document.getElementById('ai-loading-modal');
+            const percentText = document.getElementById('loading-percent-text');
+            const progressBar = document.getElementById('loading-progress-bar');
+            const stageLabel = document.getElementById('loading-stage-label');
+            modal.classList.remove('hidden');
+
+            const steps = [
+                { id: 'load-step-1', percent: 25, label: "Mifflin-St Jeor Biometrics Computed" },
+                { id: 'load-step-2', percent: 50, label: "5-Meal Indian Nutrition Calibrated" },
+                { id: 'load-step-3', percent: 75, label: "Kinetic Periodized Training Structured" },
+                { id: 'load-step-4', percent: 100, label: "24-Hour Circadian Protocol Ready" }
+            ];
+
+            for (let i = 0; i < steps.length; i++) {
+                const s = steps[i];
+                stageLabel.textContent = s.label;
+                percentText.textContent = `${s.percent}%`;
+                progressBar.style.width = `${s.percent}%`;
+                const stepEl = document.getElementById(s.id);
+                if (stepEl) {
+                    const icon = stepEl.querySelector('.step-icon');
+                    if (icon) {
+                        icon.textContent = 'check_circle';
+                        icon.classList.remove('text-secondary/40');
+                        icon.classList.add('text-emerald-400');
+                    }
+                    stepEl.classList.add('bg-white/10');
+                }
+                await new Promise(r => setTimeout(r, 220));
+            }
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // Reset loading state for next time
+                steps.forEach(s => {
+                    const el = document.getElementById(s.id);
+                    if (el) {
+                        el.classList.remove('bg-white/10');
+                        const icon = el.querySelector('.step-icon');
+                        if (icon) {
+                            icon.textContent = 'pending';
+                            icon.classList.remove('text-emerald-400');
+                            icon.classList.add('text-secondary/40');
+                        }
+                    }
+                });
+                progressBar.style.width = '0%';
+                percentText.textContent = '0%';
+                if (onComplete) onComplete();
+            }, 300);
+        }
+
+        let activeBurnTab = 'recommend';
+        let cachedBurnRecommendation = null;
+
+        function selectBurnTab(tab) {
+            activeBurnTab = tab;
+            const btnRec = document.getElementById('btn-tab-recommend');
+            const btnCustom = document.getElementById('btn-tab-custom');
+            const contentRec = document.getElementById('tab-content-recommend');
+            const contentCustom = document.getElementById('tab-content-custom');
+
+            if (tab === 'recommend') {
+                if (btnRec) btnRec.className = 'py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer bg-purple-600 text-white shadow-lg';
+                if (btnCustom) btnCustom.className = 'py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer bg-transparent text-secondary hover:text-white';
+                if (contentRec) contentRec.classList.remove('hidden');
+                if (contentCustom) contentCustom.classList.add('hidden');
+            } else {
+                if (btnCustom) btnCustom.className = 'py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer bg-amber-600 text-white shadow-lg';
+                if (btnRec) btnRec.className = 'py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer bg-transparent text-secondary hover:text-white';
+                if (contentCustom) contentCustom.classList.remove('hidden');
+                if (contentRec) contentRec.classList.add('hidden');
+                const curVal = parseInt(document.getElementById('custom-burn-input')?.value) || 500;
+                updateCustomBurnImpact(curVal);
+            }
+        }
+
+        async function openBurnGoalModal() {
+            const modal = document.getElementById('burn-goal-modal');
+            if (!modal) return;
+            modal.classList.remove('hidden');
+
+            // Fetch scientific recommendation from API
+            try {
+                const res = await fetch(`/api/ai/burn-recommendation?email=${encodeURIComponent(userEmail)}`);
+                if (res.ok) {
+                    cachedBurnRecommendation = await res.json();
+                    populateBurnRecommendation(cachedBurnRecommendation);
+                }
+            } catch (e) {
+                console.warn("Could not fetch burn recommendation from API, using profile telemetry:", e);
+            }
+
+            selectBurnTab('recommend');
+        }
+
+        function closeBurnGoalModal() {
+            const modal = document.getElementById('burn-goal-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function populateBurnRecommendation(rec) {
+            if (!rec) return;
+            const burnEl = document.getElementById('rec-burn-val');
+            if (burnEl) burnEl.textContent = rec.targetBurnCals || 450;
+            const badgeEl = document.getElementById('rec-burn-goal-badge');
+            if (badgeEl) badgeEl.textContent = `Profile: ${(rec.goal || 'Fitness').toUpperCase()}`;
+            const ratEl = document.getElementById('rec-burn-rationale');
+            if (ratEl) ratEl.textContent = rec.rationale || "Balanced caloric expenditure tailored to profile biometrics.";
+
+            const intakeEl = document.getElementById('rec-intake-val');
+            const currentIntake = currentMasterPlan?.dailyTarget?.calories || 2200;
+            if (intakeEl) intakeEl.textContent = `${currentIntake} kcal`;
+
+            const progEl = document.getElementById('rec-progress-val');
+            const sign = (rec.estimatedWeeklyWeightChangeKg > 0) ? '+' : '';
+            if (progEl) progEl.textContent = `${sign}${rec.estimatedWeeklyWeightChangeKg || -0.4} kg/wk`;
+
+            const intEl = document.getElementById('rec-intensity-val');
+            if (intEl) intEl.textContent = rec.intensity || 'Moderate';
+
+            const stepEl = document.getElementById('rec-steps-val');
+            if (stepEl) stepEl.textContent = (rec.dailyStepGoal || 10000).toLocaleString();
+
+            const customInput = document.getElementById('custom-burn-input');
+            if (customInput && !customInput.dataset.userEdited) {
+                setCustomBurnValue(rec.targetBurnCals || 450);
+            }
+        }
+
+        function onCustomBurnInputChange(val) {
+            val = parseInt(val) || 0;
+            const input = document.getElementById('custom-burn-input');
+            if (input) input.dataset.userEdited = "true";
+            const slider = document.getElementById('custom-burn-slider');
+            if (slider) slider.value = Math.min(1200, Math.max(150, val));
+            const disp = document.getElementById('custom-burn-display-val');
+            if (disp) disp.textContent = val;
+            updateCustomBurnImpact(val);
+        }
+
+        function onCustomBurnSliderChange(val) {
+            val = parseInt(val) || 500;
+            const input = document.getElementById('custom-burn-input');
+            if (input) {
+                input.dataset.userEdited = "true";
+                input.value = val;
+            }
+            const disp = document.getElementById('custom-burn-display-val');
+            if (disp) disp.textContent = val;
+            updateCustomBurnImpact(val);
+        }
+
+        function setCustomBurnValue(val) {
+            const input = document.getElementById('custom-burn-input');
+            if (input) input.value = val;
+            const slider = document.getElementById('custom-burn-slider');
+            if (slider) slider.value = Math.min(1200, Math.max(150, val));
+            const disp = document.getElementById('custom-burn-display-val');
+            if (disp) disp.textContent = val;
+            updateCustomBurnImpact(val);
+        }
+
+        function updateCustomBurnImpact(burnVal) {
+            const goal = (userProtocolCache?.goals && userProtocolCache.goals[0]?.toLowerCase()) || 'fitness';
+            const isMuscle = goal.includes('muscle') || goal.includes('hypertrophy') || goal.includes('bulk');
+
+            const weightShiftEl = document.getElementById('custom-impact-weight');
+            if (weightShiftEl) {
+                if (isMuscle) {
+                    weightShiftEl.textContent = `+0.25 kg muscle / wk`;
+                    weightShiftEl.className = "text-emerald-400 text-xs";
+                } else {
+                    const weeklyKg = - Math.round(((burnVal * 0.7 * 7) / 7700) * 100) / 100;
+                    weightShiftEl.textContent = `${weeklyKg} kg fat / wk`;
+                    weightShiftEl.className = "text-emerald-400 text-xs";
+                }
+            }
+
+            let cardioMins = 0;
+            if (burnVal <= 300) cardioMins = 10;
+            else if (burnVal <= 500) cardioMins = 20;
+            else if (burnVal <= 750) cardioMins = 30;
+            else cardioMins = 45;
+            const cardioEl = document.getElementById('custom-impact-cardio');
+            if (cardioEl) cardioEl.textContent = `${cardioMins} mins cardio`;
+
+            let steps = 8000;
+            if (burnVal <= 300) steps = 7000;
+            else if (burnVal <= 500) steps = 10000;
+            else if (burnVal <= 750) steps = 12500;
+            else steps = 15000;
+            const stepsEl = document.getElementById('custom-impact-steps');
+            if (stepsEl) stepsEl.textContent = `${steps.toLocaleString()} steps`;
+
+            let intensity = 'Moderate';
+            if (burnVal <= 300) intensity = 'Low';
+            else if (burnVal <= 550) intensity = 'Moderate';
+            else if (burnVal <= 850) intensity = 'High';
+            else intensity = 'Extreme';
+            const intensityEl = document.getElementById('custom-impact-intensity');
+            if (intensityEl) intensityEl.textContent = intensity;
+
+            // Safety Warning Notice Box
+            const alertBox = document.getElementById('custom-safety-alert');
+            const alertText = document.getElementById('safety-alert-text');
+            const alertIcon = document.getElementById('safety-alert-icon');
+
+            if (alertBox && alertText && alertIcon) {
+                if (burnVal > 1200) {
+                    alertBox.className = "p-3 rounded-xl border bg-rose-500/15 border-rose-500/30 text-rose-300 text-xs leading-relaxed transition-all block";
+                    alertIcon.textContent = "dangerous";
+                    alertIcon.className = "material-symbols-outlined text-base text-rose-400 shrink-0 mt-0.5";
+                    alertText.innerHTML = `<strong>Dangerous Target:</strong> Burning over 1200 kcal/day in active exercise risks severe catabolism, immune suppression, and injury. AI will safety-clamp intensity and add aggressive recovery blocks.`;
+                } else if (burnVal > 900) {
+                    alertBox.className = "p-3 rounded-xl border bg-amber-500/15 border-amber-500/30 text-amber-200 text-xs leading-relaxed transition-all block";
+                    alertIcon.textContent = "warning";
+                    alertIcon.className = "material-symbols-outlined text-base text-amber-400 shrink-0 mt-0.5";
+                    alertText.innerHTML = `<strong>Extreme Expenditure Notice:</strong> Burning >900 kcal/day requires strict adherence to hydration, 1.8g/kg+ protein, and 8+ hours sleep to prevent overtraining syndrome.`;
+                } else if (burnVal < 150) {
+                    alertBox.className = "p-3 rounded-xl border bg-sky-500/15 border-sky-500/30 text-sky-200 text-xs leading-relaxed transition-all block";
+                    alertIcon.textContent = "info";
+                    alertIcon.className = "material-symbols-outlined text-base text-sky-400 shrink-0 mt-0.5";
+                    alertText.innerHTML = `<strong>Light Activity Baseline:</strong> Calibrated for active recovery or minimal movement days.`;
+                } else {
+                    alertBox.className = "hidden";
+                }
+            }
+        }
+
+        async function applyBurnGoalAndGenerate() {
+            closeBurnGoalModal();
+            let burnGoal = null;
+            if (activeBurnTab === 'custom') {
+                const val = parseInt(document.getElementById('custom-burn-input')?.value) || 500;
+                burnGoal = { mode: 'custom', targetBurnCals: val };
+            } else {
+                burnGoal = { mode: 'recommend' };
+            }
+            await generateAIMasterPlan(true, burnGoal);
+        }
+
+        async function skipAndUseRecommendedBurn() {
+            closeBurnGoalModal();
+            await generateAIMasterPlan(true, { mode: 'recommend' });
+        }
+
+        async function generateAIMasterPlan(forceNew = false, burnGoal = null) {
             const btn = document.getElementById('btn-generate-ai-plan');
             const originalBtn = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">sync</span> Generating AI Plan...`;
+                btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-sm">sync</span> Generating...`;
             }
 
+            let newPlan = null;
             try {
-                const response = await fetch('/api/ai/generate-plan', {
+                // Trigger API call and animate progress in parallel
+                const fetchPromise = fetch('/api/ai/generate-plan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: userEmail, protocol: protocolData })
+                    body: JSON.stringify({
+                        email: userEmail,
+                        protocol: userProtocolCache,
+                        forceNew: forceNew,
+                        burnGoal: burnGoal
+                    })
+                }).then(res => {
+                    if (!res.ok) throw new Error("Failed to generate AI plan");
+                    return res.json();
                 });
 
-                if (!response.ok) throw new Error("Failed to generate AI plan");
+                const [planData] = await Promise.all([
+                    fetchPromise,
+                    new Promise(resolve => animateLoadingSteps(resolve))
+                ]);
 
-                currentMasterPlan = await response.json();
+                newPlan = planData;
+                currentMasterPlan = newPlan;
                 localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
                 renderMasterPlan(currentMasterPlan);
+
+                if (forceNew) {
+                    showAdaptationBanner("AI Plan Regenerated", "A fresh 24-hour protocol variation has been compiled calibrated to your calorie burn targets.");
+                }
             } catch (err) {
                 console.error("Generate AI plan error, applying instant fallback:", err);
-                currentMasterPlan = getClientFallbackPlan(protocolData);
-                localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
-                renderMasterPlan(currentMasterPlan);
+                const modal = document.getElementById('ai-loading-modal');
+                if (modal) modal.classList.add('hidden');
+                alert("Could not connect to planner API. Please check network connection.");
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -386,137 +1463,71 @@
             }
         }
 
-        function getClientFallbackPlan(p) {
-            const weight = (p && p.weight) ? p.weight : 75;
-            const goal = (p && p.goals && p.goals[0]) ? p.goals[0] : 'Fitness & Muscle Building';
-            return {
-                headline: "AI Dynamic Master Protocol",
-                summary: `Customized daily routine based on your ${weight}kg biometric profile and ${goal} goal.`,
-                dailyTarget: {
-                    calories: Math.round(weight * 28),
-                    protein: Math.round(weight * 2.1),
-                    carbs: Math.round(weight * 3.0),
-                    fat: Math.round(weight * 0.8),
-                    waterLiters: 3.5
-                },
-                schedule: [
-                    {
-                        id: "blk-1",
-                        time: "07:00 AM",
-                        type: "workout",
-                        title: "Morning Strength & Kinetic Drive",
-                        description: "Hypertrophy session targeting primary muscle groups",
-                        status: "scheduled",
-                        details: {
-                            durationMins: 45,
-                            targetCalories: 380,
-                            exercises: [
-                                { name: "Barbell / Dumbbell Squats", sets: 4, reps: "10-12", restSecs: 60 },
-                                { name: "Push-ups / Bench Press", sets: 4, reps: "12", restSecs: 60 },
-                                { name: "Plank Core Hold", sets: 3, reps: "60s", restSecs: 45 }
-                            ]
-                        }
-                    },
-                    {
-                        id: "blk-2",
-                        time: "08:30 AM",
-                        type: "meal",
-                        title: "Anabolic Breakfast Protocol",
-                        description: "High-protein morning refueling meal",
-                        status: "scheduled",
-                        details: {
-                            mealType: "Breakfast",
-                            suggestedMeal: "Oatmeal with Whey Protein & Almonds",
-                            targetCalories: 550,
-                            protein: 42,
-                            carbs: 65,
-                            fat: 14,
-                            photoRequired: true,
-                            ingredients: ["100g Oats", "1 Scoop Whey", "15g Almonds", "1 Banana"]
-                        }
-                    },
-                    {
-                        id: "blk-3",
-                        time: "01:00 PM",
-                        type: "meal",
-                        title: "Precision Lunch Matrix",
-                        description: "Balanced macronutrient mid-day power meal",
-                        status: "scheduled",
-                        details: {
-                            mealType: "Lunch",
-                            suggestedMeal: "Grilled Chicken Breast with Quinoa & Broccoli",
-                            targetCalories: 650,
-                            protein: 52,
-                            carbs: 60,
-                            fat: 15,
-                            photoRequired: true,
-                            ingredients: ["180g Chicken Breast", "150g Quinoa", "100g Broccoli"]
-                        }
-                    },
-                    {
-                        id: "blk-4",
-                        time: "04:30 PM",
-                        type: "workout",
-                        title: "Afternoon Agility & Metabolic Finisher",
-                        description: "High intensity metabolic rate amplifier",
-                        status: "scheduled",
-                        details: {
-                            durationMins: 30,
-                            targetCalories: 280,
-                            exercises: [
-                                { name: "Dumbbell Kettlebell Swings", sets: 4, reps: "15", restSecs: 45 },
-                                { name: "Bodyweight Burpees", sets: 3, reps: "12", restSecs: 45 },
-                                { name: "Mountain Climbers", sets: 3, reps: "45s", restSecs: 30 }
-                            ]
-                        }
-                    },
-                    {
-                        id: "blk-5",
-                        time: "07:30 PM",
-                        type: "meal",
-                        title: "Recovery Dinner Protocol",
-                        description: "Lean protein and fiber dense dinner",
-                        status: "scheduled",
-                        details: {
-                            mealType: "Dinner",
-                            suggestedMeal: "Baked Fish/Tofu with Sweet Potato & Salad",
-                            targetCalories: 600,
-                            protein: 45,
-                            carbs: 50,
-                            fat: 20,
-                            photoRequired: true,
-                            ingredients: ["180g Fish/Tofu", "150g Sweet Potato", "Mixed Greens"]
-                        }
-                    },
-                    {
-                        id: "blk-6",
-                        time: "09:30 PM",
-                        type: "recovery",
-                        title: "Nocturnal Regeneration & Mobility",
-                        description: "Deep breathing, hydration check, and tissue repair",
-                        status: "scheduled",
-                        details: {
-                            durationMins: 15,
-                            waterCheck: "Ensure 3.5L daily total reached",
-                            mobility: ["Child's Pose (60s)", "Cobra Stretch (60s)", "Hamstring Stretch (60s)"]
-                        }
-                    }
-                ]
-            };
-        }
-
         function renderMasterPlan(plan) {
             if (!plan) return;
             document.getElementById('ai-plan-headline').textContent = plan.headline || "AI Dynamic Master Protocol";
             document.getElementById('ai-plan-summary').textContent = plan.summary || "Customized 24-hour protocol workflow.";
 
             if (plan.dailyTarget) {
-                document.getElementById('target-cals').textContent = `${plan.dailyTarget.calories || 2200} kcal`;
-                document.getElementById('target-protein').textContent = `${plan.dailyTarget.protein || 160} g`;
-                document.getElementById('target-carbs-fats').textContent = `${plan.dailyTarget.carbs || 210}g / ${plan.dailyTarget.fat || 65}g`;
-                document.getElementById('target-water').textContent = `${plan.dailyTarget.waterLiters || 3.5} Liters`;
+                const dt = plan.dailyTarget;
+                if (dt.bmr) document.getElementById('telemetry-bmr').textContent = `${dt.bmr} kcal`;
+                if (dt.tdee) document.getElementById('telemetry-tdee').textContent = `${dt.tdee} kcal`;
+                document.getElementById('target-cals').textContent = `${dt.calories || 2200} kcal`;
+                document.getElementById('target-protein').textContent = `${dt.protein || 160} g`;
+                document.getElementById('target-carbs-fats').textContent = `${dt.carbs || 210}g / ${dt.fat || 65}g`;
+                document.getElementById('target-water').textContent = `${dt.waterLiters || 3.5} L`;
+
+                // Burn target and progress telemetry
+                const bt = dt.burnTarget || plan.burnTarget || {};
+                const burnCals = bt.targetBurnCals || 450;
+                const weeklyKg = bt.estimatedWeeklyWeightChangeKg !== undefined ? bt.estimatedWeeklyWeightChangeKg : -0.4;
+                const sign = weeklyKg > 0 ? '+' : '';
+                const steps = (bt.dailyStepGoal || 10000).toLocaleString();
+
+                const teleBurn = document.getElementById('telemetry-burn');
+                if (teleBurn) teleBurn.textContent = `${burnCals} kcal`;
+
+                const teleProg = document.getElementById('telemetry-progress');
+                if (teleProg) teleProg.textContent = `${sign}${weeklyKg} kg/wk`;
+
+                const badgeIntake = document.getElementById('hero-badge-intake');
+                if (badgeIntake) badgeIntake.textContent = `${dt.calories || 2200} kcal`;
+
+                const badgeBurn = document.getElementById('hero-badge-burn');
+                if (badgeBurn) badgeBurn.textContent = `${burnCals} kcal/day`;
+
+                const badgeProgress = document.getElementById('hero-badge-progress');
+                if (badgeProgress) badgeProgress.textContent = `${sign}${weeklyKg} kg/wk`;
+
+                const badgeSteps = document.getElementById('hero-badge-steps');
+                if (badgeSteps) badgeSteps.textContent = `${steps} steps`;
             }
 
+            // Render AI Reasoning
+            if (plan.aiReasoning) {
+                const r = plan.aiReasoning;
+                document.getElementById('reasoning-calories').textContent = r.calorieReasoning || "Calibrated using Mifflin-St Jeor.";
+                document.getElementById('reasoning-macros').textContent = r.macroReasoning || "Optimized protein & carb balance.";
+                document.getElementById('reasoning-meals').textContent = r.mealReasoning || "Authentic Indian nutrition with allergy filtration.";
+                document.getElementById('reasoning-workouts').textContent = r.workoutReasoning || "Periodized resistance training.";
+
+                const burnReasonEl = document.getElementById('reasoning-burn');
+                if (burnReasonEl) {
+                    burnReasonEl.textContent = r.burnReasoning || (plan.dailyTarget?.burnTarget?.rationale) || "Daily active burn calibrated to goal protocol.";
+                }
+            }
+
+            // Render Adherence Bar
+            if (plan.adherence) {
+                const adh = plan.adherence;
+                document.getElementById('adherence-meals-badge').textContent = `${adh.mealsCompleted || 0} / ${adh.mealsTotal || 5}`;
+                document.getElementById('adherence-workouts-badge').textContent = `${adh.workoutsCompleted || 0} / ${adh.workoutsTotal || 1}`;
+                const score = adh.overallScore || 0;
+                document.getElementById('adherence-progress-bar').style.width = `${score}%`;
+                document.getElementById('adherence-percentage-text').textContent = `${score}%`;
+            }
+
+            // Render Timeline Blocks
             const container = document.getElementById('timeline-container');
             if (!plan.schedule || plan.schedule.length === 0) {
                 container.innerHTML = `<p class="text-xs text-secondary text-center py-8">No scheduled protocol blocks.</p>`;
@@ -527,6 +1538,9 @@
                 const isWorkout = block.type === 'workout';
                 const isMeal = block.type === 'meal';
                 const isRecovery = block.type === 'recovery';
+                const isWake = block.type === 'wakeup';
+                const isSleep = block.type === 'sleep';
+                const isHydration = block.type === 'hydration';
 
                 let icon = 'event';
                 let iconColor = 'text-white';
@@ -541,52 +1555,160 @@
                     iconColor = 'text-amber-400';
                     typeBadgeBg = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
                 } else if (isRecovery) {
-                    icon = 'spa';
+                    icon = 'self_improvement';
+                    iconColor = 'text-sky-400';
+                    typeBadgeBg = 'bg-sky-500/10 text-sky-400 border border-sky-500/20';
+                } else if (isWake) {
+                    icon = 'wb_sunny';
+                    iconColor = 'text-amber-300';
+                    typeBadgeBg = 'bg-amber-500/10 text-amber-300 border border-amber-500/20';
+                } else if (isSleep) {
+                    icon = 'bedtime';
+                    iconColor = 'text-purple-400';
+                    typeBadgeBg = 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
+                } else if (isHydration) {
+                    icon = 'water_drop';
                     iconColor = 'text-sky-400';
                     typeBadgeBg = 'bg-sky-500/10 text-sky-400 border border-sky-500/20';
                 }
 
-                let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-secondary">Scheduled</span>`;
+                let statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/5 border border-white/10 text-secondary">Scheduled</span>`;
                 if (block.status === 'completed') {
-                    statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"><span class="material-symbols-outlined text-xs">check_circle</span> Completed</span>`;
+                    statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1"><span class="material-symbols-outlined text-xs">check_circle</span> Completed</span>`;
                 } else if (block.status === 'missed') {
-                    statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1"><span class="material-symbols-outlined text-xs">cancel</span> Missed / Rescheduled</span>`;
+                    statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center gap-1"><span class="material-symbols-outlined text-xs">cancel</span> Missed</span>`;
                 }
 
                 let innerContent = '';
                 if (isWorkout && block.details) {
+                    const exercises = block.details.exercises || [];
+                    const totalExercises = exercises.length;
+                    const completedExercises = exercises.filter(e => e.completed).length;
+                    const progressPercent = totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0;
+
                     innerContent = `
-                        <div class="space-y-2">
-                            <div class="flex flex-wrap gap-2 text-xs text-secondary font-mono">
-                                <span>Duration: ${block.details.durationMins || 45} mins</span>
-                                <span>•</span>
-                                <span>Target Burn: ${block.details.targetCalories || 300} kcal</span>
+                        <div class="space-y-3 mt-3 w-full">
+                            <!-- Sleek Minimal Progress Bar -->
+                            <div class="flex items-center justify-between py-1 border-b border-white/5 text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-mono font-bold text-emerald-400 text-xs">
+                                        ${completedExercises}/${totalExercises} Exercises Completed
+                                    </span>
+                                    <span class="text-secondary/40">•</span>
+                                    <span class="text-secondary font-mono text-xs">
+                                        ⏱️ ${block.details.durationMins || 45} mins
+                                    </span>
+                                </div>
+                                <div class="w-28 sm:w-36 bg-white/5 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-300 rounded-full" style="width: ${progressPercent}%;"></div>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-                                ${(block.details.exercises || []).map(ex => `
-                                    <div class="p-2.5 bg-white/5 rounded-xl border border-white/5 text-xs">
-                                        <p class="text-white font-bold">${ex.name}</p>
-                                        <p class="text-[10px] text-secondary opacity-70">${ex.sets} Sets × ${ex.reps} (${ex.restSecs}s Rest)</p>
-                                    </div>
-                                `).join('')}
+
+                            <!-- Simplified Clean Exercise Rows with Checkboxes -->
+                            <div class="space-y-2">
+                                ${exercises.map((ex, idx) => {
+                                    const isDone = !!ex.completed;
+                                    const durationText = ex.durationMins ? `${ex.durationMins}m` : '8m';
+                                    return `
+                                        <div onclick="openExerciseInfoModal('${block.id}', ${idx})" class="p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 group ${isDone ? 'bg-emerald-500/[0.03] border-emerald-500/20 opacity-55' : 'bg-white/5 border-white/5 hover:border-white/20'}">
+                                            <div class="flex items-center gap-3.5 min-w-0 flex-1">
+                                                <!-- Big Easy-to-Tap Mobile Checkbox -->
+                                                <button type="button" onclick="toggleExerciseComplete('${block.id}', ${idx}, event)" class="w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 transition-all cursor-pointer ${isDone ? 'bg-emerald-500 border-emerald-500 text-black shadow-[0_0_12px_rgba(16,185,129,0.35)]' : 'bg-white/5 border-white/20 hover:border-emerald-400/60 text-transparent'}" title="${isDone ? 'Mark as incomplete' : 'Mark as completed'}">
+                                                    <span class="material-symbols-outlined text-base font-black ${isDone ? 'text-black' : 'text-transparent'}">check</span>
+                                                </button>
+                                                
+                                                <div class="min-w-0 flex-1">
+                                                    <h5 class="text-sm font-bold text-white truncate ${isDone ? 'line-through text-secondary/70' : ''}">
+                                                        ${ex.name}
+                                                    </h5>
+                                                    <div class="flex items-center gap-2 text-xs font-mono mt-0.5">
+                                                        <span class="text-emerald-400 font-semibold text-xs">${ex.sets} Sets × ${ex.reps}</span>
+                                                        <span class="text-secondary/40">•</span>
+                                                        <span class="text-secondary text-[11px]">${ex.targetMuscles || ex.targetMuscle || 'Target Muscle'}</span>
+                                                        <span class="text-secondary/40">•</span>
+                                                        <span class="text-secondary/70 text-[11px]">⏱️ ${durationText}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Info Icon for Form Modal -->
+                                            <button type="button" onclick="openExerciseInfoModal('${block.id}', ${idx})" class="w-7 h-7 rounded-lg text-secondary/60 hover:text-white flex items-center justify-center hover:bg-white/10 shrink-0 transition-colors" title="View Technique & Tips">
+                                                <span class="material-symbols-outlined text-base">info</span>
+                                            </button>
+                                        </div>
+                                    `;
+                                }).join('')}
                             </div>
                         </div>
                     `;
                 } else if (isMeal && block.details) {
                     innerContent = `
-                        <div class="space-y-2">
-                            <div class="p-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl text-xs space-y-1">
-                                <p class="text-amber-400 font-bold uppercase tracking-wider text-[10px]">AI Suggested Menu</p>
-                                <p class="text-white font-bold text-sm">${block.details.suggestedMeal || 'High Protein Meal'}</p>
-                                <p class="text-secondary text-[11px]">${block.details.targetCalories || 500} kcal | ${block.details.protein || 40}g Protein | ${block.details.carbs || 50}g Carbs | ${block.details.fat || 15}g Fat</p>
+                        <div class="space-y-2 mt-2">
+                            <div class="p-3.5 bg-amber-500/5 border border-amber-500/10 rounded-2xl text-xs space-y-2">
+                                <div class="flex flex-wrap justify-between items-center gap-2">
+                                    <div>
+                                        <span class="text-amber-400 font-bold uppercase tracking-wider text-[10px] block">AI Suggested Indian Menu</span>
+                                        <p class="text-white font-bold text-sm sm:text-base font-headline">${block.details.suggestedMeal || 'Nutritious Meal'}</p>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300 font-mono text-[11px] font-bold border border-amber-500/20">
+                                        ${block.details.targetCalories || 500} kcal
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap gap-3 text-secondary text-[11px] font-mono border-t border-white/5 pt-2">
+                                    <span>Protein: <strong class="text-emerald-400">${block.details.protein || 30}g</strong></span>
+                                    <span>•</span>
+                                    <span>Carbs: <strong class="text-sky-400">${block.details.carbs || 50}g</strong></span>
+                                    <span>•</span>
+                                    <span>Fats: <strong class="text-amber-400">${block.details.fat || 15}g</strong></span>
+                                    <span>•</span>
+                                    <span class="text-secondary/80">${block.details.portionSummary || 'Standard serving'}</span>
+                                </div>
+                                <div class="text-[11px] text-secondary/80">
+                                    <strong class="text-secondary">Ingredients & Portions:</strong> ${(block.details.ingredients || []).join(' • ')}
+                                </div>
                             </div>
                         </div>
                     `;
                 } else if (isRecovery && block.details) {
                     innerContent = `
-                        <div class="text-xs text-secondary space-y-1">
-                            <p class="text-sky-400 font-semibold">${block.details.waterCheck || 'Maintain Hydration'}</p>
-                            <p>Mobility Routine: ${(block.details.mobility || []).join(', ')}</p>
+                        <div class="text-xs text-secondary space-y-1.5 mt-2 p-3 bg-sky-500/5 border border-sky-500/10 rounded-2xl">
+                            ${block.details.waterCheck ? `<p class="text-sky-400 font-semibold flex items-center gap-1.5"><span class="material-symbols-outlined text-sm">water_drop</span> ${block.details.waterCheck}</p>` : ''}
+                            ${block.details.actions ? `<ul class="list-disc pl-4 space-y-0.5 text-secondary/90">${block.details.actions.map(a => `<li>${a}</li>`).join('')}</ul>` : ''}
+                            ${block.details.mobility ? `<div class="text-secondary/90"><strong class="text-white">Mobility Routine:</strong> ${block.details.mobility.join(' • ')}</div>` : ''}
+                        </div>
+                    `;
+                } else if (isWake && block.details) {
+                    innerContent = `
+                        <div class="text-xs text-secondary space-y-1 mt-2 p-3 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
+                            <p class="text-amber-300 font-semibold">Morning Hydration: ${block.details.targetWaterLiters}L Electrolyte Water</p>
+                            <ul class="list-disc pl-4 space-y-0.5 text-secondary/90">${(block.details.actions || []).map(a => `<li>${a}</li>`).join('')}</ul>
+                        </div>
+                    `;
+                } else if (isHydration && block.details) {
+                    innerContent = `
+                        <div class="text-xs text-secondary space-y-1 mt-2 p-3 bg-sky-500/5 border border-sky-500/10 rounded-2xl">
+                            <p class="text-sky-400 font-semibold flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-sm">water_drop</span> Milestone Target: ${block.details.targetWaterLiters} Liters
+                            </p>
+                            <p class="text-secondary/80">${block.details.tip || 'Sip consistently to maintain osmotic hydration.'}</p>
+                        </div>
+                    `;
+                } else if (isSleep && block.details) {
+                    innerContent = `
+                        <div class="text-xs text-secondary space-y-1 mt-2 p-3 bg-purple-500/5 border border-purple-500/10 rounded-2xl">
+                            <p class="text-purple-300 font-semibold">Target Rest: ${block.details.targetHours || '8 hours'}</p>
+                            <ul class="list-disc pl-4 space-y-0.5 text-secondary/90">${(block.details.environment || []).map(e => `<li>${e}</li>`).join('')}</ul>
+                        </div>
+                    `;
+                }
+
+                // AI Reasoning Pill (Only for non-workout blocks to remove clutter)
+                let rationalePill = '';
+                if (block.reasoning && !isWorkout) {
+                    rationalePill = `
+                        <div class="mt-2 text-[11px] text-purple-300/90 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-xl flex items-start gap-2">
+                            <span class="material-symbols-outlined text-sm text-purple-400 shrink-0 mt-0.5">psychology</span>
+                            <span><strong>Why AI Selected This:</strong> ${block.reasoning}</span>
                         </div>
                     `;
                 }
@@ -594,51 +1716,82 @@
                 let actionBtn = '';
                 if (block.status === 'scheduled') {
                     if (isWorkout) {
+                        const isAllChecked = (block.details.exercises || []).length > 0 && (block.details.exercises || []).every(e => e.completed);
                         actionBtn = `
-                            <div class="flex gap-2 mt-3">
-                                <button onclick="markBlockCompleted('${block.id}')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
-                                    Mark Completed
+                            <div class="flex flex-wrap items-center gap-2.5 mt-3 pt-2 border-t border-white/5">
+                                <button onclick="startGuidedWorkout('${block.id}')" class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black font-black text-xs rounded-xl uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(16,185,129,0.35)] cursor-pointer flex items-center gap-2 transform hover:scale-[1.02]">
+                                    <span class="material-symbols-outlined text-base font-bold">play_arrow</span>
+                                    Start Guided Workout
                                 </button>
-                                <button onclick="rescheduleMissedWorkout('${block.id}')" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-rose-400 border border-rose-500/20 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
-                                    Missed / Reschedule AI
+                                ${!isAllChecked ? `
+                                    <button onclick="markAllExercisesComplete('${block.id}')" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-emerald-400 border border-emerald-500/20 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5">
+                                        <span class="material-symbols-outlined text-sm">done_all</span>
+                                        Mark All Done
+                                    </button>
+                                ` : `
+                                    <button onclick="resetAllExercises('${block.id}')" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-secondary border border-white/10 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+                                        Reset All
+                                    </button>
+                                `}
+                                <button onclick="rescheduleMissedWorkout('${block.id}')" class="px-3.5 py-2 bg-white/5 hover:bg-white/10 text-rose-400 border border-rose-500/20 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+                                    Reschedule
                                 </button>
                             </div>
                         `;
                     } else if (isMeal) {
                         actionBtn = `
-                            <div class="flex gap-2 mt-3">
+                            <div class="flex flex-wrap gap-2 mt-3">
                                 <button onclick="openMealPhotoModal('${block.id}', '${block.details?.suggestedMeal || 'Meal'}', ${block.details?.targetCalories || 500})" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer">
                                     <span class="material-symbols-outlined text-sm">photo_camera</span>
-                                    Upload Photo to Verify & Log Meal
+                                    Upload Photo to Verify & Log
+                                </button>
+                                <button onclick="markBlockCompleted('${block.id}')" class="px-4 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
+                                    Quick Mark Complete
                                 </button>
                             </div>
                         `;
-                    } else if (isRecovery) {
+                    } else {
                         actionBtn = `
                             <div class="flex gap-2 mt-3">
-                                <button onclick="markBlockCompleted('${block.id}')" class="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer">
-                                    Complete Recovery Session
+                                <button onclick="markBlockCompleted('${block.id}')" class="px-4 py-2 bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-sm">done</span>
+                                    Complete Block
                                 </button>
                             </div>
                         `;
                     }
+                } else if (block.status === 'completed' && isWorkout && block.details?.actuals) {
+                    const act = block.details.actuals;
+                    actionBtn = `
+                        <div class="p-3 mt-2 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex flex-wrap items-center gap-3 text-emerald-300 font-mono">
+                            <span>⏱️ <strong>${Math.round((act.durationSeconds || 0) / 60)} mins</strong></span>
+                            <span>•</span>
+                            <span>🔥 <strong>${act.caloriesBurned || 0} kcal</strong></span>
+                            <span>•</span>
+                            <span>🏋️ <strong>${(act.volumeLifted || 0).toLocaleString()} kg volume</strong></span>
+                            <span>•</span>
+                            <span>✅ <strong>${act.setsCompleted || 0} sets logged</strong></span>
+                        </div>
+                    `;
                 }
 
+
                 return `
-                    <div class="glass-card p-6 rounded-3xl border-glass-border flex flex-col md:flex-row items-start gap-4 justify-between transition-all hover:border-white/20">
-                        <div class="flex items-start gap-4 flex-1">
+                    <div class="glass-card p-5 sm:p-6 rounded-3xl border-glass-border flex flex-col items-start gap-4 transition-all hover:border-white/20">
+                        <div class="flex items-start gap-4 w-full">
                             <div class="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
                                 <span class="material-symbols-outlined text-2xl ${iconColor}">${icon}</span>
                             </div>
-                            <div class="space-y-2 flex-1">
+                            <div class="space-y-1.5 flex-1 min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="text-xs font-mono text-purple-400 font-bold">${block.time}</span>
                                     <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${typeBadgeBg}">${block.type}</span>
                                     ${statusBadge}
                                 </div>
-                                <h4 class="text-lg font-bold text-white font-headline">${block.title}</h4>
-                                <p class="text-xs text-secondary">${block.description}</p>
+                                <h4 class="text-base sm:text-lg font-bold text-white font-headline">${block.title}</h4>
+                                <p class="text-xs text-secondary leading-relaxed">${block.description}</p>
                                 ${innerContent}
+                                ${rationalePill}
                                 ${actionBtn}
                             </div>
                         </div>
@@ -649,29 +1802,30 @@
 
         async function markBlockCompleted(blockId) {
             if (!currentMasterPlan) return;
-            const block = currentMasterPlan.schedule.find(b => b.id === blockId);
-            if (block) {
-                block.status = 'completed';
-                localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
-                renderMasterPlan(currentMasterPlan);
+            try {
+                const res = await fetch('/api/ai/plan/complete-block', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan.planId,
+                        blockId: blockId,
+                        status: 'completed'
+                    })
+                });
 
-                if (block.type === 'workout' && userEmail) {
-                    try {
-                        await fetch('/api/workouts', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                email: userEmail,
-                                workoutName: block.title,
-                                duration: (block.details?.durationMins || 30) * 60,
-                                steps: 2500,
-                                distance: 1500,
-                                calories: block.details?.targetCalories || 300,
-                                date: new Date().toISOString()
-                            })
-                        });
-                    } catch (e) {}
+                if (res.ok) {
+                    currentMasterPlan = await res.json();
+                    localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                    renderMasterPlan(currentMasterPlan);
+                } else {
+                    // Fallback to local mutation
+                    const b = currentMasterPlan.schedule.find(x => x.id === blockId);
+                    if (b) b.status = 'completed';
+                    renderMasterPlan(currentMasterPlan);
                 }
+            } catch (err) {
+                console.error("Mark block completed error:", err);
             }
         }
 
@@ -701,6 +1855,152 @@
             }
         }
 
+        // --- PLAN HISTORY MODAL LOGIC ---
+        async function openPlanHistoryModal() {
+            const modal = document.getElementById('plan-history-modal');
+            const listContainer = document.getElementById('plan-history-list');
+            modal.classList.remove('hidden');
+            listContainer.innerHTML = `<div class="p-8 text-center text-xs text-secondary"><span class="material-symbols-outlined animate-spin text-xl text-purple-400">sync</span><p class="mt-2">Loading historical plans...</p></div>`;
+
+            try {
+                const res = await fetch(`/api/ai/plans/history?email=${encodeURIComponent(userEmail)}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const plans = data.plans || [];
+                    if (plans.length === 0) {
+                        listContainer.innerHTML = `<p class="text-xs text-secondary text-center py-8">No historical plans found.</p>`;
+                        return;
+                    }
+
+                    listContainer.innerHTML = plans.map(p => {
+                        const dateStr = new Date(p.createdAt || p.date || Date.now()).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        const isActive = p.active;
+                        const dt = p.dailyTarget || {};
+                        const adh = p.adherence || {};
+
+                        return `
+                            <div class="p-4 rounded-2xl bg-white/5 border ${isActive ? 'border-purple-500/50 bg-purple-500/5' : 'border-white/5'} space-y-2">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-sm font-bold text-white">${p.headline || 'Master Protocol'}</h4>
+                                            ${isActive ? '<span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-purple-500/20 text-purple-400 border border-purple-500/30">Active</span>' : ''}
+                                        </div>
+                                        <p class="text-[11px] text-secondary font-mono">${dateStr}</p>
+                                    </div>
+                                    ${!isActive ? `
+                                        <button onclick="restoreHistoricalPlan('${p.planId}')" class="px-3 py-1.5 bg-white/10 hover:bg-purple-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer">
+                                            Restore Plan
+                                        </button>
+                                    ` : '<span class="text-xs text-emerald-400 font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">check</span> Current</span>'}
+                                </div>
+                                <p class="text-xs text-secondary">${p.summary || ''}</p>
+                                <div class="flex flex-wrap gap-3 text-[11px] font-mono text-secondary pt-1 border-t border-white/5">
+                                    <span>Cals: <strong class="text-white">${dt.calories || 2200} kcal</strong></span>
+                                    <span>•</span>
+                                    <span>Macros: <strong class="text-emerald-400">${dt.protein}P</strong> / <strong class="text-sky-400">${dt.carbs}C</strong> / <strong class="text-amber-400">${dt.fat}F</strong></span>
+                                    <span>•</span>
+                                    <span>Adherence: <strong class="text-white">${adh.overallScore || 0}%</strong></span>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    listContainer.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Failed to fetch plan history.</p>`;
+                }
+            } catch (e) {
+                listContainer.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Error loading plan history.</p>`;
+            }
+        }
+
+        function closePlanHistoryModal() {
+            document.getElementById('plan-history-modal').classList.add('hidden');
+        }
+
+        async function restoreHistoricalPlan(planId) {
+            try {
+                const res = await fetch('/api/ai/plan/restore', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, planId: planId })
+                });
+
+                if (res.ok) {
+                    currentMasterPlan = await res.json();
+                    localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                    renderMasterPlan(currentMasterPlan);
+                    closePlanHistoryModal();
+                    showAdaptationBanner("Protocol Restored", `Switched active plan to historical version (${currentMasterPlan.headline}).`);
+                }
+            } catch (err) {
+                console.error("Restore plan error:", err);
+            }
+        }
+
+        // --- PROGRESSIVE ADAPTATION MODAL LOGIC ---
+        function openProgressiveAdaptModal() {
+            const curWeight = (currentMasterPlan?.userProfileSnapshot?.weight) || (userProtocolCache?.weight) || 75;
+            document.getElementById('adapt-current-weight').value = curWeight;
+            document.getElementById('adaptation-modal').classList.remove('hidden');
+        }
+
+        function closeProgressiveAdaptModal() {
+            document.getElementById('adaptation-modal').classList.add('hidden');
+        }
+
+        async function submitProgressiveAdaptation() {
+            const curWeight = parseFloat(document.getElementById('adapt-current-weight').value);
+            const feedback = document.getElementById('adapt-feedback').value;
+            if (!curWeight || curWeight <= 30) {
+                alert("Please enter a valid current body weight.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-submit-adaptation');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin text-xs">sync</span> Recalibrating...`;
+
+            try {
+                const res = await fetch('/api/ai/plan/progressive-adapt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan?.planId,
+                        checkInData: {
+                            currentWeight: curWeight,
+                            previousWeight: currentMasterPlan?.userProfileSnapshot?.weight || curWeight,
+                            adherenceScore: currentMasterPlan?.adherence?.overallScore || 80,
+                            feedback: feedback
+                        }
+                    })
+                });
+
+                if (!res.ok) throw new Error("Progressive adaptation request failed.");
+
+                currentMasterPlan = await res.json();
+                localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                renderMasterPlan(currentMasterPlan);
+                closeProgressiveAdaptModal();
+
+                const note = currentMasterPlan.progressiveAdaptation?.notes || "Daily parameters recalculated for progressive adaptation.";
+                showAdaptationBanner("Weekly Progressive Adaptation Calibrated", note);
+            } catch (err) {
+                console.error("Adaptation error:", err);
+                alert("Failed to run progressive adaptation. Please try again.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = orig;
+            }
+        }
+
+        // --- MEAL PHOTO VERIFICATION MODAL LOGIC ---
         function openMealPhotoModal(blockId, mealName, targetCalories) {
             selectedMealBlockId = blockId;
             selectedMealBase64 = null;
@@ -759,11 +2059,8 @@
                 const data = await res.json();
                 closeMealPhotoModal();
 
-                if (block) {
-                    block.status = 'completed';
-                    localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
-                    renderMasterPlan(currentMasterPlan);
-                }
+                // Mark block completed in DB
+                await markBlockCompleted(selectedMealBlockId);
 
                 if (data.triggerReplan && data.extraCalories > 0) {
                     showAdaptationBanner("Calorie Offset Adaptive Trigger", `Verified meal consumed +${data.extraCalories} extra calories. Gemini AI has automatically added extra workout sets to your remaining schedule!`);
@@ -804,6 +2101,812 @@
         function dismissAdaptationBanner() {
             document.getElementById('ai-adaptation-banner').classList.add('hidden');
         }
+
+        // =========================================================================
+        // GUIDED WORKOUT EXECUTION SYSTEM (LIVE PLAYER, TIMERS, REST CHIME & AI)
+        // =========================================================================
+        let gwSession = null;
+        let selectedReplaceReason = 'equipment';
+        let currentAlternativesCache = [];
+
+        // Web Audio API Crystal Bell Chime
+        function playRestDoneChime() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const now = ctx.currentTime;
+                
+                // Tone 1 (880Hz - A5)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(880, now);
+                gain1.gain.setValueAtTime(0.35, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.35);
+
+                // Tone 2 (1760Hz - A6)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1760, now + 0.16);
+                gain2.gain.setValueAtTime(0.45, now + 0.16);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.16);
+                osc2.stop(now + 0.75);
+            } catch (e) {
+                console.warn("Audio Context chime notice:", e);
+            }
+        }
+
+        function formatTimerDisplay(totalSecs) {
+            const m = Math.floor(totalSecs / 60).toString().padStart(2, '0');
+            const s = (totalSecs % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function startGuidedWorkout(blockId) {
+            if (!currentMasterPlan || !currentMasterPlan.schedule) return;
+            const block = currentMasterPlan.schedule.find(b => b.id === blockId);
+            if (!block || !block.details) {
+                alert("Workout details not found.");
+                return;
+            }
+
+            const exercises = block.details.exercises && block.details.exercises.length > 0
+                ? JSON.parse(JSON.stringify(block.details.exercises))
+                : [{
+                    name: block.title || "Custom Workout",
+                    targetMuscles: "Full Body",
+                    sets: 4,
+                    reps: 10,
+                    recommendedWeight: "Moderate",
+                    durationMins: block.details.durationMins || 45,
+                    restDurationSeconds: 60,
+                    caloriesBurnEstimate: block.details.targetCalories || 300,
+                    visualType: "generic"
+                }];
+
+            // Initialize Session State
+            gwSession = {
+                blockId: block.id,
+                workoutName: block.title,
+                exercises: exercises,
+                currentExIdx: 0,
+                currentSetNum: 1,
+                sessionSeconds: 0,
+                sessionTimer: null,
+                setSeconds: 0,
+                setTimer: null,
+                restSecondsRemaining: 0,
+                restTotalSeconds: 60,
+                restTimer: null,
+                isPaused: false,
+                isResting: false,
+                totalVolumeKg: 0,
+                totalCaloriesBurned: 0,
+                totalSetsCompleted: 0,
+                setHistory: [],
+                currentWeightTarget: 0,
+                currentRepsTarget: 10
+            };
+
+            // Open Modal
+            document.getElementById('guided-workout-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // Start Master Session Timer
+            gwSession.sessionTimer = setInterval(() => {
+                if (!gwSession || gwSession.isPaused) return;
+                gwSession.sessionSeconds++;
+                document.getElementById('gw-timer-session').textContent = formatTimerDisplay(gwSession.sessionSeconds);
+            }, 1000);
+
+            // Render First Exercise
+            renderCurrentExerciseState();
+        }
+
+        function renderCurrentExerciseState() {
+            if (!gwSession) return;
+            const ex = gwSession.exercises[gwSession.currentExIdx];
+            if (!ex) {
+                finishWorkoutSession(true);
+                return;
+            }
+
+            const totalEx = gwSession.exercises.length;
+            const exNum = gwSession.currentExIdx + 1;
+            const totalSets = Number(ex.sets) || 3;
+            const setsLeft = Math.max(0, totalSets - gwSession.currentSetNum);
+
+            // Minimal header
+            document.getElementById('gw-header-phase').textContent = `Exercise ${exNum} of ${totalEx}`;
+            document.getElementById('gw-header-title').textContent = `${gwSession.workoutName}`;
+            
+            // Progress line
+            const prog = ((gwSession.currentExIdx) / totalEx) * 100;
+            document.getElementById('gw-progress-line').style.width = `${prog}%`;
+
+            // Active Exercise Information (Clean & Minimal)
+            document.getElementById('gw-current-set-label').textContent = `Set ${gwSession.currentSetNum} of ${totalSets} • ${setsLeft} ${setsLeft === 1 ? 'Set' : 'Sets'} Remaining`;
+            document.getElementById('gw-ex-title').textContent = ex.name;
+            document.getElementById('gw-ex-muscle-simple').textContent = `${ex.targetMuscles || ex.targetMuscle || 'Target Muscle'} • Est. ${ex.durationMins || 8} mins`;
+
+            // Next Exercise Preview
+            const nextEx = gwSession.exercises[gwSession.currentExIdx + 1];
+            const nextPreviewEl = document.getElementById('gw-next-name');
+            if (nextPreviewEl) {
+                nextPreviewEl.textContent = nextEx ? nextEx.name : "Final Exercise • Almost Finished!";
+            }
+
+            // Weight and Rep Targets
+            let parsedWeight = 0;
+            if (ex.recommendedWeight) {
+                const match = ex.recommendedWeight.toString().match(/(\d+(\.\d+)?)/);
+                if (match) parsedWeight = parseFloat(match[1]);
+            }
+            let parsedReps = 10;
+            if (ex.reps) {
+                const match = ex.reps.toString().match(/(\d+)/);
+                if (match) parsedReps = parseInt(match[1], 10);
+            }
+            gwSession.currentWeightTarget = parsedWeight;
+            gwSession.currentRepsTarget = parsedReps;
+            document.getElementById('gw-target-weight-val').textContent = parsedWeight > 0 ? `${parsedWeight} kg` : "Bodyweight";
+            document.getElementById('gw-target-reps-val').textContent = parsedReps;
+
+            // Switch to Active Set Mode
+            switchToActiveSetMode();
+        }
+
+        function switchToActiveSetMode() {
+            if (!gwSession) return;
+            gwSession.isResting = false;
+            clearInterval(gwSession.restTimer);
+            gwSession.restTimer = null;
+
+            document.getElementById('gw-mode-rest').classList.add('hidden');
+            document.getElementById('gw-mode-active-set').classList.remove('hidden');
+
+            const ex = gwSession.exercises[gwSession.currentExIdx];
+            const totalSets = Number(ex.sets) || 3;
+            const setsLeft = Math.max(0, totalSets - gwSession.currentSetNum);
+            document.getElementById('gw-current-set-label').textContent = `Set ${gwSession.currentSetNum} of ${totalSets} • ${setsLeft} ${setsLeft === 1 ? 'Set' : 'Sets'} Remaining`;
+
+            // Reset and start Set Timer
+            gwSession.setSeconds = 0;
+            document.getElementById('gw-timer-set').textContent = "00:00";
+            clearInterval(gwSession.setTimer);
+            gwSession.setTimer = setInterval(() => {
+                if (!gwSession || gwSession.isPaused || gwSession.isResting) return;
+                gwSession.setSeconds++;
+                document.getElementById('gw-timer-set').textContent = formatTimerDisplay(gwSession.setSeconds);
+            }, 1000);
+        }
+
+        function completeCurrentSet() {
+            if (!gwSession || gwSession.isResting) return;
+            const ex = gwSession.exercises[gwSession.currentExIdx];
+            const totalSets = Number(ex.sets) || 3;
+
+            // Stop set timer
+            clearInterval(gwSession.setTimer);
+            gwSession.setTimer = null;
+
+            // Record set log
+            gwSession.totalSetsCompleted++;
+            const wt = gwSession.currentWeightTarget;
+            const reps = gwSession.currentRepsTarget;
+            const addedVol = wt > 0 ? wt * reps : Math.round(50 * 0.65 * reps);
+            gwSession.totalVolumeKg += addedVol;
+            const addedBurn = Math.round((ex.caloriesBurnEstimate || 60) / totalSets);
+            gwSession.totalCaloriesBurned += addedBurn;
+
+            // Check if there are more sets for this exercise
+            if (gwSession.currentSetNum < totalSets) {
+                // Enter Breathing-Based Rest Mode
+                startRestPeriod(ex.restDurationSeconds || 60, false);
+            } else {
+                // Mark exercise completed in the master plan
+                ex.completed = true;
+                if (currentMasterPlan) {
+                    const block = currentMasterPlan.schedule.find(b => b.id === gwSession.blockId);
+                    if (block && block.details && block.details.exercises) {
+                        const targetEx = block.details.exercises[gwSession.currentExIdx];
+                        if (targetEx) targetEx.completed = true;
+                    }
+                }
+
+                // If more exercises remain in this workout
+                if (gwSession.currentExIdx + 1 < gwSession.exercises.length) {
+                    gwSession.currentExIdx++;
+                    gwSession.currentSetNum = 1;
+                    startRestPeriod(72, true); // 6 breath cycles between exercises
+                } else {
+                    // Entire Workout Finished!
+                    finishWorkoutSession(true);
+                }
+            }
+        }
+
+        // =========================================================================
+        // BREATHING-BASED RECOVERY SYSTEM (RHYTHMIC BREATHS & CALMING RECOVERY)
+        // =========================================================================
+        function startRestPeriod(seconds, isTransition = false) {
+            if (!gwSession) return;
+            gwSession.isResting = true;
+            
+            // 12 seconds per full recovery breath round (Inhale 4s, Hold 2s, Exhale 6s)
+            const initialBreaths = Math.max(3, Math.round(seconds / 12));
+            gwSession.breathsRemaining = initialBreaths;
+            gwSession.breathCycleSec = 0;
+
+            document.getElementById('gw-mode-active-set').classList.add('hidden');
+            document.getElementById('gw-mode-rest').classList.remove('hidden');
+
+            const nextEx = gwSession.exercises[gwSession.currentExIdx];
+
+            if (isTransition) {
+                document.getElementById('gw-rest-pill').textContent = "Exercise Complete • Transition";
+                document.getElementById('gw-rest-heading').textContent = "Deep Recovery Breaths";
+                document.getElementById('gw-rest-coach-msg').textContent = "Inhale 4 counts • Hold 2 counts • Exhale 6 counts";
+                document.getElementById('gw-rest-next-preview').classList.remove('hidden');
+                document.getElementById('gw-rest-next-name').textContent = nextEx ? nextEx.name : "Routine Complete";
+                document.getElementById('gw-skip-rest-btn-label').textContent = "Start Next Exercise";
+            } else {
+                const ex = gwSession.exercises[gwSession.currentExIdx];
+                const totalSets = Number(ex.sets) || 3;
+                document.getElementById('gw-rest-pill').textContent = `Set ${gwSession.currentSetNum} Complete • Recover`;
+                document.getElementById('gw-rest-heading').textContent = "Deep Recovery Breaths";
+                document.getElementById('gw-rest-coach-msg').textContent = "Inhale 4 counts • Hold 2 counts • Exhale 6 counts";
+                document.getElementById('gw-rest-next-preview').classList.remove('hidden');
+                document.getElementById('gw-rest-next-name').textContent = `Set ${gwSession.currentSetNum + 1} of ${totalSets}`;
+                document.getElementById('gw-skip-rest-btn-label').textContent = "Start Next Set";
+            }
+
+            document.getElementById('gw-breath-count-text').textContent = gwSession.breathsRemaining;
+            document.getElementById('gw-breath-phase').textContent = "INHALE (4s)";
+
+            clearInterval(gwSession.restTimer);
+            gwSession.restTimer = setInterval(() => {
+                if (!gwSession || gwSession.isPaused) return;
+
+                gwSession.breathCycleSec++;
+
+                // 12s Breath Cadence State Machine
+                const cycle = gwSession.breathCycleSec % 12;
+                const phaseEl = document.getElementById('gw-breath-phase');
+
+                if (cycle < 4) {
+                    phaseEl.textContent = `INHALE (${4 - cycle}s)`;
+                    phaseEl.className = "text-xs sm:text-sm font-black font-mono uppercase tracking-widest text-emerald-300 block";
+                } else if (cycle >= 4 && cycle < 6) {
+                    phaseEl.textContent = `HOLD (${6 - cycle}s)`;
+                    phaseEl.className = "text-xs sm:text-sm font-black font-mono uppercase tracking-widest text-amber-300 block";
+                } else {
+                    phaseEl.textContent = `EXHALE (${12 - cycle}s)`;
+                    phaseEl.className = "text-xs sm:text-sm font-black font-mono uppercase tracking-widest text-sky-300 block";
+                }
+
+                // A full breath round completed every 12 seconds
+                if (cycle === 0 && gwSession.breathCycleSec > 0) {
+                    gwSession.breathsRemaining--;
+                    document.getElementById('gw-breath-count-text').textContent = Math.max(0, gwSession.breathsRemaining);
+
+                    if (gwSession.breathsRemaining <= 0) {
+                        clearInterval(gwSession.restTimer);
+                        gwSession.restTimer = null;
+                        playRestDoneChime();
+
+                        if (!isTransition) {
+                            gwSession.currentSetNum++;
+                        }
+                        if (isTransition) {
+                            renderCurrentExerciseState();
+                        } else {
+                            switchToActiveSetMode();
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function addBreaths(extraBreaths) {
+            if (!gwSession || !gwSession.isResting) return;
+            gwSession.breathsRemaining += extraBreaths;
+            document.getElementById('gw-breath-count-text').textContent = gwSession.breathsRemaining;
+        }
+
+        function skipRestAndStartNextSet() {
+            if (!gwSession || !gwSession.isResting) return;
+            clearInterval(gwSession.restTimer);
+            gwSession.restTimer = null;
+            playRestDoneChime();
+
+            const isTransition = (document.getElementById('gw-skip-rest-btn-label').textContent === "Start Next Exercise");
+
+            if (isTransition) {
+                renderCurrentExerciseState();
+            } else {
+                gwSession.currentSetNum++;
+                const ex = gwSession.exercises[gwSession.currentExIdx];
+                const totalSets = Number(ex.sets) || 3;
+                if (gwSession.currentSetNum > totalSets) {
+                    if (gwSession.currentExIdx + 1 < gwSession.exercises.length) {
+                        gwSession.currentExIdx++;
+                        gwSession.currentSetNum = 1;
+                        renderCurrentExerciseState();
+                    } else {
+                        finishWorkoutSession(true);
+                    }
+                } else {
+                    switchToActiveSetMode();
+                }
+            }
+        }
+
+        // =========================================================================
+        // INDIVIDUAL EXERCISE CHECKBOXES & ON-DEMAND DETAILS MODAL
+        // =========================================================================
+        function toggleExerciseComplete(blockId, exerciseIdx, event) {
+            if (event) event.stopPropagation();
+            if (!currentMasterPlan || !currentMasterPlan.schedule) return;
+
+            const block = currentMasterPlan.schedule.find(b => b.id === blockId);
+            if (!block || !block.details || !Array.isArray(block.details.exercises)) return;
+
+            const ex = block.details.exercises[exerciseIdx];
+            if (!ex) return;
+
+            ex.completed = !ex.completed;
+
+            const completedCount = block.details.exercises.filter(e => e.completed).length;
+            const totalCount = block.details.exercises.length;
+
+            if (completedCount === totalCount && totalCount > 0) {
+                block.status = 'completed';
+            } else {
+                if (block.status === 'completed' && completedCount < totalCount) {
+                    block.status = 'scheduled';
+                }
+            }
+
+            // Save locally
+            localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+            renderMasterPlan(currentMasterPlan);
+
+            // Sync to backend
+            try {
+                fetch('/api/ai/plan/complete-block', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan.planId,
+                        blockId: blockId,
+                        status: block.status
+                    })
+                }).catch(e => console.warn(e));
+            } catch (err) {}
+        }
+
+        function markAllExercisesComplete(blockId) {
+            if (!currentMasterPlan || !currentMasterPlan.schedule) return;
+            const block = currentMasterPlan.schedule.find(b => b.id === blockId);
+            if (!block || !block.details || !Array.isArray(block.details.exercises)) return;
+
+            block.details.exercises.forEach(e => e.completed = true);
+            block.status = 'completed';
+
+            localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+            renderMasterPlan(currentMasterPlan);
+
+            try {
+                fetch('/api/ai/plan/complete-block', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan.planId,
+                        blockId: blockId,
+                        status: 'completed'
+                    })
+                }).catch(e => console.warn(e));
+            } catch (err) {}
+        }
+
+        function resetAllExercises(blockId) {
+            if (!currentMasterPlan || !currentMasterPlan.schedule) return;
+            const block = currentMasterPlan.schedule.find(b => b.id === blockId);
+            if (!block || !block.details || !Array.isArray(block.details.exercises)) return;
+
+            block.details.exercises.forEach(e => e.completed = false);
+            block.status = 'scheduled';
+
+            localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+            renderMasterPlan(currentMasterPlan);
+
+            try {
+                fetch('/api/ai/plan/complete-block', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan.planId,
+                        blockId: blockId,
+                        status: 'scheduled'
+                    })
+                }).catch(e => console.warn(e));
+            } catch (err) {}
+        }
+
+        function openExerciseInfoModal(blockId, exerciseIdx) {
+            let ex = null;
+            if (gwSession && gwSession.exercises) {
+                ex = gwSession.exercises[exerciseIdx];
+            } else if (currentMasterPlan && currentMasterPlan.schedule) {
+                const block = currentMasterPlan.schedule.find(b => b.id === blockId);
+                if (block && block.details && block.details.exercises) {
+                    ex = block.details.exercises[exerciseIdx];
+                }
+            }
+
+            if (!ex) return;
+
+            document.getElementById('ex-info-name').textContent = ex.name;
+            document.getElementById('ex-info-muscle').textContent = ex.targetMuscles || ex.targetMuscle || 'Target Muscle';
+            document.getElementById('ex-info-meta').textContent = `${ex.sets} Sets × ${ex.reps} • ~${ex.durationMins || 8} mins duration`;
+
+            // Form Bullets
+            const formContainer = document.getElementById('ex-info-form');
+            formContainer.innerHTML = '';
+            const formPoints = [
+                ex.startPosition || "Assume stable posture with feet braced and core locked.",
+                ex.movementPath || "Lower controlled under continuous tension, drive explosively.",
+                ex.breathingInstructions || "Inhale on descent, exhale forcefully on drive."
+            ];
+            formPoints.forEach(pt => {
+                const li = document.createElement('li');
+                li.textContent = pt;
+                formContainer.appendChild(li);
+            });
+
+            // Common Mistakes
+            document.getElementById('ex-info-mistakes').textContent = ex.commonMistakes || "Avoid rushing repetitions or compromising joint neutrality under fatigue.";
+
+            // Key Tips
+            document.getElementById('ex-info-tips').textContent = ex.muscleActivationCues || ex.safetyInstructions || ex.injuryPreventionTips || "Prioritize controlled range of motion over sheer weight load.";
+
+            // Render Kinetic Visual
+            const visualViewport = document.getElementById('ex-info-visualizer');
+            const type = (ex.visualType || '').toLowerCase();
+            if (type.includes('squat') || type.includes('leg')) {
+                visualViewport.innerHTML = `
+                    <svg class="w-36 h-36 animate-kinetic-squat" viewBox="0 0 200 200" fill="none">
+                        <line x1="20" y1="180" x2="180" y2="180" stroke="#2B2B2B" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="40" y1="70" x2="160" y2="70" stroke="#e5e2e1" stroke-width="4" stroke-linecap="round"/>
+                        <rect x="30" y="55" width="10" height="30" rx="3" fill="#10b981" />
+                        <rect x="160" y="55" width="10" height="30" rx="3" fill="#10b981" />
+                        <circle cx="100" cy="55" r="9" fill="#8b5cf6" />
+                        <path d="M100 64 L100 110 L75 145 L70 178 M100 110 L125 145 L130 178" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                `;
+            } else if (type.includes('bench') || type.includes('chest') || type.includes('press')) {
+                visualViewport.innerHTML = `
+                    <svg class="w-36 h-36 animate-kinetic-bench" viewBox="0 0 200 200" fill="none">
+                        <rect x="35" y="130" width="130" height="12" rx="3" fill="#201f1f" stroke="#2B2B2B" stroke-width="2"/>
+                        <path d="M55 125 Q100 115 145 125" stroke="#8b5cf6" stroke-width="5" stroke-linecap="round" fill="none"/>
+                        <circle cx="48" cy="120" r="7" fill="#8b5cf6"/>
+                        <line x1="30" y1="65" x2="170" y2="65" stroke="#e5e2e1" stroke-width="4" stroke-linecap="round"/>
+                        <rect x="22" y="50" width="8" height="30" rx="2" fill="#0ea5e9"/>
+                        <rect x="170" y="50" width="8" height="30" rx="2" fill="#0ea5e9"/>
+                    </svg>
+                `;
+            } else if (type.includes('deadlift') || type.includes('back')) {
+                visualViewport.innerHTML = `
+                    <svg class="w-36 h-36 animate-kinetic-deadlift" viewBox="0 0 200 200" fill="none">
+                        <line x1="20" y1="180" x2="180" y2="180" stroke="#2B2B2B" stroke-width="3" stroke-linecap="round"/>
+                        <line x1="45" y1="165" x2="155" y2="165" stroke="#e5e2e1" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="45" cy="165" r="16" fill="none" stroke="#f59e0b" stroke-width="4"/>
+                        <circle cx="155" cy="165" r="16" fill="none" stroke="#f59e0b" stroke-width="4"/>
+                        <path d="M95 90 L115 130 L100 178" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="90" cy="80" r="8" fill="#8b5cf6"/>
+                    </svg>
+                `;
+            } else {
+                visualViewport.innerHTML = `
+                    <svg class="w-36 h-36 animate-kinetic-squat" viewBox="0 0 200 200" fill="none">
+                        <circle cx="100" cy="70" r="10" fill="#8b5cf6"/>
+                        <path d="M100 82 L100 130 L80 175 M100 130 L120 175" stroke="#10b981" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="70" cy="100" r="6" fill="#f59e0b"/>
+                        <circle cx="130" cy="100" r="6" fill="#f59e0b"/>
+                    </svg>
+                `;
+            }
+
+            document.getElementById('exercise-info-modal').classList.remove('hidden');
+        }
+
+        function closeExerciseInfoModal() {
+            document.getElementById('exercise-info-modal').classList.add('hidden');
+        }
+
+        function adjustTargetWeight(delta) {
+            if (!gwSession) return;
+            gwSession.currentWeightTarget = Math.max(0, Math.round((gwSession.currentWeightTarget + delta) * 10) / 10);
+            document.getElementById('gw-target-weight-val').textContent = gwSession.currentWeightTarget > 0 ? `${gwSession.currentWeightTarget} kg` : "Bodyweight";
+        }
+
+        function adjustTargetReps(delta) {
+            if (!gwSession) return;
+            gwSession.currentRepsTarget = Math.max(1, gwSession.currentRepsTarget + delta);
+            document.getElementById('gw-target-reps-val').textContent = gwSession.currentRepsTarget;
+        }
+
+        function togglePauseWorkout() {
+            if (!gwSession) return;
+            gwSession.isPaused = !gwSession.isPaused;
+            const btn = document.getElementById('gw-btn-pause');
+            const icon = document.getElementById('gw-pause-icon');
+            const text = document.getElementById('gw-pause-text');
+
+            if (gwSession.isPaused) {
+                btn.classList.add('bg-amber-500/20', 'text-amber-300', 'border-amber-500/30');
+                icon.textContent = 'play_arrow';
+                text.textContent = 'Resume';
+            } else {
+                btn.classList.remove('bg-amber-500/20', 'text-amber-300', 'border-amber-500/30');
+                icon.textContent = 'pause';
+                text.textContent = 'Pause';
+            }
+        }
+
+        function skipCurrentExercise() {
+            if (!gwSession) return;
+            if (confirm(`Skip "${gwSession.exercises[gwSession.currentExIdx]?.name}" and move to next?`)) {
+                clearInterval(gwSession.setTimer);
+                clearInterval(gwSession.restTimer);
+                if (gwSession.currentExIdx + 1 < gwSession.exercises.length) {
+                    gwSession.currentExIdx++;
+                    gwSession.currentSetNum = 1;
+                    renderCurrentExerciseState();
+                } else {
+                    finishWorkoutSession(true);
+                }
+            }
+        }
+
+        function confirmExitWorkout() {
+            if (!gwSession) return;
+            if (confirm("Are you sure you want to exit? Your progress so far can be saved.")) {
+                finishWorkoutSession(false);
+            }
+        }
+
+        function confirmFinishEarly() {
+            if (!gwSession) return;
+            if (confirm("Log and complete workout with sets performed so far?")) {
+                finishWorkoutSession(true);
+            }
+        }
+
+        async function finishWorkoutSession(completedNaturally) {
+            if (!gwSession) return;
+
+            // Stop all intervals
+            clearInterval(gwSession.sessionTimer);
+            clearInterval(gwSession.setTimer);
+            clearInterval(gwSession.restTimer);
+
+            const totalDurationSecs = Math.max(60, gwSession.sessionSeconds);
+            const totalCalories = Math.max(20, gwSession.totalCaloriesBurned);
+            const totalVolume = Math.round(gwSession.totalVolumeKg);
+            const totalSets = gwSession.totalSetsCompleted;
+            const blockId = gwSession.blockId;
+            const workoutName = gwSession.workoutName;
+
+            // Persist session to MongoDB backend
+            try {
+                const res = await fetch('/api/ai/workout/session-complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan?.planId,
+                        blockId: blockId,
+                        workoutName: workoutName,
+                        durationSeconds: totalDurationSecs,
+                        caloriesBurned: totalCalories,
+                        setsCompleted: totalSets,
+                        exercisesCompleted: gwSession.currentExIdx + 1,
+                        volumeLifted: totalVolume
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.plan) {
+                        currentMasterPlan = data.plan;
+                        localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                        renderMasterPlan(currentMasterPlan);
+                    }
+
+                    // Populate Summary Modal
+                    document.getElementById('gw-sum-time').textContent = `${Math.round(totalDurationSecs / 60)}m`;
+                    document.getElementById('gw-sum-calories').textContent = `${totalCalories} kcal`;
+                    document.getElementById('gw-sum-volume').textContent = `${totalVolume.toLocaleString()} kg`;
+                    document.getElementById('gw-sum-sets').textContent = totalSets;
+
+                    if (data.recoveryBlueprint) {
+                        document.getElementById('gw-sum-water').textContent = `${data.recoveryBlueprint.waterMl} ml`;
+                        document.getElementById('gw-sum-protein').textContent = `${data.recoveryBlueprint.proteinGrams}g`;
+                        if (data.recoveryBlueprint.stretches) {
+                            document.getElementById('gw-sum-stretches').innerHTML = data.recoveryBlueprint.stretches.map(s => `<p>• ${s}</p>`).join('');
+                        }
+                    }
+
+                    // Close Guided Workout Modal & Open Summary
+                    document.getElementById('guided-workout-modal').classList.add('hidden');
+                    document.getElementById('workout-summary-modal').classList.remove('hidden');
+                } else {
+                    // Fallback
+                    document.getElementById('guided-workout-modal').classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                    alert("Workout session completed!");
+                }
+            } catch (err) {
+                console.error("Save workout session error:", err);
+                document.getElementById('guided-workout-modal').classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            } finally {
+                gwSession = null;
+            }
+        }
+
+        function closeWorkoutSummaryModal() {
+            document.getElementById('workout-summary-modal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        // =========================================================================
+        // EXERCISE REPLACEMENT & SMART SWAP ENGINE
+        // =========================================================================
+        async function openExerciseReplaceModal() {
+            if (!gwSession) return;
+            const ex = gwSession.exercises[gwSession.currentExIdx];
+            if (!ex) return;
+
+            document.getElementById('gw-replace-subtitle').textContent = `Find smart replacements for "${ex.name}"`;
+            document.getElementById('exercise-replace-modal').classList.remove('hidden');
+            selectReplaceReason('equipment');
+        }
+
+        function closeExerciseReplaceModal() {
+            document.getElementById('exercise-replace-modal').classList.add('hidden');
+        }
+
+        async function selectReplaceReason(reason) {
+            selectedReplaceReason = reason;
+
+            // Highlight selected pill
+            const pillIds = ['btn-reason-equip', 'btn-reason-injury', 'btn-reason-regression', 'btn-reason-progression'];
+            pillIds.forEach(id => {
+                const b = document.getElementById(id);
+                if (b) {
+                    b.className = 'px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer bg-white/5 text-secondary border-white/10 hover:text-white';
+                }
+            });
+
+            const activeBtn = document.getElementById(
+                reason === 'equipment' ? 'btn-reason-equip' :
+                reason === 'injury' ? 'btn-reason-injury' :
+                reason === 'regression' ? 'btn-reason-regression' : 'btn-reason-progression'
+            );
+            if (activeBtn) {
+                activeBtn.className = 'px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer bg-purple-600 text-white border-purple-500 shadow-[0_0_15px_rgba(139,92,246,0.4)]';
+            }
+
+            loadExerciseAlternatives(reason);
+        }
+
+        async function loadExerciseAlternatives(reason) {
+            if (!gwSession) return;
+            const ex = gwSession.exercises[gwSession.currentExIdx];
+            const container = document.getElementById('gw-alternatives-container');
+            container.innerHTML = `<p class="text-xs text-secondary text-center py-4">Finding best biomechanical alternatives with AI...</p>`;
+
+            try {
+                const equip = currentMasterPlan?.protocol?.workoutLocation || 'gym';
+                const level = currentMasterPlan?.protocol?.fitnessLevel || 'intermediate';
+                const url = `/api/ai/workout/exercise-alternatives?exerciseName=${encodeURIComponent(ex.name)}&reason=${encodeURIComponent(reason)}&equipment=${encodeURIComponent(equip)}&fitnessLevel=${encodeURIComponent(level)}`;
+                
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    const alts = data.alternatives || [];
+                    currentAlternativesCache = alts;
+
+                    if (alts.length === 0) {
+                        container.innerHTML = `<p class="text-xs text-secondary text-center py-4">No direct alternatives found for this filter. Try another reason above.</p>`;
+                        return;
+                    }
+
+                    container.innerHTML = alts.map((alt, idx) => `
+                        <div class="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm font-bold text-white">${alt.name}</h4>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-purple-500/10 text-purple-300 border border-purple-500/20">${alt.targetMuscles || 'Targeted'}</span>
+                                </div>
+                                <p class="text-[11px] text-secondary/90">${alt.reasonWhy || alt.muscleActivationCues || 'Direct biomechanical substitute with matching stimulus.'}</p>
+                                <div class="flex gap-2 text-[10px] text-emerald-400 font-mono">
+                                    <span>${alt.sets || ex.sets} Sets × ${alt.reps || ex.reps}</span>
+                                    <span>•</span>
+                                    <span>${alt.recommendedWeight || 'Recommended Weight'}</span>
+                                </div>
+                            </div>
+                            <button onclick="confirmSwapExercise('${alt.name.replace(/'/g, "\\'")}', '${reason}')" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl uppercase tracking-wider transition-all shrink-0 cursor-pointer flex items-center justify-center gap-1">
+                                <span class="material-symbols-outlined text-sm">swap_horiz</span>
+                                Swap In
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Could not load alternatives.</p>`;
+                }
+            } catch (err) {
+                console.error("Load alternatives error:", err);
+                container.innerHTML = `<p class="text-xs text-rose-400 text-center py-4">Failed to load alternatives.</p>`;
+            }
+        }
+
+        async function confirmSwapExercise(replacementName, reason) {
+            if (!gwSession) return;
+            const ex = gwSession.exercises[gwSession.currentExIdx];
+
+            try {
+                const res = await fetch('/api/ai/workout/replace-exercise', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        planId: currentMasterPlan?.planId,
+                        blockId: gwSession.blockId,
+                        exerciseIndex: gwSession.currentExIdx,
+                        replacementName: replacementName,
+                        reason: reason
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.replacedExercise) {
+                        gwSession.exercises[gwSession.currentExIdx] = data.replacedExercise;
+                    }
+                    if (data.plan) {
+                        currentMasterPlan = data.plan;
+                        localStorage.setItem('fitforge_ai_master_plan_' + userEmail, JSON.stringify(currentMasterPlan));
+                        renderMasterPlan(currentMasterPlan);
+                    }
+
+                    closeExerciseReplaceModal();
+                    // Re-render the active exercise in place without restarting workout elapsed timer
+                    renderCurrentExerciseState();
+                } else {
+                    alert("Could not replace exercise. Please try again.");
+                }
+            } catch (err) {
+                console.error("Swap exercise error:", err);
+                alert("Network error swapping exercise.");
+            }
+        }
     </script>
 </body>
 </html>
+
