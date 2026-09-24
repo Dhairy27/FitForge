@@ -948,7 +948,15 @@
                     .catch(err => console.error("Error validating protocol completion:", err));
             }
         }
-        function logout() { localStorage.removeItem('userEmail'); localStorage.removeItem('userName'); localStorage.removeItem('userProtocol'); window.location.href = 'login.html'; }
+        function logout() {
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('userProtocol');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            sessionStorage.clear();
+            window.location.href = 'login.html';
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const video = document.getElementById('camera-video');

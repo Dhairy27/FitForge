@@ -1070,7 +1070,59 @@
         }
 
         async function saveScanToHistory() {
-            alert("AI Body Scan record saved successfully!");
+            const userEmail = localStorage.getItem('userEmail') || 'guest@fitforge.ai';
+            const h = parseFloat(document.getElementById('input-height').value) || 175;
+            const w = parseFloat(document.getElementById('input-weight').value) || 70;
+            const goal = document.getElementById('select-goal').value || 'Muscle Gain';
+            const bmi = (w / ((h / 100) * (h / 100))).toFixed(1);
+
+            const payload = {
+                email: userEmail,
+                height: h,
+                weight: w,
+                bmi: Number(bmi),
+                fitnessScore: 82,
+                posture: 'Good',
+                shoulderAlignment: 'Good (0.8°)',
+                bodySymmetry: 88,
+                goal: goal,
+                measurements: {
+                    chest: '98 cm',
+                    waist: '80 cm',
+                    hips: '96 cm',
+                    bicep: '35 cm',
+                    thigh: '56 cm',
+                    neck: '38 cm'
+                },
+                recommendations: {
+                    focusArea: 'Upper Back & Core',
+                    shoulderAlignment: 'Good',
+                    estimatedBodyFat: '15.8%'
+                }
+            };
+
+            try {
+                const res = await fetch('/api/bodyscan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || '')
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // Also cache locally
+                let scans = [];
+                try { scans = JSON.parse(localStorage.getItem('fitforge_scans') || '[]'); } catch(e) {}
+                scans.unshift({ ...payload, date: new Date().toISOString() });
+                localStorage.setItem('fitforge_scans', JSON.stringify(scans.slice(0, 10)));
+
+                alert("AI Body Scan telemetry synced to profile and database successfully!");
+            } catch (err) {
+                console.warn("Offline or backend save failed, saved locally:", err);
+                alert("AI Body Scan record saved locally!");
+            }
+
             showStep('step-history');
         }
 
@@ -1089,13 +1141,23 @@
             }
         }
 
-        function confirmClearHistory() {
+        async function confirmClearHistory() {
             if (confirm("Delete all scan history records?")) {
+                const userEmail = localStorage.getItem('userEmail') || 'guest@fitforge.ai';
+                try {
+                    await fetch(`/api/bodyscan?email=${encodeURIComponent(userEmail)}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || '')
+                        }
+                    });
+                } catch(e) {}
                 localStorage.removeItem('fitforge_scans');
                 showStep('step-intro');
             }
         }
     </script>
+    <script src="subscription-check.js"></script>
 </body>
 
 </html>

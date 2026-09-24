@@ -530,6 +530,9 @@
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
             localStorage.removeItem('userProtocol');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isProUser');
             window.location.href = 'login.html';
         }
 
@@ -776,6 +779,16 @@
             applyFiltersAndRender();
         }
 
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // Apply filters and print Activity Feed list
         function applyFiltersAndRender() {
             const searchInput = document.getElementById('history-search-input');
@@ -833,8 +846,8 @@
                                     <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${badgeBg}">${badgeText}</span>
                                     <span class="text-[10px] text-secondary/60 font-mono">${formattedDate} @ ${formattedTime}</span>
                                 </div>
-                                <h4 class="text-sm font-bold text-white font-headline">${item.title}</h4>
-                                <p class="text-xs text-secondary/75">${item.subtitle}</p>
+                                <h4 class="text-sm font-bold text-white font-headline">${escapeHTML(item.title)}</h4>
+                                <p class="text-xs text-secondary/75">${escapeHTML(item.subtitle)}</p>
                             </div>
                         </div>
 
@@ -842,7 +855,7 @@
                             <div class="text-left sm:text-right">
                                 <p class="text-xs sm:text-sm font-bold ${calColor}">${calLabel}</p>
                             </div>
-                            <button onclick="deleteLogEntry('${item.id}', '${item.logType}')" class="p-2 text-secondary/40 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0" title="Delete Log Entry">
+                            <button onclick="deleteLogEntry('${escapeHTML(item.id)}', '${escapeHTML(item.logType)}')" class="p-2 text-secondary/40 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0" title="Delete Log Entry">
                                 <span class="material-symbols-outlined text-lg">delete</span>
                             </button>
                         </div>
@@ -1464,6 +1477,192 @@
             </div>
         </div>
     </div>
+
+    <!-- AI Coach Floating Action Button -->
+    <div id="ai-coach-fab" class="fixed bottom-6 right-6 z-40">
+        <button onclick="toggleCoachChat()" id="ai-coach-trigger-btn"
+            class="flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-black font-bold font-headline rounded-full shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer">
+            <span class="material-symbols-outlined text-2xl">smart_toy</span>
+            <span class="text-xs uppercase tracking-wider hidden sm:inline">AI Coach</span>
+            <span class="w-2 h-2 rounded-full bg-black animate-ping"></span>
+        </button>
+    </div>
+
+    <!-- AI Coach Interactive Drawer / Modal -->
+    <div id="ai-coach-drawer" class="hidden fixed bottom-20 sm:bottom-24 right-4 sm:right-6 w-[92vw] sm:w-[420px] max-h-[85vh] h-[560px] glass-card rounded-3xl border-emerald-500/30 flex flex-col z-50 shadow-2xl backdrop-blur-2xl transition-all duration-300 origin-bottom-right">
+        <!-- Drawer Header -->
+        <div class="p-4 border-b border-white/10 flex items-center justify-between bg-black/40 rounded-t-3xl">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-emerald-400 text-xl">smart_toy</span>
+                </div>
+                <div>
+                    <h4 class="font-headline font-bold text-white text-sm">FitForge AI Coach</h4>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="text-[10px] text-emerald-400/80 font-mono">Live Telemetry Connected</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="toggleCoachChat()" class="p-1.5 text-secondary hover:text-white rounded-full hover:bg-white/5 transition-all cursor-pointer">
+                <span class="material-symbols-outlined text-xl">close</span>
+            </button>
+        </div>
+
+        <!-- Suggestions Quick Pills -->
+        <div class="px-4 py-2 border-b border-white/5 flex gap-2 overflow-x-auto text-[11px] no-scrollbar">
+            <button onclick="sendQuickPrompt('Analyze my workout volume and nutrition today')" class="shrink-0 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 hover:border-emerald-500/40 text-secondary hover:text-white transition-all cursor-pointer">📊 Daily Analysis</button>
+            <button onclick="sendQuickPrompt('Suggest a 15-minute high intensity workout finisher')" class="shrink-0 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 hover:border-emerald-500/40 text-secondary hover:text-white transition-all cursor-pointer">⚡ Quick Finisher</button>
+            <button onclick="sendQuickPrompt('What should I eat post workout today?')" class="shrink-0 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 hover:border-emerald-500/40 text-secondary hover:text-white transition-all cursor-pointer">🥗 Post-Workout</button>
+            <button onclick="sendQuickPrompt('Check my hydration progress today')" class="shrink-0 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 hover:border-emerald-500/40 text-secondary hover:text-white transition-all cursor-pointer">💧 Hydration</button>
+        </div>
+
+        <!-- Chat Messages Area -->
+        <div id="ai-chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 font-body text-xs">
+            <div class="flex gap-2.5 items-start">
+                <div class="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-emerald-400 text-sm">smart_toy</span>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm p-3 text-secondary/90 leading-relaxed max-w-[85%]">
+                    Greetings! I am your real-time sports science coach. Ask me anything about your current workout regimen, macro breakdown, or telemetry adjustments.
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Form -->
+        <form id="ai-chat-form" onsubmit="handleCoachChatSubmit(event)" class="p-3 border-t border-white/10 bg-black/40 rounded-b-3xl flex gap-2">
+            <input type="text" id="ai-chat-input" placeholder="Ask your coach anything..." class="flex-1 bg-white/5 border border-white/10 focus:border-emerald-500/50 rounded-2xl px-3.5 py-2.5 text-xs text-white placeholder-secondary/50 focus:outline-none" required autocomplete="off" />
+            <button type="submit" id="ai-chat-send-btn" class="w-9 h-9 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-bold transition-all disabled:opacity-50 shrink-0 cursor-pointer">
+                <span class="material-symbols-outlined text-lg">send</span>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // AI Coach Chat State & Logic
+        let coachChatHistory = [];
+        let isCoachThinking = false;
+
+        function toggleCoachChat() {
+            const drawer = document.getElementById('ai-coach-drawer');
+            if (drawer.classList.contains('hidden')) {
+                drawer.classList.remove('hidden');
+                document.getElementById('ai-chat-input').focus();
+            } else {
+                drawer.classList.add('hidden');
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            const input = document.getElementById('ai-chat-input');
+            input.value = promptText;
+            document.getElementById('ai-chat-form').dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+
+        async function handleCoachChatSubmit(e) {
+            e.preventDefault();
+            const input = document.getElementById('ai-chat-input');
+            const message = input.value.trim();
+            if (!message || isCoachThinking) return;
+
+            input.value = '';
+            appendChatMessage('user', message);
+
+            isCoachThinking = true;
+            const sendBtn = document.getElementById('ai-chat-send-btn');
+            sendBtn.disabled = true;
+
+            // Show typing indicator
+            const typingId = appendTypingIndicator();
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/ai/coach-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        message: message,
+                        history: coachChatHistory
+                    })
+                });
+
+                removeTypingIndicator(typingId);
+
+                const data = await response.json();
+                if (response.ok && data.reply) {
+                    appendChatMessage('coach', data.reply);
+                    coachChatHistory.push({ role: 'user', content: message });
+                    coachChatHistory.push({ role: 'assistant', content: data.reply });
+                    if (coachChatHistory.length > 20) coachChatHistory = coachChatHistory.slice(-20);
+                } else {
+                    appendChatMessage('coach', data.error || 'I encountered an issue processing your telemetry. Please try again.');
+                }
+            } catch (err) {
+                removeTypingIndicator(typingId);
+                appendChatMessage('coach', 'Connection error. Please check your network and try again.');
+            } finally {
+                isCoachThinking = false;
+                sendBtn.disabled = false;
+            }
+        }
+
+        function appendChatMessage(sender, text) {
+            const container = document.getElementById('ai-chat-messages');
+            const msgDiv = document.createElement('div');
+
+            if (sender === 'user') {
+                msgDiv.className = 'flex justify-end';
+                msgDiv.innerHTML = `
+                    <div class="bg-primary text-on-primary rounded-2xl rounded-tr-sm p-3 font-medium leading-relaxed max-w-[85%] text-xs shadow-md">
+                        ${escapeHTML(text)}
+                    </div>
+                `;
+            } else {
+                msgDiv.className = 'flex gap-2.5 items-start';
+                msgDiv.innerHTML = `
+                    <div class="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-emerald-400 text-sm">smart_toy</span>
+                    </div>
+                    <div class="bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm p-3 text-secondary/90 leading-relaxed max-w-[85%] text-xs">
+                        ${escapeHTML(text).replace(/\\n/g, '<br/>')}
+                    </div>
+                `;
+            }
+
+            container.appendChild(msgDiv);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const container = document.getElementById('ai-chat-messages');
+            const id = 'typing-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex gap-2.5 items-start';
+            div.innerHTML = `
+                <div class="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                    <span class="material-symbols-outlined text-emerald-400 text-sm">smart_toy</span>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-2xl rounded-tl-sm p-3 text-emerald-400 flex items-center gap-1.5 text-xs">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+    </script>
 
     <script src="subscription-check.js"></script>
 </body>

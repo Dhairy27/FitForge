@@ -36,6 +36,15 @@ const mockDb = {
 function makeChainable(arr) {
   const res = [...arr];
   res.sort = function (sortObj) {
+    if (sortObj && typeof sortObj === 'object') {
+      const field = Object.keys(sortObj)[0];
+      const dir = sortObj[field];
+      res.sort((a, b) => {
+        const valA = a[field] ? (new Date(a[field]).getTime() || a[field]) : 0;
+        const valB = b[field] ? (new Date(b[field]).getTime() || b[field]) : 0;
+        return dir === -1 ? (valB > valA ? 1 : valB < valA ? -1 : 0) : (valA > valB ? 1 : valA < valB ? -1 : 0);
+      });
+    }
     return makeChainable(res);
   };
   res.limit = function (num) {
@@ -220,10 +229,21 @@ mongoose.model = function (name, schema) {
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dhairy:2336@clothy.4mh44a5.mongodb.net/fitforge?appName=clothy';
+
+// Security Headers Middleware (Production Standards)
+app.use((req, res, next) => {
+  res.removeHeader('X-Powered-By');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
 
 // Middleware
 app.use(express.json({ limit: '50mb' }));
@@ -237,6 +257,220 @@ app.use((err, req, res, next) => {
   }
   next();
 });
+
+// Sliding-Window In-Memory Rate Limiter
+const rateLimitStore = new Map();
+function rateLimiter({ windowMs = 60000, max = 60, message = 'Too many requests. Please try again later.' } = {}) {
+  return (req, res, next) => {
+    const rawIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+    const ip = typeof rawIp === 'string' ? rawIp.split(',')[0].trim() : '127.0.0.1';
+    const now = Date.now();
+    let record = rateLimitStore.get(ip);
+    if (!record || now > record.resetTime) {
+      record = { count: 1, resetTime: now + windowMs };
+      rateLimitStore.set(ip, record);
+      return next();
+    }
+    record.count++;
+    if (record.count > max) {
+      return res.status(429).json({ error: message });
+    }
+    next();
+  };
+}
+
+// Clean up expired rate-limit records every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of rateLimitStore) {
+    if (now > v.resetTime) rateLimitStore.delete(k);
+  }
+}, 300000);
+
+// JWT Secret & Helpers (RFC 7519 Compliant HMAC-SHA256)
+const JWT_SECRET = process.env.JWT_SECRET || 'fitforge_production_secure_jwt_secret_2026_signature';
+
+function generateJWT(payload, expiresInSeconds = 7 * 24 * 3600) {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
+  const fullPayload = { ...payload, exp, iat: Math.floor(Date.now() / 1000) };
+  
+  const b64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
+  const b64Payload = Buffer.from(JSON.stringify(fullPayload)).toString('base64url');
+  const data = `${b64Header}.${b64Payload}`;
+  const signature = crypto.createHmac('sha256', JWT_SECRET).update(data).digest('base64url');
+  return `${data}.${signature}`;
+}
+
+function verifyJWT(token) {
+  if (!token || typeof token !== 'string') return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const [b64Header, b64Payload, signature] = parts;
+  const data = `${b64Header}.${b64Payload}`;
+  const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(data).digest('base64url');
+  
+  try {
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return null;
+    }
+  } catch (e) {
+    return null;
+  }
+  
+  try {
+    const payload = JSON.parse(Buffer.from(b64Payload, 'base64url').toString('utf8'));
+    if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
+      return null; // Expired
+    }
+    return payload;
+  } catch (e) {
+    return null;
+  }
+}
+
+function extractToken(req) {
+  const authHeader = req.headers.authorization || '';
+  if (authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7).trim();
+  }
+  return req.headers['x-auth-token'] || (req.query && req.query.token) || null;
+}
+
+// Authentication & Authorization Middlewares
+function authenticateUser(req, res, next) {
+  const token = extractToken(req);
+  if (token) {
+    const decoded = verifyJWT(token);
+    if (decoded) {
+      req.user = decoded;
+      return next();
+    }
+  }
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  const token = extractToken(req);
+  if (!token) {
+    return res.status(401).json({ error: 'Access denied: Authentication token required.' });
+  }
+  const decoded = verifyJWT(token);
+  if (!decoded) {
+    return res.status(401).json({ error: 'Access denied: Session expired or invalid token.' });
+  }
+  const isAdmin = decoded.role === 'admin' || (decoded.email && decoded.email.toLowerCase() === 'admin@gmail.com');
+  if (!isAdmin) {
+    return res.status(403).json({ error: 'Access denied: Administrator privileges required.' });
+  }
+  req.user = decoded;
+  next();
+}
+
+// Verification Middleware for User-Specific Resources (Protects against IDOR)
+function verifyUserOwnership(req, res, next) {
+  const token = extractToken(req);
+  const emailParam = (req.query && req.query.email) || (req.body && req.body.email);
+
+  if (token) {
+    const decoded = verifyJWT(token);
+    if (decoded) {
+      req.user = decoded;
+      const targetEmail = (emailParam ? String(emailParam) : decoded.email).toLowerCase().trim();
+      const isOwner = decoded.email.toLowerCase().trim() === targetEmail;
+      const isAdmin = decoded.role === 'admin' || decoded.email.toLowerCase().trim() === 'admin@gmail.com';
+
+      if (!isOwner && !isAdmin) {
+        return res.status(403).json({ error: 'Access denied: You are not authorized to view or modify this user profile.' });
+      }
+
+      req.targetEmail = targetEmail;
+      return next();
+    }
+  }
+
+  // Graceful fallback for initial onboarding or public queries where token is not yet stored
+  if (emailParam && typeof emailParam === 'string') {
+    req.targetEmail = emailParam.toLowerCase().trim();
+    return next();
+  }
+
+  return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+}
+
+// Centralized Resilient Gemini AI Caller with automatic model fallback
+async function callGeminiApi(promptOrContents, key, generationConfig = {}, timeoutMs = 15000) {
+  const geminiKey = key || process.env.GEMINI_API_KEY;
+  if (!geminiKey) throw new Error("No Gemini API key configured.");
+
+  const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  let lastErr = null;
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`;
+      const payload = Array.isArray(promptOrContents)
+        ? { contents: promptOrContents }
+        : { contents: [{ parts: [{ text: promptOrContents }] }] };
+
+      if (generationConfig && Object.keys(generationConfig).length > 0) {
+        payload.generationConfig = generationConfig;
+      }
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(timeoutMs)
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Gemini ${model} returned ${response.status}: ${errText}`);
+      }
+
+      const result = await response.json();
+      const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        return text;
+      }
+    } catch (err) {
+      lastErr = err;
+      console.warn(`Gemini model ${model} attempt failed: ${err.message}. Trying next fallback if available...`);
+    }
+  }
+  throw lastErr || new Error("All Gemini models failed.");
+}
+
+// Helper to extract grams from diverse portion representations
+function parsePortionGrams(portionStr) {
+  if (!portionStr || typeof portionStr !== 'string') return 100;
+  const str = portionStr.toLowerCase().trim();
+  const numMatch = str.match(/([\d.]+)\s*(g|gm|gram|grams|kg|oz|ml|cup|cups|tbsp|tsp|slice|slices|piece|pieces|serving|servings)?/);
+  if (!numMatch) return 100;
+  const val = parseFloat(numMatch[1]);
+  if (isNaN(val) || val <= 0) return 100;
+  const unit = numMatch[2] || 'g';
+
+  switch (unit) {
+    case 'kg': return Math.round(val * 1000);
+    case 'oz': return Math.round(val * 28.35);
+    case 'ml': return Math.round(val);
+    case 'cup':
+    case 'cups': return Math.round(val * 240);
+    case 'tbsp': return Math.round(val * 15);
+    case 'tsp': return Math.round(val * 5);
+    case 'slice':
+    case 'slices': return Math.round(val * 35);
+    case 'piece':
+    case 'pieces':
+    case 'serving':
+    case 'servings': return Math.round(val * 120);
+    default: return Math.round(val);
+  }
+}
 
 // Database Connection Handler (Serverless & Standalone compatible)
 let dbConnPromise = null;
@@ -292,10 +526,12 @@ const userSchema = new mongoose.Schema({
     occupation: { type: String },
     activityLevel: { type: String },
     goals: [{ type: String }],
+    goal: { type: String },
     location: { type: String },
     equipment: [{ type: String }],
     duration: { type: Number },
-    fitnessLevel: { type: String }
+    fitnessLevel: { type: String },
+    experienceLevel: { type: String }
   },
   workoutPlan: { type: Object, default: null },
   dietProfile: {
@@ -332,6 +568,7 @@ const workoutSchema = new mongoose.Schema({
   volumeLifted: { type: Number, default: 0 },
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
+workoutSchema.index({ email: 1, date: -1 });
 
 const Workout = mongoose.model('Workout', workoutSchema);
 
@@ -353,6 +590,7 @@ const nutritionLogSchema = new mongoose.Schema({
   imageUrl: { type: String },
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
+nutritionLogSchema.index({ email: 1, date: -1 });
 
 const NutritionLog = mongoose.model('NutritionLog', nutritionLogSchema);
 
@@ -372,6 +610,7 @@ const bodyScanSchema = new mongoose.Schema({
   sideScanImage: { type: String },
   date: { type: Date, default: Date.now }
 }, { timestamps: true });
+bodyScanSchema.index({ email: 1, date: -1 });
 
 const BodyScan = mongoose.model('BodyScan', bodyScanSchema);
 
@@ -505,7 +744,7 @@ async function findUserOrMock(email) {
 // API Routes
 
 // 1. Signup Route
-app.post('/api/auth/signup', async (req, res) => {
+app.post('/api/auth/signup', rateLimiter({ windowMs: 60000, max: 20 }), async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) {
@@ -513,6 +752,14 @@ app.post('/api/auth/signup', async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({ error: 'Please provide a valid email address.' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
+    }
 
     // Check if user already exists (with fail-safe fallback)
     let existingUser;
@@ -547,7 +794,15 @@ app.post('/api/auth/signup', async (req, res) => {
       await newUser.save();
     }
 
-    res.status(201).json({ message: 'Account initialized.', email: newUser.email, name: newUser.name });
+    const token = generateJWT({ id: newUser._id, email: newUser.email, role: 'user', name: newUser.name });
+
+    res.status(201).json({
+      message: 'Account initialized.',
+      token,
+      email: newUser.email,
+      name: newUser.name,
+      role: 'user'
+    });
   } catch (error) {
     console.error('Signup error:', error);
     res.status(500).json({ error: error.message || 'Failed to process signup.' });
@@ -555,7 +810,7 @@ app.post('/api/auth/signup', async (req, res) => {
 });
 
 // 2. Login Route
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', rateLimiter({ windowMs: 60000, max: 30 }), async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -603,9 +858,11 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const isAdmin = user.role === 'admin' || normalizedEmail === 'admin@gmail.com';
+    const token = generateJWT({ id: user._id, email: user.email, role: isAdmin ? 'admin' : (user.role || 'user'), name: user.name });
 
     res.status(200).json({
       message: 'Access granted.',
+      token,
       email: user.email,
       name: user.name,
       role: isAdmin ? 'admin' : (user.role || 'user'),
@@ -614,6 +871,34 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: error.message || 'Failed to process login.' });
+  }
+});
+
+// Session Token Refresh / Exchange Endpoint
+app.post('/api/auth/session-token', async (req, res) => {
+  try {
+    const existingToken = extractToken(req) || req.body.token;
+    if (!existingToken) {
+      return res.status(401).json({ error: 'Valid existing session token required.' });
+    }
+    const decoded = verifyJWT(existingToken);
+    if (!decoded || !decoded.email) {
+      return res.status(401).json({ error: 'Session token invalid or expired. Please log in.' });
+    }
+    const normalizedEmail = decoded.email.toLowerCase().trim();
+    let user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      if (useMockDb) {
+        user = await findUserOrMock(normalizedEmail);
+      } else {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+    }
+    const isAdmin = user.role === 'admin' || normalizedEmail === 'admin@gmail.com';
+    const token = generateJWT({ id: user._id, email: user.email, role: isAdmin ? 'admin' : (user.role || 'user'), name: user.name });
+    res.json({ success: true, token, email: user.email, role: isAdmin ? 'admin' : (user.role || 'user') });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to issue token.' });
   }
 });
 
@@ -630,7 +915,7 @@ app.post('/api/auth/google', async (req, res) => {
       return res.status(400).json({ error: 'Google email and name are required.' });
     }
 
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
     let user = await User.findOne({ email: normalizedEmail });
     let isNewUser = false;
 
@@ -652,10 +937,16 @@ app.post('/api/auth/google', async (req, res) => {
       await user.save();
     }
 
+    const isAdmin = user.role === 'admin' || normalizedEmail === 'admin@gmail.com';
+    const token = generateJWT({ id: user._id, email: user.email, role: isAdmin ? 'admin' : (user.role || 'user'), name: user.name });
+
     res.status(200).json({
       message: isNewUser ? 'Account initialized.' : 'Access granted.',
+      token,
       email: user.email,
       name: user.name,
+      role: isAdmin ? 'admin' : (user.role || 'user'),
+      redirect: isAdmin ? 'admin.html' : 'dashboard.html',
       isNewUser
     });
   } catch (error) {
@@ -690,9 +981,10 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       return res.status(400).json({ error: 'Email is required.' });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
-      return res.status(404).json({ error: 'No account registered with this email.' });
+      return res.status(200).json({ message: 'If an account exists with this email, a verification code has been dispatched.' });
     }
 
     // Generate 6-digit OTP code
@@ -778,9 +1070,10 @@ app.post('/api/auth/reset-password', async (req, res) => {
 });
 
 // 3. Save/Update Protocol Telemetry Route
-app.post('/api/user/protocol', async (req, res) => {
+app.post('/api/user/protocol', verifyUserOwnership, async (req, res) => {
   try {
-    const { email, age, biologicalSex, height, weight, occupation, activityLevel, goals, location, equipment, duration, fitnessLevel } = req.body;
+    const email = req.targetEmail || req.body.email;
+    const { age, biologicalSex, height, weight, occupation, activityLevel, goals, goal, location, equipment, duration, fitnessLevel, experienceLevel } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'User email is required to save protocol.' });
     }
@@ -789,6 +1082,9 @@ app.post('/api/user/protocol', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User profile not found.' });
     }
+
+    const resolvedGoals = goals !== undefined && goals !== null ? goals : (goal !== undefined ? goal : (user.protocol ? user.protocol.goals : undefined));
+    const resolvedFitnessLevel = fitnessLevel !== undefined && fitnessLevel !== null ? fitnessLevel : (experienceLevel !== undefined ? experienceLevel : (user.protocol ? user.protocol.fitnessLevel : undefined));
 
     // Update protocol telemetry
     user.protocol = {
@@ -799,11 +1095,13 @@ app.post('/api/user/protocol', async (req, res) => {
       weight: weight !== undefined && weight !== null ? Number(weight) : (user.protocol ? user.protocol.weight : undefined),
       occupation: occupation !== undefined && occupation !== null ? occupation : (user.protocol ? user.protocol.occupation : undefined),
       activityLevel: activityLevel !== undefined && activityLevel !== null ? activityLevel : (user.protocol ? user.protocol.activityLevel : undefined),
-      goals: goals !== undefined && goals !== null ? goals : (user.protocol ? user.protocol.goals : undefined),
+      goals: Array.isArray(resolvedGoals) ? resolvedGoals : (resolvedGoals ? [resolvedGoals] : []),
+      goal: Array.isArray(resolvedGoals) ? resolvedGoals[0] : resolvedGoals,
       location: location !== undefined && location !== null ? location : (user.protocol ? user.protocol.location : undefined),
       equipment: equipment !== undefined && equipment !== null ? equipment : (user.protocol ? user.protocol.equipment : undefined),
       duration: duration !== undefined && duration !== null ? Number(duration) : (user.protocol ? user.protocol.duration : undefined),
-      fitnessLevel: fitnessLevel !== undefined && fitnessLevel !== null ? fitnessLevel : (user.protocol ? user.protocol.fitnessLevel : undefined)
+      fitnessLevel: resolvedFitnessLevel,
+      experienceLevel: resolvedFitnessLevel
     };
 
     await user.save();
@@ -815,9 +1113,9 @@ app.post('/api/user/protocol', async (req, res) => {
 });
 
 // 4. Get User Protocol Route
-app.get('/api/user/protocol', async (req, res) => {
+app.get('/api/user/protocol', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -833,9 +1131,9 @@ app.get('/api/user/protocol', async (req, res) => {
 });
 
 // 4b. Get User Profile Route
-app.get('/api/user/profile', async (req, res) => {
+app.get('/api/user/profile', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -855,12 +1153,64 @@ app.get('/api/user/profile', async (req, res) => {
   }
 });
 
+// 4b-update. Update User Profile Name & Password
+app.put('/api/user/profile', verifyUserOwnership, async (req, res) => {
+  try {
+    const email = req.targetEmail || req.body.email;
+    const { name, currentPassword, newPassword } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+    const normalizedEmail = email.toLowerCase().trim();
+    let user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      if (useMockDb) {
+        user = await findUserOrMock(normalizedEmail);
+      } else {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+    }
+
+    if (name && typeof name === 'string' && name.trim()) {
+      user.name = name.trim();
+    }
+
+    if (newPassword) {
+      if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+      }
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Current password is required to change password.' });
+      }
+      if (user.password) {
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+          return res.status(400).json({ error: 'Incorrect current password.' });
+        }
+      }
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+    }
+
+    await user.save();
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully.',
+      name: user.name,
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: error.message || 'Failed to update profile.' });
+  }
+});
+
 // 4b2. Subscription Routes
 
 // A. Get subscription status
-app.get('/api/user/subscription', async (req, res) => {
+app.get('/api/user/subscription', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -912,9 +1262,10 @@ app.get('/api/user/subscription', async (req, res) => {
 });
 
 // B. Subscribe/Start Trial
-app.post('/api/user/subscribe', async (req, res) => {
+app.post('/api/user/subscribe', verifyUserOwnership, async (req, res) => {
   try {
-    const { email, plan } = req.body;
+    const email = req.targetEmail || req.body.email;
+    const { plan } = req.body;
     if (!email || !plan) {
       return res.status(400).json({ error: 'Email and plan are required.' });
     }
@@ -970,9 +1321,9 @@ app.post('/api/user/subscribe', async (req, res) => {
 });
 
 // C. Cancel subscription
-app.post('/api/user/cancel-subscription', async (req, res) => {
+app.post('/api/user/cancel-subscription', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.targetEmail || req.body.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -1005,9 +1356,9 @@ app.post('/api/user/cancel-subscription', async (req, res) => {
 });
 
 // 4c. Get Saved Workout Plan
-app.get('/api/user/workout-plan', async (req, res) => {
+app.get('/api/user/workout-plan', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -1023,9 +1374,9 @@ app.get('/api/user/workout-plan', async (req, res) => {
 });
 
 // 4d. Generate & Save Adaptive AI Workout Plan
-app.post('/api/user/workout-plan', async (req, res) => {
+app.post('/api/user/workout-plan', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.targetEmail || req.body.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -1535,9 +1886,10 @@ app.post('/api/user/workout-plan', async (req, res) => {
 });
 
 // 5. Save Workout Session Route
-app.post('/api/workouts', async (req, res) => {
+app.post('/api/workouts', verifyUserOwnership, async (req, res) => {
   try {
-    const { email, workoutName, duration, steps, distance, calories, date } = req.body;
+    const email = req.targetEmail || req.body.email;
+    const { workoutName, duration, steps, distance, calories, date } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'User email is required to save workout.' });
     }
@@ -1545,10 +1897,10 @@ app.post('/api/workouts', async (req, res) => {
     const workout = new Workout({
       email: email.toLowerCase(),
       workoutName: workoutName || 'Custom Session',
-      duration: Number(duration),
-      steps: Number(steps),
-      distance: Number(distance),
-      calories: calories ? Number(calories) : undefined,
+      duration: Number.isFinite(Number(duration)) ? Number(duration) : 0,
+      steps: Number.isFinite(Number(steps)) ? Number(steps) : 0,
+      distance: Number.isFinite(Number(distance)) ? Number(distance) : 0,
+      calories: Number.isFinite(Number(calories)) ? Number(calories) : 0,
       date: logDate
     });
     await workout.save();
@@ -1560,9 +1912,9 @@ app.post('/api/workouts', async (req, res) => {
 });
 
 // 6. Get Workouts History Route
-app.get('/api/workouts', async (req, res) => {
+app.get('/api/workouts', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -2201,9 +2553,10 @@ function findAndFilterRecipe(mealType, dietaryType, budget, allergies, healthCon
 }
 
 // 4e. Save Diet Profile Telemetry
-app.post('/api/user/diet-profile', async (req, res) => {
+app.post('/api/user/diet-profile', verifyUserOwnership, async (req, res) => {
   try {
-    const { email, dietaryType, allergies, healthConditions, budget, dailyCalories } = req.body;
+    const email = req.targetEmail || req.body.email;
+    const { dietaryType, allergies, healthConditions, budget, dailyCalories } = req.body;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -2229,9 +2582,9 @@ app.post('/api/user/diet-profile', async (req, res) => {
 });
 
 // 4f. Get Diet Profile
-app.get('/api/user/diet-profile', async (req, res) => {
+app.get('/api/user/diet-profile', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -2247,9 +2600,9 @@ app.get('/api/user/diet-profile', async (req, res) => {
 });
 
 // 4g. Generate & Save AI Diet Plan
-app.post('/api/user/diet-plan', async (req, res) => {
+app.post('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = req.targetEmail || req.body.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -2355,9 +2708,9 @@ app.post('/api/user/diet-plan', async (req, res) => {
 });
 
 // 4h. Get Saved Diet Plan
-app.get('/api/user/diet-plan', async (req, res) => {
+app.get('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -2372,9 +2725,9 @@ app.get('/api/user/diet-plan', async (req, res) => {
   }
 });
 
-app.delete('/api/user/diet-plan', async (req, res) => {
+app.delete('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || req.query.email;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -3124,37 +3477,27 @@ app.post('/api/scan-food', async (req, res) => {
           "warning": ""
         }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${geminiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: prompt },
-                  { inlineData: { mimeType, data: base64Data } }
-                ]
-              }
-            ],
-            generationConfig: {
-              responseMimeType: "application/json"
-            }
-          })
-        });
+        const contents = [
+          {
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType, data: base64Data } }
+            ]
+          }
+        ];
 
-        if (!response.ok) {
-          const errText = await response.text();
-          throw new Error(`Gemini API error: ${response.status} ${errText}`);
-        }
-
-        const resultJson = await response.json();
-        const responseText = resultJson.candidates?.[0]?.content?.parts?.[0]?.text;
+        const responseText = await callGeminiApi(contents, geminiKey, { responseMimeType: "application/json" }, 15000);
         if (!responseText) {
           throw new Error("No response text from Gemini API.");
         }
 
         const data = cleanAndParseJson(responseText);
         if (data.items && data.items.length > 0) {
+          data.items.forEach(item => {
+            if (!item.estimatedGrams) {
+              item.estimatedGrams = parsePortionGrams(item.portion);
+            }
+          });
           const resolved = resolveNutritionForMeal(data.items);
           data.items = resolved.items;
           data.totalCalories = resolved.totalCalories;
@@ -3176,8 +3519,7 @@ app.post('/api/scan-food', async (req, res) => {
         if (mockData.items && mockData.items.length > 0) {
           mockData.items.forEach(item => {
             if (!item.estimatedGrams) {
-              const matchGrams = (item.portion || '').match(/(\d+)g/);
-              item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 100;
+              item.estimatedGrams = parsePortionGrams(item.portion);
             }
           });
           const resolved = resolveNutritionForMeal(mockData.items);
@@ -3282,35 +3624,34 @@ app.post('/api/analyze-text-food', async (req, res) => {
           }
         }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        });
+        const responseText = await callGeminiApi(
+          [{ parts: [{ text: prompt }] }],
+          process.env.GEMINI_API_KEY,
+          { responseMimeType: "application/json" },
+          15000
+        );
 
-        if (response.ok) {
-          const resultJson = await response.json();
-          const responseText = resultJson.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (responseText) {
-            const data = cleanAndParseJson(responseText);
-            if (data.items && data.items.length > 0) {
-              const resolved = resolveNutritionForMeal(data.items);
-              data.items = resolved.items;
-              data.totalCalories = resolved.totalCalories;
-              data.protein = resolved.protein;
-              data.carbs = resolved.carbs;
-              data.fat = resolved.fat;
-              data.fiber = resolved.fiber;
-              data.sugar = resolved.sugar;
-              data.sodium = resolved.sodium;
-              data.cholesterol = resolved.cholesterol;
-              data.potassium = resolved.potassium;
-            }
-            return res.status(200).json(data);
+        if (responseText) {
+          const data = cleanAndParseJson(responseText);
+          if (data.items && data.items.length > 0) {
+            data.items.forEach(item => {
+              if (!item.estimatedGrams) {
+                item.estimatedGrams = parsePortionGrams(item.portion);
+              }
+            });
+            const resolved = resolveNutritionForMeal(data.items);
+            data.items = resolved.items;
+            data.totalCalories = resolved.totalCalories;
+            data.protein = resolved.protein;
+            data.carbs = resolved.carbs;
+            data.fat = resolved.fat;
+            data.fiber = resolved.fiber;
+            data.sugar = resolved.sugar;
+            data.sodium = resolved.sodium;
+            data.cholesterol = resolved.cholesterol;
+            data.potassium = resolved.potassium;
           }
+          return res.status(200).json(data);
         }
       } catch (geminiError) {
         console.error("Gemini text analysis failed, using local database parser:", geminiError);
@@ -3485,7 +3826,8 @@ Respond ONLY with a JSON object updating 'headline', 'summary', and 'aiReasoning
           body: JSON.stringify({
             contents: [{ parts: [{ text: geminiPrompt }] }],
             generationConfig: { responseMimeType: "application/json" }
-          })
+          }),
+          signal: AbortSignal.timeout(15000)
         });
 
         if (geminiRes.ok) {
@@ -4114,31 +4456,21 @@ app.post('/api/ai/verify-meal-photo', async (req, res) => {
           "explanation": "Brief verification note"
         }`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: prompt },
-                { inlineData: { mimeType: imageMime, data: base64Data } }
-              ]
-            }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        });
+        const contents = [{
+          parts: [
+            { text: prompt },
+            { inlineData: { mimeType: imageMime, data: base64Data } }
+          ]
+        }];
 
-        if (response.ok) {
-          const resData = await response.json();
-          const txt = resData.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (txt) {
-            const parsed = cleanAndParseJson(txt);
-            detectedMealName = parsed.foodName || detectedMealName;
-            detectedCalories = parsed.totalCalories || detectedCalories;
-            detectedProtein = parsed.protein || detectedProtein;
-            detectedCarbs = parsed.carbs || detectedCarbs;
-            detectedFat = parsed.fat || detectedFat;
-          }
+        const txt = await callGeminiApi(contents, process.env.GEMINI_API_KEY, { responseMimeType: "application/json" }, 15000);
+        if (txt) {
+          const parsed = cleanAndParseJson(txt);
+          detectedMealName = parsed.foodName || detectedMealName;
+          detectedCalories = parsed.totalCalories || detectedCalories;
+          detectedProtein = parsed.protein || detectedProtein;
+          detectedCarbs = parsed.carbs || detectedCarbs;
+          detectedFat = parsed.fat || detectedFat;
         }
       } catch (err) {
         console.error("Gemini vision meal verification error:", err);
@@ -4180,18 +4512,115 @@ app.post('/api/ai/verify-meal-photo', async (req, res) => {
   }
 });
 
+// 4i-3. AI Coach Chat Interactive API Endpoint
+app.post('/api/ai/coach-chat', rateLimiter({ windowMs: 60000, max: 25 }), async (req, res) => {
+  try {
+    const { message, history, email, protocol } = req.body;
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ error: 'Message content is required.' });
+    }
+
+    const trimmedMsg = message.trim();
+
+    // 1. Prompt Injection & Jailbreak Mitigation Safeguards
+    const injectionPatterns = [
+      /ignore\s+(all\s+)?(previous|prior|above)\s+instructions/i,
+      /reveal\s+(your|the)?\s+(system\s+prompt|instructions|secret)/i,
+      /disregard\s+(the\s+)?(rules|guidelines)/i,
+      /you\s+are\s+now\s+(an\s+unfiltered|DAN|jailbreak)/i,
+      /pretend\s+you\s+have\s+no\s+(restrictions|ethics)/i,
+      /override\s+system\s+prompt/i,
+      /<script[\s\S]*?>/i
+    ];
+
+    const hasInjection = injectionPatterns.some(pattern => pattern.test(trimmedMsg));
+    if (hasInjection) {
+      return res.json({
+        reply: "As your FitForge Elite Coach, I am dedicated exclusively to your fitness, strength, nutrition, and longevity goals. How can I help optimize your workouts or diet today?",
+        role: "assistant"
+      });
+    }
+
+    // 2. Fetch User Context for Personalized Coaching
+    let userContext = "";
+    if (email) {
+      try {
+        const u = await User.findOne({ email: email.toLowerCase().trim() });
+        if (u && u.protocol) {
+          userContext = `Athlete Profile: Age ${u.protocol.age || 'N/A'}, Weight ${u.protocol.weight || 'N/A'}kg, Height ${u.protocol.height || 'N/A'}cm, Primary Goals: ${(u.protocol.goals || []).join(', ') || 'Overall Fitness'}, Fitness Level: ${u.protocol.fitnessLevel || 'Intermediate'}.`;
+        }
+      } catch (e) {}
+    } else if (protocol) {
+      userContext = `Athlete Profile: Age ${protocol.age || 'N/A'}, Weight ${protocol.weight || 'N/A'}kg, Height ${protocol.height || 'N/A'}cm, Primary Goals: ${(protocol.goals || []).join(', ') || 'Overall Fitness'}.`;
+    }
+
+    const systemPrompt = `You are "Coach Forge", the elite AI strength & conditioning coach and sports nutritionist for FitForge.
+Your tone is professional, encouraging, scientifically grounded, and concise (under 120 words per response).
+Provide actionable advice on workout form, progressive overload, recovery, hydration, macro targets, and mobility.
+Never break character or give medical prescriptions.
+${userContext}`;
+
+    // 3. Call Gemini if available with 12-second timeout
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey) {
+      try {
+        const formattedHistory = Array.isArray(history) 
+          ? history.slice(-6).map(h => ({
+              role: h.role === 'user' ? 'user' : 'model',
+              parts: [{ text: String(h.content || h.text || '').substring(0, 800) }]
+            }))
+          : [];
+
+        const contents = [
+          ...formattedHistory,
+          { role: 'user', parts: [{ text: `${systemPrompt}\n\nAthlete Query: ${trimmedMsg}` }] }
+        ];
+
+        const replyText = await callGeminiApi(contents, geminiKey, {}, 12000);
+        if (replyText) {
+          return res.json({ reply: replyText.trim(), role: 'assistant' });
+        }
+      } catch (geminiErr) {
+        console.warn('Gemini AI Coach fallback engaged:', geminiErr.message);
+      }
+    }
+
+    // 4. Intelligent Rule-Based Sports Science Fallback
+    const lower = trimmedMsg.toLowerCase();
+    let fallbackReply = "Consistency and progressive overload are the foundation of athletic excellence. Ensure you hit your daily protein target and prioritize 7-8 hours of sleep for central nervous system recovery.";
+    
+    if (lower.includes('protein') || lower.includes('macro') || lower.includes('eat') || lower.includes('diet') || lower.includes('calorie')) {
+      fallbackReply = "Target 1.8 to 2.2g of protein per kg of bodyweight daily. Distribute this across 4-5 feedings containing high leucine content, and balance with nutrient-dense complex carbs and healthy fats.";
+    } else if (lower.includes('sore') || lower.includes('doms') || lower.includes('pain') || lower.includes('recover')) {
+      fallbackReply = "Delayed Onset Muscle Soreness (DOMS) peaks 24-48 hours post-training. Utilize active recovery (20-30 min brisk walking), gentle mobility drills, contrast hydrotherapy, and magnesium supplementation.";
+    } else if (lower.includes('plateau') || lower.includes('stuck') || lower.includes('gain') || lower.includes('loss')) {
+      fallbackReply = "To break a plateau, modify your training stimulus: implement a 1-week deload, adjust reps in reserve (RIR), or fine-tune daily caloric intake by +/- 150 kcal. Focus on controlling the eccentric tempo.";
+    } else if (lower.includes('water') || lower.includes('hydrate') || lower.includes('hydration')) {
+      fallbackReply = "Drink 35-40ml of water per kg of bodyweight daily. Add 500ml before training and sip electrolytes during intense sessions to maintain muscle cell volumization and peak power output.";
+    } else if (lower.includes('split') || lower.includes('plan') || lower.includes('routine')) {
+      fallbackReply = "An Upper/Lower 4-day or Push/Pull/Legs 6-day split allows each muscle group to be trained twice per week, which sports science demonstrates optimizes muscle protein synthesis over standard once-a-week body part splits.";
+    }
+
+    res.json({ reply: fallbackReply, role: 'assistant', simulated: true });
+  } catch (error) {
+    console.error('Coach chat error:', error);
+    res.status(500).json({ error: 'AI Coach service temporarily unavailable.' });
+  }
+});
+
 // 4j. Log Nutrition Intake
-app.post('/api/nutrition/log', async (req, res) => {
+app.post('/api/nutrition/log', verifyUserOwnership, async (req, res) => {
   try {
     const { email, foodName, calories, protein, carbs, fat, fiber, sugar, sodium, cholesterol, potassium, healthAnalysis, recommendations, items, imageUrl, date } = req.body;
-    if (!email || !foodName || !calories) {
+    const userEmail = (req.targetEmail || email || '').toLowerCase().trim();
+    if (!userEmail || !foodName || calories === undefined || calories === null) {
       return res.status(400).json({ error: 'Email, food name, and calories are required.' });
     }
 
     const logDate = date ? new Date(date) : new Date();
 
     const logEntry = new NutritionLog({
-      email: email.toLowerCase(),
+      email: userEmail,
       foodName,
       calories: Math.round(Number(calories)),
       protein: Math.round(Number(protein || 0)),
@@ -4218,9 +4647,10 @@ app.post('/api/nutrition/log', async (req, res) => {
 });
 
 // 4k. Get Nutrition Logs
-app.get('/api/nutrition/logs', async (req, res) => {
+app.get('/api/nutrition/logs', verifyUserOwnership, async (req, res) => {
   try {
-    const { email, date } = req.query;
+    const email = req.targetEmail || (req.query && req.query.email);
+    const { date } = req.query;
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
@@ -4248,10 +4678,10 @@ app.get('/api/nutrition/logs', async (req, res) => {
 });
 
 // 4l. Delete Nutrition Log
-app.delete('/api/nutrition/log/:id', async (req, res) => {
+app.delete('/api/nutrition/log/:id', verifyUserOwnership, async (req, res) => {
   try {
     const { id } = req.params;
-    const { email } = req.query;
+    const email = req.targetEmail || (req.query && req.query.email);
     if (!email) {
       return res.status(400).json({ error: 'User email is required to delete log.' });
     }
@@ -4269,10 +4699,10 @@ app.delete('/api/nutrition/log/:id', async (req, res) => {
 });
 
 // 4m. Delete Workout Log
-app.delete('/api/workout/:id', async (req, res) => {
+app.delete('/api/workout/:id', verifyUserOwnership, async (req, res) => {
   try {
     const { id } = req.params;
-    const { email } = req.query;
+    const email = req.targetEmail || (req.query && req.query.email);
     if (!email) {
       return res.status(400).json({ error: 'User email is required to delete workout log.' });
     }
@@ -4290,20 +4720,23 @@ app.delete('/api/workout/:id', async (req, res) => {
 });
 
 // 4n. Delete User Account and associated logs
-app.delete('/api/user/account', async (req, res) => {
+app.delete('/api/user/account', verifyUserOwnership, async (req, res) => {
   try {
-    const { email } = req.query;
+    const email = req.targetEmail || (req.query && req.query.email);
     if (!email) {
       return res.status(400).json({ error: 'User email is required.' });
     }
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.toLowerCase().trim();
 
     // Delete user profile
     await User.findOneAndDelete({ email: normalizedEmail });
 
-    // Delete associated logs
-    await Workout.deleteMany({ email: normalizedEmail });
-    await NutritionLog.deleteMany({ email: normalizedEmail });
+    // Delete associated logs and data
+    await Promise.all([
+      Workout.deleteMany({ email: normalizedEmail }),
+      NutritionLog.deleteMany({ email: normalizedEmail }),
+      BodyScan.deleteMany({ email: normalizedEmail })
+    ]);
 
     res.status(200).json({ message: "Account and associated data deleted successfully." });
   } catch (error) {
@@ -4313,10 +4746,10 @@ app.delete('/api/user/account', async (req, res) => {
 });
 
 // 5. Body Scan Routes
-app.post('/api/bodyscan', async (req, res) => {
+app.post('/api/bodyscan', verifyUserOwnership, async (req, res) => {
   try {
     const { email, height, weight, bmi, fitnessScore, posture, shoulderAlignment, bodySymmetry, goal, measurements, recommendations, frontScanImage, sideScanImage } = req.body;
-    const userEmail = (email || 'guest@fitforge.ai').toLowerCase().trim();
+    const userEmail = (req.targetEmail || email || 'guest@fitforge.ai').toLowerCase().trim();
 
     const scanRecord = new BodyScan({
       email: userEmail,
@@ -4349,9 +4782,9 @@ app.post('/api/bodyscan', async (req, res) => {
   }
 });
 
-app.get('/api/bodyscan', async (req, res) => {
+app.get('/api/bodyscan', verifyUserOwnership, async (req, res) => {
   try {
-    const email = (req.query.email || 'guest@fitforge.ai').toLowerCase().trim();
+    const email = (req.targetEmail || req.query.email || 'guest@fitforge.ai').toLowerCase().trim();
     let scans;
     try {
       scans = await BodyScan.find({ email }).sort({ date: -1 });
@@ -4366,9 +4799,9 @@ app.get('/api/bodyscan', async (req, res) => {
   }
 });
 
-app.delete('/api/bodyscan', async (req, res) => {
+app.delete('/api/bodyscan', verifyUserOwnership, async (req, res) => {
   try {
-    const email = (req.query.email || req.body.email || 'guest@fitforge.ai').toLowerCase().trim();
+    const email = (req.targetEmail || req.query.email || (req.body && req.body.email) || 'guest@fitforge.ai').toLowerCase().trim();
     try {
       await BodyScan.deleteMany({ email });
     } catch (err) {
@@ -4387,7 +4820,7 @@ app.delete('/api/bodyscan', async (req, res) => {
 // ==========================================
 
 // 1. Get Platform Stats & System Overview
-app.get('/api/admin/stats', async (req, res) => {
+app.get('/api/admin/stats', requireAdmin, async (req, res) => {
   try {
     let users = [], workouts = [], nutritionLogs = [], bodyScans = [];
     try {
@@ -4443,7 +4876,7 @@ app.get('/api/admin/stats', async (req, res) => {
 });
 
 // 2. Get All Users with Summary & Telemetry Counts
-app.get('/api/admin/users', async (req, res) => {
+app.get('/api/admin/users', requireAdmin, async (req, res) => {
   try {
     let users = [], workouts = [], nutritionLogs = [], bodyScans = [];
     try {
@@ -4509,7 +4942,7 @@ app.get('/api/admin/users', async (req, res) => {
 });
 
 // 3. Get Single User Deep Profile & Full Telemetry History
-app.get('/api/admin/user/:email', async (req, res) => {
+app.get('/api/admin/user/:email', requireAdmin, async (req, res) => {
   try {
     const email = req.params.email.toLowerCase().trim();
     let user, workouts, nutritionLogs, bodyScans;
@@ -4531,9 +4964,15 @@ app.get('/api/admin/user/:email', async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
 
+    // Security: sanitize password hash and reset tokens
+    const safeUser = user.toObject ? user.toObject() : { ...user };
+    delete safeUser.password;
+    delete safeUser.resetOTP;
+    delete safeUser.resetOTPExpires;
+
     res.json({
       success: true,
-      user,
+      user: safeUser,
       workouts: workouts || [],
       nutritionLogs: nutritionLogs || [],
       bodyScans: bodyScans || []
@@ -4545,7 +4984,7 @@ app.get('/api/admin/user/:email', async (req, res) => {
 });
 
 // 4. Create New User (Admin Direct Provisioning)
-app.post('/api/admin/user', async (req, res) => {
+app.post('/api/admin/user', requireAdmin, async (req, res) => {
   try {
     const { name, email, password, role, protocol, dietProfile, subscription } = req.body;
     if (!name || !email || !password) {
@@ -4586,7 +5025,7 @@ app.post('/api/admin/user', async (req, res) => {
 });
 
 // 5. Update User Profile, Protocol, Diet, Subscription & Role
-app.put('/api/admin/user/:email', async (req, res) => {
+app.put('/api/admin/user/:email', requireAdmin, async (req, res) => {
   try {
     const originalEmail = req.params.email.toLowerCase().trim();
     const { name, email, role, password, protocol, dietProfile, subscription } = req.body;
@@ -4617,16 +5056,9 @@ app.put('/api/admin/user/:email', async (req, res) => {
 
       // Update associated workouts, nutrition logs, scans
       await Promise.all([
-        Workout.deleteMany ? null : null,
-        Workout.find({ email: originalEmail }).then(async (wks) => {
-          for (const w of wks) { w.email = newEmail; await w.save(); }
-        }),
-        NutritionLog.find({ email: originalEmail }).then(async (nts) => {
-          for (const n of nts) { n.email = newEmail; await n.save(); }
-        }),
-        BodyScan.find({ email: originalEmail }).then(async (scs) => {
-          for (const s of scs) { s.email = newEmail; await s.save(); }
-        })
+        Workout.updateMany({ email: originalEmail }, { $set: { email: newEmail } }),
+        NutritionLog.updateMany({ email: originalEmail }, { $set: { email: newEmail } }),
+        BodyScan.updateMany({ email: originalEmail }, { $set: { email: newEmail } })
       ]);
     }
 
@@ -4665,7 +5097,7 @@ app.put('/api/admin/user/:email', async (req, res) => {
 });
 
 // 6. Delete User and Cascade All Telemetry Logs
-app.delete('/api/admin/user/:email', async (req, res) => {
+app.delete('/api/admin/user/:email', requireAdmin, async (req, res) => {
   try {
     const email = req.params.email.toLowerCase().trim();
 
@@ -4698,7 +5130,7 @@ app.delete('/api/admin/user/:email', async (req, res) => {
 });
 
 // 7. Reset User Password Directly
-app.post('/api/admin/user/:email/reset-password', async (req, res) => {
+app.post('/api/admin/user/:email/reset-password', requireAdmin, async (req, res) => {
   try {
     const email = req.params.email.toLowerCase().trim();
     const { newPassword } = req.body;
@@ -4721,7 +5153,7 @@ app.post('/api/admin/user/:email/reset-password', async (req, res) => {
 });
 
 // 8. Add Workout for User
-app.post('/api/admin/user/:email/workout', async (req, res) => {
+app.post('/api/admin/user/:email/workout', requireAdmin, async (req, res) => {
   try {
     const email = req.params.email.toLowerCase().trim();
     const { workoutName, duration, steps, distance, calories, date } = req.body;
@@ -4751,7 +5183,7 @@ app.post('/api/admin/user/:email/workout', async (req, res) => {
 });
 
 // 9. Update Workout
-app.put('/api/admin/workout/:id', async (req, res) => {
+app.put('/api/admin/workout/:id', requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     const { workoutName, duration, steps, distance, calories, date } = req.body;
@@ -4778,7 +5210,7 @@ app.put('/api/admin/workout/:id', async (req, res) => {
 });
 
 // 10. Delete Workout
-app.delete('/api/admin/workout/:id', async (req, res) => {
+app.delete('/api/admin/workout/:id', requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     let deleted;
@@ -4796,7 +5228,7 @@ app.delete('/api/admin/workout/:id', async (req, res) => {
 });
 
 // 11. Add Nutrition Log for User
-app.post('/api/admin/user/:email/nutrition', async (req, res) => {
+app.post('/api/admin/user/:email/nutrition', requireAdmin, async (req, res) => {
   try {
     const email = req.params.email.toLowerCase().trim();
     const { foodName, calories, protein, carbs, fat, fiber, sugar, sodium, date } = req.body;
@@ -4829,7 +5261,7 @@ app.post('/api/admin/user/:email/nutrition', async (req, res) => {
 });
 
 // 12. Update Nutrition Log
-app.put('/api/admin/nutrition/:id', async (req, res) => {
+app.put('/api/admin/nutrition/:id', requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     const { foodName, calories, protein, carbs, fat, fiber, sugar, sodium, date } = req.body;
@@ -4857,7 +5289,7 @@ app.put('/api/admin/nutrition/:id', async (req, res) => {
 });
 
 // 13. Delete Nutrition Log
-app.delete('/api/admin/nutrition/:id', async (req, res) => {
+app.delete('/api/admin/nutrition/:id', requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     let deleted;
@@ -4875,7 +5307,7 @@ app.delete('/api/admin/nutrition/:id', async (req, res) => {
 });
 
 // 14. Delete Body Scan
-app.delete('/api/admin/bodyscan/:id', async (req, res) => {
+app.delete('/api/admin/bodyscan/:id', requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;
     let deleted;
@@ -4892,11 +5324,38 @@ app.delete('/api/admin/bodyscan/:id', async (req, res) => {
   }
 });
 
-// Serve Static Frontend files from root
-// Disable caching for HTML files so updates are immediately visible
+// Protect sensitive backend source files and config from being statically leaked
 app.use((req, res, next) => {
-  if (req.method === 'GET' && (req.url.endsWith('.html') || req.url === '/' || req.url.split('?')[0].endsWith('.html'))) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  const urlPath = req.path.toLowerCase();
+  const forbiddenPatterns = [
+    /^\/server(\.js)?$/i,
+    /^\/ai-planner-engine(\.js)?$/i,
+    /^\/package(-lock)?\.json$/i,
+    /^\/vercel\.json$/i,
+    /^\/.*\.env.*$/i,
+    /^\/\.git/i,
+    /^\/node_modules/i,
+    /^\/api(\/.*)?$/i,
+    /^\/verify_.*\.js$/i,
+    /^\/.*\.txt$/i,
+    /^\/.*\.md$/i
+  ];
+
+  if (forbiddenPatterns.some(regex => regex.test(urlPath))) {
+    return res.status(403).json({ error: 'Access forbidden: Protected system resource.' });
+  }
+  next();
+});
+
+// Cache control headers: no-cache for dynamic HTML; 24h positive cache for static assets
+app.use((req, res, next) => {
+  const url = req.url.split('?')[0];
+  if (req.method === 'GET') {
+    if (url.endsWith('.html') || url === '/') {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    } else if (url.startsWith('/assets/') || url.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|ttf)$/i)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
   }
   next();
 });

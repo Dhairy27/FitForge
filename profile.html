@@ -216,14 +216,19 @@
                     <p class="text-secondary opacity-60 mb-2 font-body-md" id="profile-email">email@address.com</p>
 
                 </div>
-                <div class="flex-shrink-0 w-full md:w-auto flex justify-center mt-4 md:mt-0 gap-3">
+                <div class="flex-shrink-0 w-full md:w-auto flex flex-wrap justify-center mt-4 md:mt-0 gap-3">
+                    <button onclick="openEditProfileModal()"
+                        class="px-5 py-3 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all text-emerald-400 font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+                        <span class="material-symbols-outlined text-sm">edit_note</span>
+                        Edit Profile
+                    </button>
                     <button onclick="logout()"
-                        class="px-6 py-3 border border-glass-border bg-white/5 hover:bg-white/10 transition-all text-secondary font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95">
+                        class="px-5 py-3 border border-glass-border bg-white/5 hover:bg-white/10 transition-all text-secondary font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95">
                         <span class="material-symbols-outlined text-sm">logout</span>
                         Logout
                     </button>
                     <button onclick="deleteAccount()"
-                        class="px-6 py-3 border border-red-500/30 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all text-red-400 font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                        class="px-5 py-3 border border-red-500/30 bg-red-500/5 hover:bg-red-500 hover:text-white transition-all text-red-400 font-bold uppercase tracking-widest text-[9px] rounded-full flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
                         <span class="material-symbols-outlined text-sm">delete_forever</span>
                         Delete Account
                     </button>
@@ -409,6 +414,9 @@
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
             localStorage.removeItem('userProtocol');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isProUser');
             window.location.href = 'login.html';
         }
 
@@ -416,12 +424,18 @@
             if (!confirm("Are you sure you want to permanently delete your account and all workout/nutrition logs? This action cannot be undone.")) return;
 
             try {
+                const token = localStorage.getItem('authToken');
                 const response = await fetch(`/api/user/account?email=${encodeURIComponent(userEmail)}`, {
-                    method: 'DELETE'
+                    method: 'DELETE',
+                    headers: {
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+                        'x-user-email': userEmail
+                    }
                 });
 
                 if (!response.ok) {
-                    throw new Error("Failed to delete account from server.");
+                    const errData = await response.json().catch(() => ({}));
+                    throw new Error(errData.error || "Failed to delete account from server.");
                 }
 
                 alert("Your account and all associated logs have been permanently deleted.");
@@ -431,7 +445,7 @@
                 const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
                     const key = localStorage.key(i);
-                    if (key && (key.includes(emailKey) || key === 'userEmail' || key === 'userName')) {
+                    if (key && (key.includes(emailKey) || key === 'userEmail' || key === 'userName' || key === 'authToken' || key === 'userRole' || key === 'isProUser')) {
                         keysToRemove.push(key);
                     }
                 }
@@ -441,6 +455,76 @@
             } catch (err) {
                 console.error("Delete account error:", err);
                 alert("Error deleting account: " + err.message);
+            }
+        }
+
+        // Edit Profile Modal Toggles & Actions
+        function openEditProfileModal() {
+            const currentName = localStorage.getItem('userName') || '';
+            document.getElementById('edit-profile-name').value = currentName;
+            document.getElementById('edit-profile-password').value = '';
+            document.getElementById('edit-profile-confirm-password').value = '';
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+        }
+
+        async function handleEditProfileSubmit(e) {
+            e.preventDefault();
+            const newName = document.getElementById('edit-profile-name').value.trim();
+            const newPassword = document.getElementById('edit-profile-password').value;
+            const confirmPassword = document.getElementById('edit-profile-confirm-password').value;
+
+            if (newPassword) {
+                if (newPassword.length < 6) {
+                    alert("Password must be at least 6 characters long.");
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    alert("Passwords do not match.");
+                    return;
+                }
+            }
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Updating...';
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/user/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
+                    body: JSON.stringify({
+                        email: userEmail,
+                        name: newName,
+                        ...(newPassword ? { newPassword } : {})
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    if (newName) {
+                        localStorage.setItem('userName', newName);
+                        document.getElementById('profile-name').textContent = newName;
+                    }
+                    closeEditProfileModal();
+                    alert("Profile updated successfully!");
+                } else {
+                    alert(data.error || "Failed to update profile.");
+                }
+            } catch (err) {
+                console.error("Profile update error:", err);
+                alert("Network error updating profile.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         }
 
@@ -950,6 +1034,39 @@
                 
                 <button type="submit" class="w-full py-3 bg-white hover:bg-white/90 text-black font-bold text-sm rounded-full uppercase tracking-wider transition-all cursor-pointer mt-4">
                     Save Goals &amp; Equipment
+                </button>
+            </form>
+        </div>
+    </div>
+    <!-- EDIT PROFILE MODAL -->
+    <div id="edit-profile-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+            <button onclick="closeEditProfileModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
+                <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+            
+            <div class="text-center space-y-1">
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Account Security</span>
+                <h3 class="text-xl font-bold text-white font-headline">Edit Profile</h3>
+                <p class="text-xs text-secondary">Update your account name or update your secure password.</p>
+            </div>
+
+            <form id="edit-profile-form" class="space-y-4" onsubmit="handleEditProfileSubmit(event)">
+                <div>
+                    <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Full Name</label>
+                    <input type="text" id="edit-profile-name" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" required />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">New Password <span class="text-zinc-500 font-normal lowercase">(optional)</span></label>
+                    <input type="password" id="edit-profile-password" placeholder="Leave blank to keep current password" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" minlength="6" />
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-secondary/80 mb-1.5 uppercase tracking-wider">Confirm New Password</label>
+                    <input type="password" id="edit-profile-confirm-password" placeholder="Confirm new password" class="w-full bg-white/5 border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:ring-1 focus:ring-primary focus:outline-none" minlength="6" />
+                </div>
+                
+                <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm rounded-full uppercase tracking-wider transition-all cursor-pointer mt-4">
+                    Update Profile
                 </button>
             </form>
         </div>

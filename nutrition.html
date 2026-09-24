@@ -720,6 +720,9 @@
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
             localStorage.removeItem('userProtocol');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            sessionStorage.clear();
             window.location.href = 'login.html';
         }
 
@@ -1322,7 +1325,13 @@
                 const logId = localStorage.getItem(logKey);
                 if (logId) {
                     try {
-                        const res = await fetch(`/api/nutrition/log/${logId}`, { method: 'DELETE' });
+                        const token = localStorage.getItem('authToken');
+                        const headers = {};
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+                        const res = await fetch(`/api/nutrition/log/${logId}?email=${encodeURIComponent(userEmail)}`, {
+                            method: 'DELETE',
+                            headers
+                        });
                         if (res.ok) {
                             localStorage.removeItem(logKey);
                             showToast(`Removed meal from Progress Analysis.`);
@@ -1341,9 +1350,13 @@
                     const meal = currentDietPlan.dailyMeals[mealType];
                     if (meal) {
                         try {
+                            const token = localStorage.getItem('authToken');
+                            const headers = { 'Content-Type': 'application/json' };
+                            if (token) headers['Authorization'] = `Bearer ${token}`;
+
                             const response = await fetch('/api/nutrition/log', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers,
                                 body: JSON.stringify({
                                     email: userEmail,
                                     foodName: meal.name,
