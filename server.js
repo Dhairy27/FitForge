@@ -1,4 +1,10 @@
 require('dotenv').config();
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignore in environments where custom DNS servers cannot be set
+}
 const express = require('express');
 const mongoose = require('mongoose');
 
@@ -294,7 +300,7 @@ function generateJWT(payload, expiresInSeconds = 7 * 24 * 3600) {
   const header = { alg: 'HS256', typ: 'JWT' };
   const exp = Math.floor(Date.now() / 1000) + expiresInSeconds;
   const fullPayload = { ...payload, exp, iat: Math.floor(Date.now() / 1000) };
-  
+
   const b64Header = Buffer.from(JSON.stringify(header)).toString('base64url');
   const b64Payload = Buffer.from(JSON.stringify(fullPayload)).toString('base64url');
   const data = `${b64Header}.${b64Payload}`;
@@ -309,7 +315,7 @@ function verifyJWT(token) {
   const [b64Header, b64Payload, signature] = parts;
   const data = `${b64Header}.${b64Payload}`;
   const expectedSig = crypto.createHmac('sha256', JWT_SECRET).update(data).digest('base64url');
-  
+
   try {
     const sigBuf = Buffer.from(signature);
     const expBuf = Buffer.from(expectedSig);
@@ -319,7 +325,7 @@ function verifyJWT(token) {
   } catch (e) {
     return null;
   }
-  
+
   try {
     const payload = JSON.parse(Buffer.from(b64Payload, 'base64url').toString('utf8'));
     if (payload.exp && Math.floor(Date.now() / 1000) > payload.exp) {
@@ -843,7 +849,7 @@ app.post('/api/auth/login', rateLimiter({ windowMs: 60000, max: 30 }), async (re
 
     // Validate password
     let isMatch = await bcrypt.compare(password, user.password);
-    
+
     // Safety check for admin password
     if (!isMatch && normalizedEmail === 'admin@gmail.com' && password === 'Admin@123') {
       const salt = await bcrypt.genSalt(10);
@@ -3813,10 +3819,10 @@ Refine and personalize the wording, meal descriptions, and motivational recovery
 
 Current calibrated structure:
 ${JSON.stringify({
-  headline: generatedPlan.headline,
-  summary: generatedPlan.summary,
-  aiReasoning: generatedPlan.aiReasoning
-})}
+          headline: generatedPlan.headline,
+          summary: generatedPlan.summary,
+          aiReasoning: generatedPlan.aiReasoning
+        })}
 
 Respond ONLY with a JSON object updating 'headline', 'summary', and 'aiReasoning' (calorieReasoning, macroReasoning, mealReasoning, workoutReasoning, adaptationNotes). Keep all target numbers, calories, and macros identical.`;
 
@@ -4048,15 +4054,15 @@ app.post('/api/ai/plan/complete-block', async (req, res) => {
 // 5e2. Complete Guided Workout Session and Persist Stats
 app.post('/api/ai/workout/session-complete', async (req, res) => {
   try {
-    const { 
-      email, 
-      planId, 
-      blockId, 
-      workoutName, 
-      durationSeconds = 1800, 
-      caloriesBurned = 250, 
-      setsCompleted = 0, 
-      exercisesCompleted = 0, 
+    const {
+      email,
+      planId,
+      blockId,
+      workoutName,
+      durationSeconds = 1800,
+      caloriesBurned = 250,
+      setsCompleted = 0,
+      exercisesCompleted = 0,
       volumeLifted = 0,
       exercisesSummary = []
     } = req.body;
@@ -4213,7 +4219,7 @@ app.post('/api/ai/workout/replace-exercise', async (req, res) => {
     if (replacementName) {
       const alts = aiPlannerEngine.findExerciseAlternatives(currentEx.name, reason, equip, level);
       selectedReplacement = alts.find(a => a.name.toLowerCase() === replacementName.toLowerCase());
-      
+
       if (!selectedReplacement) {
         const lib = aiPlannerEngine.EXERCISE_LIBRARY || {};
         for (const loc of Object.keys(lib)) {
@@ -4549,7 +4555,7 @@ app.post('/api/ai/coach-chat', rateLimiter({ windowMs: 60000, max: 25 }), async 
         if (u && u.protocol) {
           userContext = `Athlete Profile: Age ${u.protocol.age || 'N/A'}, Weight ${u.protocol.weight || 'N/A'}kg, Height ${u.protocol.height || 'N/A'}cm, Primary Goals: ${(u.protocol.goals || []).join(', ') || 'Overall Fitness'}, Fitness Level: ${u.protocol.fitnessLevel || 'Intermediate'}.`;
         }
-      } catch (e) {}
+      } catch (e) { }
     } else if (protocol) {
       userContext = `Athlete Profile: Age ${protocol.age || 'N/A'}, Weight ${protocol.weight || 'N/A'}kg, Height ${protocol.height || 'N/A'}cm, Primary Goals: ${(protocol.goals || []).join(', ') || 'Overall Fitness'}.`;
     }
@@ -4564,11 +4570,11 @@ ${userContext}`;
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey) {
       try {
-        const formattedHistory = Array.isArray(history) 
+        const formattedHistory = Array.isArray(history)
           ? history.slice(-6).map(h => ({
-              role: h.role === 'user' ? 'user' : 'model',
-              parts: [{ text: String(h.content || h.text || '').substring(0, 800) }]
-            }))
+            role: h.role === 'user' ? 'user' : 'model',
+            parts: [{ text: String(h.content || h.text || '').substring(0, 800) }]
+          }))
           : [];
 
         const contents = [
@@ -4588,7 +4594,7 @@ ${userContext}`;
     // 4. Intelligent Rule-Based Sports Science Fallback
     const lower = trimmedMsg.toLowerCase();
     let fallbackReply = "Consistency and progressive overload are the foundation of athletic excellence. Ensure you hit your daily protein target and prioritize 7-8 hours of sleep for central nervous system recovery.";
-    
+
     if (lower.includes('protein') || lower.includes('macro') || lower.includes('eat') || lower.includes('diet') || lower.includes('calorie')) {
       fallbackReply = "Target 1.8 to 2.2g of protein per kg of bodyweight daily. Distribute this across 4-5 feedings containing high leucine content, and balance with nutrient-dense complex carbs and healthy fats.";
     } else if (lower.includes('sore') || lower.includes('doms') || lower.includes('pain') || lower.includes('recover')) {
@@ -4901,7 +4907,7 @@ app.get('/api/admin/users', requireAdmin, async (req, res) => {
       const userWorkouts = workouts.filter(w => (w.email || '').toLowerCase() === email);
       const userNutrition = nutritionLogs.filter(n => (n.email || '').toLowerCase() === email);
       const userScans = bodyScans.filter(s => (s.email || '').toLowerCase() === email);
-      
+
       const burned = userWorkouts.reduce((acc, w) => acc + (Number(w.calories) || 0), 0);
       const consumed = userNutrition.reduce((acc, n) => acc + (Number(n.calories) || 0), 0);
 

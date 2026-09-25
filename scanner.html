@@ -692,7 +692,9 @@
                             </div>
                             <!-- Item portions list -->
                             <div class="space-y-3 border-t border-white/5 pt-4" id="edit-items-section">
-                                <label class="block text-[9px] text-primary/60 uppercase tracking-widest font-bold font-headline">Adjust Item Portions</label>
+                                <label
+                                    class="block text-[9px] text-primary/60 uppercase tracking-widest font-bold font-headline">Adjust
+                                    Item Portions</label>
                                 <div id="edit-items-list" class="space-y-3">
                                     <!-- Dynamic item inputs -->
                                 </div>
@@ -930,7 +932,7 @@
             window.location.href = 'login.html';
         } else {
             // Check localStorage cache first (avoids redirect loop in offline mode)
-            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+            const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch (e) { return {}; } })();
             if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
                 // Protocol already complete - no redirect needed
             } else {
@@ -2052,7 +2054,7 @@
                         const m = item.portion.match(/(\d+)g/);
                         if (m) grams = Number(m[1]);
                     }
-                    
+
                     if (!item.basePer100) {
                         const factor = grams / 100;
                         item.basePer100 = {
@@ -2082,7 +2084,7 @@
                 }).join('');
             }
 
-            window.changeItemWeight = function(idx, delta) {
+            window.changeItemWeight = function (idx, delta) {
                 const input = document.getElementById(`edit-item-weight-${idx}`);
                 if (!input) return;
                 let current = Number(input.value) || 0;
@@ -2091,7 +2093,7 @@
                 onItemWeightInput(idx, newVal);
             };
 
-            window.onItemWeightInput = function(idx, val) {
+            window.onItemWeightInput = function (idx, val) {
                 if (!scannedFoodData || !scannedFoodData.items || !scannedFoodData.items[idx]) return;
                 const grams = Math.max(10, Number(val) || 10);
                 const item = scannedFoodData.items[idx];
@@ -2379,6 +2381,76 @@
     </div>
 
     <script src="subscription-check.js"></script>
+</body>
+
+</html> weight: weight,
+unit: unit,
+email: userEmail
+})
+});
+
+if (!response.ok) {
+throw new Error("Text analysis failed.");
+}
+
+const data = await response.json();
+scannedFoodData = data;
+currentImageBase64 = ""; // Reset base64 image since it's a manual entry log
+
+renderNutritionalResults(data);
+setUIState('scanned');
+} catch (error) {
+console.error("Text food analysis error:", error);
+alert("Failed to analyze food text. " + error.message);
+setUIState('ready');
+}
+}
+
+btnTextAnalyze.addEventListener('click', analyzeTextFood);
+
+// Sidebar Navigation Drawer Toggle logic
+function toggleSidebar() {
+const sidebar = document.getElementById('sidebar-nav');
+const backdrop = document.getElementById('sidebar-backdrop');
+if (sidebar && backdrop) {
+sidebar.classList.toggle('-translate-x-full');
+backdrop.classList.toggle('hidden');
+}
+}
+
+window.toggleSidebar = toggleSidebar;
+});
+</script>
+<!-- API Settings Modal -->
+<div id="api-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div
+        class="glass-panel max-w-md w-full p-8 rounded-[2rem] border-white/10 space-y-6 relative bg-[#0d0d0f]/90 border border-white/10">
+        <button id="btn-close-api-modal"
+            class="absolute top-6 right-6 text-secondary hover:text-primary transition-colors cursor-pointer bg-transparent border-0">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+        <div class="space-y-2">
+            <h3 class="font-headline text-2xl font-bold text-white">Gemini API Key</h3>
+            <p class="text-xs text-secondary opacity-60">Set a custom API key for direct client-side food scanning.
+                Leave blank to use server defaults or fallbacks.</p>
+        </div>
+        <div class="space-y-4">
+            <div class="relative">
+                <input id="input-api-key" type="password" placeholder="Enter your Gemini API key..."
+                    class="w-full bg-black/40 border border-glass-border rounded-xl px-4 py-3 text-sm text-primary placeholder-secondary/30 focus:outline-none focus:border-primary transition-colors" />
+            </div>
+            <div class="flex gap-4">
+                <button id="btn-clear-api-key"
+                    class="flex-1 py-3 border border-white/10 rounded-xl font-headline text-xs hover:bg-white/5 transition-all text-white/60 cursor-pointer bg-transparent uppercase font-bold">Clear</button>
+                <button id="btn-save-api-key"
+                    class="flex-1 py-3 bg-primary text-black rounded-xl font-headline text-xs hover:scale-105 active:scale-95 transition-all cursor-pointer border-0 uppercase font-bold">Save
+                    Key</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="subscription-check.js"></script>
 </body>
 
 </html>

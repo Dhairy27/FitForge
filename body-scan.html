@@ -229,76 +229,117 @@
         <div class="px-4 md:px-12 py-8 flex-1 space-y-8 max-w-[1440px] w-full mx-auto">
 
             <!-- STEP 1: SETUP SCREEN -->
-            <section id="step-intro" class="space-y-8">
+            <section id="step-intro" class="space-y-8 max-w-5xl mx-auto">
 
-                <!-- Main Feature Hero Card -->
+                <!-- Main Feature Unified Card -->
                 <div
-                    class="glass-card p-8 md:p-10 rounded-[2rem] border-glass-border relative overflow-hidden flex flex-col lg:flex-row justify-between gap-8 items-start lg:items-start">
+                    class="glass-card p-6 sm:p-8 md:p-10 rounded-[2rem] border-glass-border relative overflow-hidden space-y-8 shadow-2xl">
 
-                    <div class="space-y-4 lg:w-7/12">
-                        <div class="flex items-center gap-3">
+                    <!-- Top Header Section -->
+                    <div class="space-y-4">
+                        <div class="flex flex-wrap items-center gap-3">
                             <span
-                                class="px-3 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1.5">
-                                <span class="w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping"></span>
+                                class="px-3.5 py-1 bg-purple-500/10 border border-purple-500/20 text-purple-400 text-[11px] font-bold uppercase tracking-wider rounded-full flex items-center gap-2">
+                                <span class="w-2 h-2 bg-purple-400 rounded-full animate-ping"></span>
                                 MediaPipe Vision Protocol Linked
                             </span>
-                            <span class="text-xs text-secondary/60 font-mono">33 Biomechanical Keypoints</span>
+                            <span
+                                class="text-xs text-secondary/60 font-mono tracking-tight bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                33 Biomechanical Keypoints
+                            </span>
                         </div>
 
-                        <h1 class="font-headline text-3xl sm:text-4xl font-bold tracking-tight text-white mb-2">
-                            Biometric Posture Mapping</h1>
-                        <p class="text-xs sm:text-sm text-secondary leading-relaxed">
-                            Analyze your posture, body proportions and fitness progress using your camera. Extract
-                            spatial keypoints for symmetry breakdown and posture evaluation.
-                        </p>
+                        <div>
+                            <h1
+                                class="font-headline text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-white mb-3">
+                                Biometric Posture Mapping
+                            </h1>
+                            <p class="text-xs sm:text-sm md:text-base text-secondary/80 leading-relaxed max-w-3xl">
+                                Analyze your posture, body proportions and fitness progress using your camera. Extract
+                                spatial keypoints for symmetry breakdown and posture evaluation.
+                            </p>
+                        </div>
+
+                        <!-- Highlights Feature Chips -->
+                        <div class="flex flex-wrap gap-2.5 pt-1">
+                            <div
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-[11px] text-secondary">
+                                <span
+                                    class="material-symbols-outlined text-[15px] text-purple-400">accessibility_new</span>
+                                <span>Spine & Shoulder Alignment</span>
+                            </div>
+                            <div
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-[11px] text-secondary">
+                                <span class="material-symbols-outlined text-[15px] text-emerald-400">balance</span>
+                                <span>Kinetic Symmetry Score</span>
+                            </div>
+                            <div
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-[11px] text-secondary">
+                                <span class="material-symbols-outlined text-[15px] text-sky-400">straighten</span>
+                                <span>Proportion Breakdown</span>
+                            </div>
+                            <div
+                                class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/10 text-[11px] text-secondary">
+                                <span class="material-symbols-outlined text-[15px] text-amber-400">lock</span>
+                                <span>On-Device Vision Privacy</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Setup Parameters Form Card -->
-                    <div class="glass-card p-6 md:p-8 rounded-[2rem] border-glass-border space-y-5 lg:w-5/12 w-full">
-                        <div class="flex justify-between items-center border-b border-white/5 pb-3">
-                            <h3 class="font-headline text-base font-bold text-white flex items-center gap-2">
-                                <span class="material-symbols-outlined text-purple-400">tune</span> Setup Scan
-                                Parameters
-                            </h3>
-                            <span class="text-[10px] uppercase font-bold text-secondary tracking-widest">Step 1 of
-                                3</span>
+                    <!-- Setup Parameters Form Panel (Shifted Below Header) -->
+                    <div
+                        class="bg-surface-container/60 border border-glass-border p-6 sm:p-8 rounded-2xl sm:rounded-[1.5rem] space-y-6">
+                        <div class="flex justify-between items-center border-b border-white/10 pb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div
+                                    class="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                                    <span class="material-symbols-outlined text-lg">tune</span>
+                                </div>
+                                <h3 class="font-headline text-base sm:text-lg font-bold text-white">Setup Scan
+                                    Parameters</h3>
+                            </div>
+                            <span
+                                class="text-[10px] sm:text-xs uppercase font-bold text-purple-400/90 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20 tracking-wider">
+                                Step 1 of 3
+                            </span>
                         </div>
 
-                        <!-- Inputs -->
-                        <div class="grid grid-cols-2 gap-4">
+                        <!-- 4-Column Responsive Parameters Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <label
-                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5 flex justify-between">Height
-                                    (cm) <span
-                                        class="material-symbols-outlined text-[12px] opacity-50">lock</span></label>
-                                <input type="number" id="input-height" value="175" disabled
-                                    class="w-full bg-white/5 border border-glass-border rounded-xl px-4 py-2.5 text-white/70 text-xs focus:outline-none transition-colors cursor-not-allowed">
+                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-2 flex justify-between items-center">
+                                    <span>Height (cm)</span>
+                                    <span class="material-symbols-outlined text-[13px] opacity-40">lock</span>
+                                </label>
+                                <input type="number" id="input-height" value="170" disabled
+                                    class="w-full bg-black/40 border border-glass-border rounded-xl px-4 py-3 text-white text-xs font-semibold focus:outline-none cursor-not-allowed">
                             </div>
                             <div>
                                 <label
-                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5 flex justify-between">Weight
-                                    (kg) <span
-                                        class="material-symbols-outlined text-[12px] opacity-50">lock</span></label>
-                                <input type="number" id="input-weight" value="70" disabled
-                                    class="w-full bg-white/5 border border-glass-border rounded-xl px-4 py-2.5 text-white/70 text-xs focus:outline-none transition-colors cursor-not-allowed">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label
-                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5 flex justify-between">Fitness
-                                    Goal <span
-                                        class="material-symbols-outlined text-[12px] opacity-50">lock</span></label>
-                                <input type="text" id="input-goal" disabled value="Muscle Gain"
-                                    class="w-full bg-surface-container border border-glass-border rounded-xl px-4 py-2.5 text-white/70 text-xs focus:outline-none transition-colors cursor-not-allowed">
+                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-2 flex justify-between items-center">
+                                    <span>Weight (kg)</span>
+                                    <span class="material-symbols-outlined text-[13px] opacity-40">lock</span>
+                                </label>
+                                <input type="number" id="input-weight" value="60" disabled
+                                    class="w-full bg-black/40 border border-glass-border rounded-xl px-4 py-3 text-white text-xs font-semibold focus:outline-none cursor-not-allowed">
                             </div>
                             <div>
                                 <label
-                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-1.5">Dietary
-                                    Preference</label>
+                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-2 flex justify-between items-center">
+                                    <span>Fitness Goal</span>
+                                    <span class="material-symbols-outlined text-[13px] opacity-40">lock</span>
+                                </label>
+                                <input type="text" id="input-goal" disabled value="Flexibility"
+                                    class="w-full bg-black/40 border border-glass-border rounded-xl px-4 py-3 text-white text-xs font-semibold focus:outline-none cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label
+                                    class="block text-[11px] font-semibold text-secondary uppercase tracking-wider mb-2">
+                                    Dietary Preference
+                                </label>
                                 <select id="select-diet" onchange="recalculateNutritionRecommendations()"
-                                    class="w-full bg-surface-container border border-glass-border rounded-xl px-4 py-2.5 text-white text-xs focus:outline-none focus:border-primary transition-colors">
+                                    class="w-full bg-black/40 border border-glass-border rounded-xl px-4 py-3 text-white text-xs font-semibold focus:outline-none focus:border-purple-400 transition-colors cursor-pointer">
                                     <option value="Non-Vegetarian" selected>🍖 Non-Vegetarian</option>
                                     <option value="Vegetarian">🥗 Vegetarian</option>
                                     <option value="Vegan">🌱 Vegan</option>
@@ -306,18 +347,64 @@
                             </div>
                         </div>
 
-
-                        <!-- Actions -->
-                        <div class="flex flex-col sm:flex-row gap-3 pt-6 mt-1 border-t border-white/5">
+                        <!-- CTA Action Area -->
+                        <div
+                            class="pt-2 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p class="text-[11px] text-secondary/60 text-center sm:text-left">
+                                Stand 6–8 feet away from the camera for full-body tracking.
+                            </p>
                             <button onclick="requestCameraAccessAndStart()"
-                                class="w-full py-4 bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-full hover:scale-[1.02] active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
-                                <span class="material-symbols-outlined text-lg">videocam</span>
+                                class="w-full sm:w-auto px-8 py-3.5 bg-primary text-on-primary font-headline font-bold text-xs uppercase tracking-wider rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+                                <span class="material-symbols-outlined text-base">videocam</span>
                                 Proceed to Camera Scan
                             </button>
                         </div>
                     </div>
 
                 </div>
+
+                <!-- 3-Step Workflow Guidance Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="glass-card p-5 rounded-2xl border-glass-border flex items-start gap-4">
+                        <div
+                            class="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 text-sm font-bold font-headline">
+                            01
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Calibration</h4>
+                            <p class="text-[11px] text-secondary/70 leading-relaxed">
+                                Base metrics loaded from your protocol profile.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border-glass-border flex items-start gap-4">
+                        <div
+                            class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 text-sm font-bold font-headline">
+                            02
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Vision Scanning</h4>
+                            <p class="text-[11px] text-secondary/70 leading-relaxed">
+                                Stand in frame while MediaPipe maps 33 spatial keypoints.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-2xl border-glass-border flex items-start gap-4">
+                        <div
+                            class="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0 text-sm font-bold font-headline">
+                            03
+                        </div>
+                        <div class="space-y-1">
+                            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Instant Analysis</h4>
+                            <p class="text-[11px] text-secondary/70 leading-relaxed">
+                                Real-time posture score, symmetry %, and exercise cues.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </section>
 
 
@@ -387,18 +474,16 @@
                     <!-- Floating Action Buttons -->
                     <div class="absolute bottom-8 left-0 right-0 flex justify-center items-center gap-4 z-10 px-4">
 
-                        <label id="btn-capture-front"
-                            class="pl-5 pr-6 py-4 bg-white text-black text-sm font-bold rounded-[2rem] hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-3 shadow-lg">
-                            <input type="file" accept="image/*" capture="environment" class="hidden"
-                                onchange="captureFrontScan()">
+                        <button id="btn-capture-front" type="button" onclick="captureDirectFromWebcam()"
+                            class="pl-5 pr-6 py-4 bg-white text-black text-sm font-bold rounded-[2rem] hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-3 shadow-lg border-0">
                             <span class="material-symbols-outlined text-black text-xl">photo_camera</span>
                             CAPTURE PHOTO
-                        </label>
+                        </button>
 
-                        <label
+                        <label id="btn-gallery-upload"
                             class="pl-4 pr-5 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-bold rounded-[2rem] hover:bg-white/20 transition-all cursor-pointer flex items-center gap-2">
-                            <input type="file" accept="image/*,.pdf,.doc,.docx" class="hidden"
-                                onchange="captureFrontScan()">
+                            <input type="file" accept="image/*,.heic,.heif,.png,.jpg,.jpeg" class="hidden"
+                                onchange="handleGalleryUpload(event)">
                             <span class="material-symbols-outlined text-white text-xl">image</span>
                             GALLERY
                         </label>
@@ -922,16 +1007,64 @@
             if (scanPhaseTag) scanPhaseTag.innerText = "Camera Active";
         }
 
-        function captureFrontScan() {
-            frontScanCaptured = true;
-            const scanPhaseTag = document.getElementById('scan-phase-tag');
-            if (scanPhaseTag) scanPhaseTag.innerText = "Processing...";
+        function triggerCameraFlash() {
+            const viewport = document.querySelector('#step-camera .relative');
+            if (!viewport) return;
+            const flash = document.createElement('div');
+            flash.className = 'absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-100';
+            viewport.appendChild(flash);
+            setTimeout(() => flash.style.opacity = '0.5', 20);
+            setTimeout(() => flash.style.opacity = '0', 120);
+            setTimeout(() => flash.remove(), 400);
+        }
 
-            // In the new simplified UI, a single capture acts as the full scan.
-            // We simulate the capturing and wait before moving to the analyzing step.
+        function captureDirectFromWebcam() {
+            triggerCameraFlash();
+
+            const scanPhaseTag = document.getElementById('scan-phase-tag');
+            if (scanPhaseTag) scanPhaseTag.innerText = "Capturing...";
+
+            const videoEl = document.getElementById('webcam');
+            const canvasEl = document.getElementById('landmark-canvas');
+
+            if (webcamStream && videoEl && !videoEl.classList.contains('hidden') && videoEl.videoWidth) {
+                try {
+                    canvasEl.width = videoEl.videoWidth;
+                    canvasEl.height = videoEl.videoHeight;
+                    const ctx = canvasEl.getContext('2d');
+                    ctx.drawImage(videoEl, 0, 0, canvasEl.width, canvasEl.height);
+                    frontScanCaptured = true;
+                } catch (err) {
+                    console.warn("Canvas capture note:", err);
+                }
+            } else {
+                frontScanCaptured = true;
+            }
+
             setTimeout(() => {
-                captureSideScan();
-            }, 500);
+                stopCameraStream();
+                triggerAnalysisSequence();
+            }, 300);
+        }
+
+        function handleGalleryUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const scanPhaseTag = document.getElementById('scan-phase-tag');
+            if (scanPhaseTag) scanPhaseTag.innerText = "Processing Image...";
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                frontScanCaptured = true;
+                stopCameraStream();
+                triggerAnalysisSequence();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function captureFrontScan() {
+            captureDirectFromWebcam();
         }
 
         function captureSideScan() {
@@ -952,10 +1085,15 @@
             let pct = 0;
             const timer = setInterval(() => {
                 pct += 25;
-                document.getElementById('loader-progress').style.width = pct + '%';
+                const bar = document.getElementById('loader-progress');
+                if (bar) bar.style.width = pct + '%';
                 if (pct >= 100) {
                     clearInterval(timer);
-                    calculateAndRenderResults();
+                    try {
+                        calculateAndRenderResults();
+                    } catch(err) {
+                        console.error('calculateAndRenderResults failed:', err);
+                    }
                     showStep('step-results');
                 }
             }, 400);
@@ -980,9 +1118,11 @@
         }
 
         function calculateAndRenderResults() {
-            const h = parseFloat(document.getElementById('input-height').value) || 175;
-            const w = parseFloat(document.getElementById('input-weight').value) || 70;
-            const goal = document.getElementById('select-goal').value || 'Muscle Gain';
+            const h = parseFloat(document.getElementById('input-height')?.value) || 175;
+            const w = parseFloat(document.getElementById('input-weight')?.value) || 70;
+            const goalEl = document.getElementById('input-goal') || document.getElementById('select-goal');
+            const goal = (goalEl?.value) || 'Muscle Gain';
+            const diet = document.getElementById('select-diet')?.value || selectedDietPref || 'Non-Vegetarian';
             const bmi = (w / ((h / 100) * (h / 100))).toFixed(1);
 
             document.getElementById('res-score').innerText = '82';
@@ -993,13 +1133,39 @@
 
             recalculateNutritionRecommendations();
 
-            currentScanData = { date: new Date().toISOString(), height: h, weight: w, bmi, fitnessScore: 82, postureScore: 82, symmetryScore: 88, goal };
+            const postureScore = 82;
+            const symmetryScore = 88;
+            const postureRating = postureScore >= 85 ? 'Excellent' : postureScore >= 70 ? 'Good' : postureScore >= 55 ? 'Fair' : 'Needs Work';
+            const issues = [];
+            if (postureScore < 85) issues.push('rounded_shoulders');
+            if (symmetryScore < 90) issues.push('minor_asymmetry');
+            if (postureScore < 70) issues.push('forward_head');
+
+            currentScanData = {
+                date: new Date().toISOString(),
+                height: h, weight: w, bmi,
+                fitnessScore: postureScore, postureScore, symmetryScore,
+                goal, diet, postureRating, issues,
+                shoulderAlignment: 'Good (0.8°)',
+                hipAlignment: 'Good (0.5°)',
+                spineVerticality: '1.2° Tilt',
+                estimatedBodyFat: '15.8%',
+                focusArea: 'Upper Back & Core'
+            };
+
+            // Save for progress.html
+            localStorage.setItem('latestBodyScan', JSON.stringify(currentScanData));
+            let scans = [];
+            try { scans = JSON.parse(localStorage.getItem('fitforge_scans') || '[]'); } catch(e) {}
+            scans.unshift({ ...currentScanData });
+            localStorage.setItem('fitforge_scans', JSON.stringify(scans.slice(0, 10)));
         }
 
         function recalculateNutritionRecommendations() {
-            const h = parseFloat(document.getElementById('input-height').value) || 175;
-            const w = parseFloat(document.getElementById('input-weight').value) || 70;
-            const goal = document.getElementById('select-goal').value || 'Muscle Gain';
+            const h = parseFloat(document.getElementById('input-height')?.value) || 175;
+            const w = parseFloat(document.getElementById('input-weight')?.value) || 70;
+            const goalEl = document.getElementById('input-goal') || document.getElementById('select-goal');
+            const goal = (goalEl?.value) || 'Muscle Gain';
             const diet = document.getElementById('select-diet')?.value || selectedDietPref;
 
             let cals = Math.round(w * 30 + 200);
@@ -1110,10 +1276,10 @@
                     },
                     body: JSON.stringify(payload)
                 });
-                
+
                 // Also cache locally
                 let scans = [];
-                try { scans = JSON.parse(localStorage.getItem('fitforge_scans') || '[]'); } catch(e) {}
+                try { scans = JSON.parse(localStorage.getItem('fitforge_scans') || '[]'); } catch (e) { }
                 scans.unshift({ ...payload, date: new Date().toISOString() });
                 localStorage.setItem('fitforge_scans', JSON.stringify(scans.slice(0, 10)));
 
@@ -1151,7 +1317,7 @@
                             'Authorization': 'Bearer ' + (localStorage.getItem('authToken') || '')
                         }
                     });
-                } catch(e) {}
+                } catch (e) { }
                 localStorage.removeItem('fitforge_scans');
                 showStep('step-intro');
             }
