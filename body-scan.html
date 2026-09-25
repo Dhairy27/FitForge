@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html class="dark" lang="en">
 
 <head>
@@ -298,10 +298,7 @@
                                 <h3 class="font-headline text-base sm:text-lg font-bold text-white">Setup Scan
                                     Parameters</h3>
                             </div>
-                            <span
-                                class="text-[10px] sm:text-xs uppercase font-bold text-purple-400/90 bg-purple-500/10 px-3 py-1 rounded-full border border-purple-500/20 tracking-wider">
-                                Step 1 of 3
-                            </span>
+                            
                         </div>
 
                         <!-- 4-Column Responsive Parameters Grid -->
@@ -348,17 +345,16 @@
                         </div>
 
                         <!-- CTA Action Area -->
-                        <div
-                            class="pt-2 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <p class="text-[11px] text-secondary/60 text-center sm:text-left">
-                                Stand 6–8 feet away from the camera for full-body tracking.
-                            </p>
-                            <button onclick="requestCameraAccessAndStart()"
-                                class="w-full sm:w-auto px-8 py-3.5 bg-primary text-on-primary font-headline font-bold text-xs uppercase tracking-wider rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(255,255,255,0.15)]">
-                                <span class="material-symbols-outlined text-base">videocam</span>
-                                Proceed to Camera Scan
-                            </button>
-                        </div>
+                        <div class="pt-6 pb-2 border-t border-white/5 flex flex-col items-center justify-center gap-4 w-full">
+    <button onclick="requestCameraAccessAndStart()"
+        class="px-10 py-4 bg-primary text-on-primary font-headline font-bold text-sm uppercase tracking-wider rounded-full hover:bg-white hover:text-black transition-all cursor-pointer flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+        <span class="material-symbols-outlined text-xl">videocam</span>
+        PROCEED TO CAMERA SCAN
+    </button>
+    <p class="text-[12px] text-secondary/60 text-center">
+        Stand 6-8 feet away from the camera for full-body tracking.
+    </p>
+</div>
                     </div>
 
                 </div>
@@ -605,7 +601,7 @@
                 <!-- Posture Breakdown & Alignment Cards -->
                 <div class="grid grid-cols-12 gap-6">
 
-                    <div class="col-span-12 lg:col-span-7 glass-card p-8 rounded-[2rem] border-glass-border space-y-6">
+                    <div class="col-span-12 lg:col-span-6 glass-card p-8 rounded-[2rem] border-glass-border space-y-6">
                         <h3 class="font-headline text-lg font-bold text-white">Detailed Posture Analysis</h3>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -640,7 +636,7 @@
                         </div>
                     </div>
 
-                    <div class="col-span-12 lg:col-span-5 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
+                    <div class="col-span-12 lg:col-span-6 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
                         <h3 class="font-headline text-lg font-bold text-white">Recommended Focus</h3>
                         <div class="space-y-3 text-xs">
                             <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-1">
@@ -666,218 +662,171 @@
 
 
                 <!-- NEW: AI NUTRITION RECOMMENDATION SECTION -->
-                <div class="glass-card p-8 rounded-[2rem] border-glass-border space-y-8">
+<div class="glass-card p-8 rounded-[2rem] border-glass-border space-y-8">
 
-                    <div
-                        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-4">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="material-symbols-outlined text-purple-400 text-xl">restaurant</span>
-                                <h3 class="font-headline text-xl font-bold text-white">AI Nutrition Recommendation</h3>
-                            </div>
-                            <p class="text-xs text-secondary">General fitness-oriented nutrition targets derived from
-                                your biometric profile & goal.</p>
-                        </div>
+    <!-- Section Header & Diet Tabs -->
+    <div
+        class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-white/5 pb-4">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-purple-400 text-xl">restaurant</span>
+                <h3 class="font-headline text-xl font-bold text-white">AI Nutrition Recommendation</h3>
+            </div>
+            <p class="text-xs text-secondary">General fitness-oriented nutrition targets derived from your biometric
+                profile &amp; goal.</p>
+        </div>
+        <div class="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-glass-border">
+            <button id="diet-tab-nonveg"
+                class="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer">Non-Veg</button>
+            <button id="diet-tab-veg"
+                class="px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer">Vegetarian</button>
+            <button id="diet-tab-vegan"
+                class="px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer">Vegan</button>
+        </div>
+    </div>
 
-                        <!-- Interactive Preference Tabs -->
-                        <div class="flex items-center gap-2 bg-white/5 p-1 rounded-full border border-glass-border">
-                            <button id="diet-tab-nonveg" onclick="setDietPreference('Non-Vegetarian')"
-                                class="px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer">
-                                Non-Veg
-                            </button>
-                            <button id="diet-tab-veg" onclick="setDietPreference('Vegetarian')"
-                                class="px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer">
-                                Vegetarian
-                            </button>
-                            <button id="diet-tab-vegan" onclick="setDietPreference('Vegan')"
-                                class="px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer">
-                                Vegan
-                            </button>
-                        </div>
-                    </div>
+    <!-- 1. Daily Calorie Target -->
+    <div
+        class="bg-white/5 border border-white/5 p-6 rounded-2xl flex flex-col md:flex-row justify-between md:items-center gap-4">
+        <div class="space-y-2">
+            <div class="flex items-center gap-2 text-primary font-bold">
+                <span>🔥 Daily Calories:</span>
+                <span class="font-headline text-2xl text-purple-400">2,100–2,300 kcal</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+                <span
+                    class="bg-purple-500/10 text-purple-400 px-3 py-1 rounded-full border border-purple-500/20 font-bold uppercase tracking-wider">Goal:
+                    Weight Loss</span>
+                <span class="text-secondary">Suggested deficit: Moderate</span>
+            </div>
+        </div>
+    </div>
 
-                    <!-- Macro Target Bento Dashboard Grid -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
-                            <span class="text-[10px] uppercase font-bold text-secondary tracking-widest block">Daily
-                                Calorie Target</span>
-                            <span id="nutri-cals" class="font-headline text-3xl font-bold text-white">2,100 kcal</span>
-                            <span class="text-[10px] text-purple-300 font-semibold block">Estimated Target</span>
-                        </div>
-                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
-                            <span class="text-[10px] uppercase font-bold text-emerald-400 tracking-widest block">Protein
-                                Target</span>
-                            <span id="nutri-protein" class="font-headline text-3xl font-bold text-white">140 g</span>
-                            <span class="text-[10px] text-secondary block">Muscle Repair & Building</span>
-                        </div>
-                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
-                            <span
-                                class="text-[10px] uppercase font-bold text-sky-400 tracking-widest block">Carbohydrates</span>
-                            <span id="nutri-carbs" class="font-headline text-3xl font-bold text-white">230 g</span>
-                            <span class="text-[10px] text-secondary block">Energy & Workout Fuel</span>
-                        </div>
-                        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl text-center space-y-1">
-                            <span class="text-[10px] uppercase font-bold text-amber-400 tracking-widest block">Healthy
-                                Fats</span>
-                            <span id="nutri-fats" class="font-headline text-3xl font-bold text-white">60 g</span>
-                            <span class="text-[10px] text-secondary block">Hormonal Balance</span>
-                        </div>
-                    </div>
+    <!-- 2. Macronutrient Recommendation (3-card) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl space-y-2 relative overflow-hidden group">
+            <div class="flex justify-between items-center">
+                <span class="text-xs uppercase font-bold text-emerald-400 tracking-widest flex items-center gap-2">🥩
+                    Protein</span>
+                <span class="text-[10px] text-white/40 font-bold">~30%</span>
+            </div>
+            <span class="font-headline text-3xl font-bold text-white block">120 g</span>
+            <div class="absolute bottom-0 left-0 h-1 bg-emerald-400/30 w-full"></div>
+        </div>
+        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl space-y-2 relative overflow-hidden group">
+            <div class="flex justify-between items-center">
+                <span class="text-xs uppercase font-bold text-sky-400 tracking-widest flex items-center gap-2">🍚
+                    Carbohydrates</span>
+                <span class="text-[10px] text-white/40 font-bold">~40%</span>
+            </div>
+            <span class="font-headline text-3xl font-bold text-white block">250 g</span>
+            <div class="absolute bottom-0 left-0 h-1 bg-sky-400/30 w-full"></div>
+        </div>
+        <div class="bg-white/5 border border-white/5 p-5 rounded-2xl space-y-2 relative overflow-hidden group">
+            <div class="flex justify-between items-center">
+                <span class="text-xs uppercase font-bold text-amber-400 tracking-widest flex items-center gap-2">🥑
+                    Fats</span>
+                <span class="text-[10px] text-white/40 font-bold">~30%</span>
+            </div>
+            <span class="font-headline text-3xl font-bold text-white block">65 g</span>
+            <div class="absolute bottom-0 left-0 h-1 bg-amber-400/30 w-full"></div>
+        </div>
+    </div>
 
-                    <!-- Goal-Based Strategy Banner -->
-                    <div class="p-5 bg-white/5 border border-glass-border rounded-2xl flex items-start gap-4">
-                        <div
-                            class="w-10 h-10 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 mt-0.5">
-                            <span class="material-symbols-outlined">track_changes</span>
-                        </div>
-                        <div class="space-y-1">
-                            <h4 id="nutri-strategy-title" class="text-sm font-bold text-white">Goal Strategy: Muscle
-                                Gain & Hypertrophy</h4>
-                            <p id="nutri-strategy-desc" class="text-xs text-secondary leading-relaxed">
-                                Recommend sufficient calories and high-quality protein to support muscle recovery.
-                                Prioritize protein-rich foods, balanced complex carbohydrates around training sessions,
-                                and optimal hydration.
-                            </p>
-                        </div>
-                    </div>
+    <!-- 5. AI-Recommended Foods -->
+    <div class="space-y-4 pt-1">
+        <h4 class="font-headline text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-emerald-400 text-sm">inventory_2</span>
+            Recommended Foods
+        </h4>
+        <div id="ai-recommended-foods" class="flex flex-wrap gap-2 text-xs font-semibold">
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🥚 Eggs</span>
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🥛 Greek yogurt</span>
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🍗 Chicken /
+                paneer</span>
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🫘 Dal &amp;
+                legumes</span>
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🥦 Green
+                vegetables</span>
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🍌 Fruits</span>
+            <span class="px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white">🌾 Whole grains</span>
+        </div>
+    </div>
 
-                    <!-- Personalized Meal Suggestions Breakdown -->
-                    <div class="space-y-4">
-                        <h4
-                            class="font-headline text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                            <span class="material-symbols-outlined text-purple-400">flatware</span> Personalized Daily
-                            Meal Suggestions
-                        </h4>
+    <!-- 6. Meal Distribution -->
+    <div class="space-y-4 pt-1">
+        <h4 class="font-headline text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-amber-400 text-sm">pie_chart</span>
+            Suggested Meal Split
+        </h4>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div
+                class="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-1">
+                <span class="text-lg">🌅</span>
+                <span class="text-[10px] text-secondary font-bold uppercase tracking-wider">Breakfast</span>
+                <span class="text-sm font-bold text-white">25%</span>
+            </div>
+            <div
+                class="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-1">
+                <span class="text-lg">☀️</span>
+                <span class="text-[10px] text-secondary font-bold uppercase tracking-wider">Lunch</span>
+                <span class="text-sm font-bold text-white">35%</span>
+            </div>
+            <div
+                class="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-1">
+                <span class="text-lg">🌆</span>
+                <span class="text-[10px] text-secondary font-bold uppercase tracking-wider">Snack</span>
+                <span class="text-sm font-bold text-white">10%</span>
+            </div>
+            <div
+                class="bg-black/30 p-3 rounded-xl border border-white/5 flex flex-col items-center justify-center gap-1">
+                <span class="text-lg">🌙</span>
+                <span class="text-[10px] text-secondary font-bold uppercase tracking-wider">Dinner</span>
+                <span class="text-sm font-bold text-white">30%</span>
+            </div>
+        </div>
+    </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                                <span
-                                    class="text-[10px] font-bold text-purple-400 uppercase tracking-wider block">Breakfast</span>
-                                <p id="meal-breakfast" class="text-xs text-white font-medium">Oats + milk/Greek yogurt +
-                                    fruit OR Eggs + whole-grain toast</p>
-                            </div>
-                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                                <span
-                                    class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Lunch</span>
-                                <p id="meal-lunch" class="text-xs text-white font-medium">Rice/roti + dal + vegetables +
-                                    chicken/fish OR paneer/tofu</p>
-                            </div>
-                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                                <span
-                                    class="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Snack</span>
-                                <p id="meal-snack" class="text-xs text-white font-medium">Fruit + handful of nuts OR
-                                    Greek yogurt OR boiled eggs</p>
-                            </div>
-                            <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                                <span
-                                    class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Dinner</span>
-                                <p id="meal-dinner" class="text-xs text-white font-medium">Lean protein source + mixed
-                                    vegetables + moderate carbohydrates</p>
-                            </div>
-                        </div>
-                    </div>
+    <!-- 4. Body Composition Insight -->
+    <div class="p-5 bg-white/5 border border-glass-border rounded-2xl space-y-2 border-l-2 border-l-purple-500">
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
+            <span class="material-symbols-outlined text-purple-400 text-sm">psychology</span>
+            Body Scan Insight
+        </h4>
+        <p class="text-xs text-secondary leading-relaxed font-medium">
+            Your current profile indicates a focus on maintaining muscle while gradually reducing body fat.
+        </p>
+    </div>
 
-                    <!-- Hydration, Pre & Post Workout Fuel -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                            <div
-                                class="flex items-center gap-2 text-sky-400 text-xs font-bold uppercase tracking-wider">
-                                <span class="material-symbols-outlined text-base">water_drop</span>
-                                <span>Recommended Water Intake</span>
-                            </div>
-                            <span id="nutri-water" class="font-headline text-2xl font-bold text-white block">2.5 L /
-                                day</span>
-                            <p class="text-[11px] text-secondary">Estimated baseline water intake. Adjust based on
-                                climate and workout sweat loss.</p>
-                        </div>
+    <!-- 7. AI Recommendation Message -->
+    <div
+        class="p-6 bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-500/20 rounded-2xl flex items-start gap-4">
+        <span class="text-2xl mt-1">🤖</span>
+        <div class="space-y-1">
+            <h4 class="text-xs font-bold text-purple-400 uppercase tracking-wider">AI Recommendation</h4>
+            <p class="text-xs text-white/80 leading-relaxed font-medium">
+                Prioritize protein-rich foods and vegetables in your meals. Maintain adequate hydration and choose
+                whole-food carbohydrate sources to support your fitness goal.
+            </p>
+        </div>
+    </div>
 
-                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                            <div
-                                class="flex items-center gap-2 text-amber-400 text-xs font-bold uppercase tracking-wider">
-                                <span class="material-symbols-outlined text-base">bolt</span>
-                                <span>Pre-Workout Nutrition</span>
-                            </div>
-                            <p class="text-xs text-white">Banana, Oats, Whole-Grain Toast, or Fruit + Yogurt 45-60 mins
-                                prior to training.</p>
-                        </div>
-
-                        <div class="bg-white/5 border border-white/5 p-4 rounded-2xl space-y-2">
-                            <div
-                                class="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-                                <span class="material-symbols-outlined text-base">fitness_center</span>
-                                <span>Post-Workout Recovery</span>
-                            </div>
-                            <p class="text-xs text-white">Protein-rich food + fast-absorbing carbohydrates for muscle
-                                glycogen recovery & electrolytes.</p>
-                        </div>
-                    </div>
-
-                    <!-- Important Safety Notice Card -->
-                    <div class="p-4 bg-white/5 border border-glass-border rounded-2xl flex items-start gap-3">
-                        <span class="material-symbols-outlined text-purple-400 text-lg shrink-0 mt-0.5">warning</span>
-                        <div class="space-y-1">
-                            <h5 class="text-xs font-bold text-white uppercase tracking-wider">Important Nutrition Safety
-                                Notice</h5>
-                            <p class="text-[11px] text-secondary leading-snug">
-                                Nutrition recommendations are general fitness guidance and AI-generated estimates. They
-                                are not medical advice. Calorie and nutrient requirements vary between individuals.
-                                Users with medical conditions, allergies, eating disorders, pregnancy, or special
-                                dietary requirements should consult a qualified healthcare professional or registered
-                                dietitian.
-                            </p>
-                        </div>
-                    </div>
-
-                </div>
-
-            </section>
-
+</div>
+</section>
 
             <!-- STEP 5: PROGRESS TRACKING & SCAN HISTORY -->
             <section id="step-history" class="hidden space-y-8">
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <div>
-                        <h2 class="font-headline text-2xl font-bold text-white">Scan History & Progress Tracking</h2>
-                        <p class="text-xs text-secondary">Compare previous vs current scan metrics over time.</p>
-                    </div>
-                    <button onclick="confirmClearHistory()"
-                        class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-full text-xs font-bold cursor-pointer">Delete
-                        Scan History</button>
-                </div>
-
-                <div class="grid grid-cols-12 gap-6">
-                    <div class="col-span-12 lg:col-span-7 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
-                        <h3 class="font-headline text-lg font-bold text-white">Previous Scan vs Current Scan</h3>
-                        <div class="space-y-3 text-xs">
-                            <div
-                                class="grid grid-cols-3 gap-2 bg-white/5 p-3 rounded-xl text-center font-bold text-secondary">
-                                <span>Metric</span><span>Previous Scan</span><span>Current Scan</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3.5 rounded-xl text-center items-center">
-                                <span class="text-white font-bold text-left">Posture Score</span><span
-                                    class="text-secondary">76</span><span class="text-emerald-400 font-bold">82
-                                    (+6)</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3.5 rounded-xl text-center items-center">
-                                <span class="text-white font-bold text-left">Body Symmetry</span><span
-                                    class="text-secondary">83%</span><span class="text-emerald-400 font-bold">88%
-                                    (+5%)</span>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 bg-white/5 p-3.5 rounded-xl text-center items-center">
-                                <span class="text-white font-bold text-left">AI Fitness Score</span><span
-                                    class="text-secondary">75</span><span class="text-emerald-400 font-bold">82
-                                    (+7)</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-span-12 lg:col-span-5 glass-card p-8 rounded-[2rem] border-glass-border space-y-4">
-                        <h3 class="font-headline text-lg font-bold text-white">Progression Trend</h3>
-                        <div class="w-full h-60">
-                            <canvas id="progress-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
+    <div class="flex justify-between items-center border-b border-white/5 pb-4">
+        <div>
+            <h2 class="font-headline text-2xl font-bold text-white">Scan History & Progress Tracking</h2>
+            <p class="text-xs text-secondary">Review your previous scan records and biometric tracking.</p>
+        </div>
+        <button onclick="confirmClearHistory()" class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-full text-xs font-bold cursor-pointer transition-colors">Delete Scan History</button>
+    </div>
+    
+    <div id="history-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- History Cards will be injected here via JavaScript -->
+    </div>
             </section>
 
         </div>
@@ -1206,12 +1155,9 @@
             }
 
             document.getElementById('nutri-cals').innerText = cals.toLocaleString() + ' kcal';
-            document.getElementById('nutri-protein').innerText = prot + ' g';
-            document.getElementById('nutri-carbs').innerText = carbs + ' g';
+                        document.getElementById('nutri-carbs').innerText = carbs + ' g';
             document.getElementById('nutri-fats').innerText = fats + ' g';
-            document.getElementById('nutri-strategy-title').innerText = strategyTitle;
-            document.getElementById('nutri-strategy-desc').innerText = strategyDesc;
-
+                        
             let breakfast = "Oats + milk/Greek yogurt + fruit OR Eggs + whole-grain toast";
             let lunch = "Rice/roti + dal + vegetables + chicken/fish";
             let snack = "Fruit + nuts OR Greek yogurt OR Boiled eggs";
@@ -1229,11 +1175,7 @@
                 dinner = "Tofu stir-fry + broccoli + sweet potato/rice";
             }
 
-            document.getElementById('meal-breakfast').innerText = breakfast;
-            document.getElementById('meal-lunch').innerText = lunch;
-            document.getElementById('meal-snack').innerText = snack;
-            document.getElementById('meal-dinner').innerText = dinner;
-        }
+                                                        }
 
         async function saveScanToHistory() {
             const userEmail = localStorage.getItem('userEmail') || 'guest@fitforge.ai';
@@ -1289,6 +1231,7 @@
                 alert("AI Body Scan record saved locally!");
             }
 
+            renderHistoryUI();
             showStep('step-history');
         }
 
@@ -1324,6 +1267,123 @@
         }
     </script>
     <script src="subscription-check.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tabs = {
+        'nonveg': document.getElementById('diet-tab-nonveg'),
+        'veg': document.getElementById('diet-tab-veg'),
+        'vegan': document.getElementById('diet-tab-vegan')
+    };
+    const foodsContainer = document.getElementById('ai-recommended-foods');
+
+    const foodData = {
+        'nonveg': [
+            'Eggs (Missing Choline)', 'Greek yogurt', 'Chicken Breast (Needed Protein)', 
+            'Salmon (Omega-3s)', 'Dal & legumes', 'Green vegetables', 'Fruits'
+        ],
+        'veg': [
+            'Greek yogurt (Needed Protein)', 'Paneer', 'Spinach (Missing Iron)', 
+            'Dal & legumes', 'Green vegetables', 'Fruits', 'Quinoa'
+        ],
+        'vegan': [
+            'Tofu (Needed Protein)', 'Tempeh', 'Lentils', 
+            'Chia Seeds (Omega-3s)', 'Green vegetables', 'Fruits', 'Quinoa'
+        ]
+    };
+
+    function setActiveTab(selected) {
+        // Reset all tabs
+        Object.values(tabs).forEach(tab => {
+            if (tab) {
+                tab.className = 'px-4 py-1.5 rounded-full text-xs font-bold text-secondary hover:text-white transition-all cursor-pointer';
+            }
+        });
+        
+        // Set selected tab
+        if (tabs[selected]) {
+            tabs[selected].className = 'px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary transition-all cursor-pointer';
+        }
+
+        // Update foods
+        if (foodsContainer) {
+            foodsContainer.innerHTML = '';
+            foodData[selected].forEach(food => {
+                const sp = document.createElement('span');
+                sp.className = 'px-3 py-1.5 bg-white/10 border border-white/10 rounded-full text-white';
+                sp.innerText = food;
+                foodsContainer.appendChild(sp);
+            });
+        }
+    }
+
+    // Attach listeners
+    if (tabs['nonveg']) tabs['nonveg'].addEventListener('click', () => setActiveTab('nonveg'));
+    if (tabs['veg']) tabs['veg'].addEventListener('click', () => setActiveTab('veg'));
+    if (tabs['vegan']) tabs['vegan'].addEventListener('click', () => setActiveTab('vegan'));
+});
+</script>
+<script>
+        function renderHistoryUI() {
+            const container = document.getElementById('history-cards-container');
+            if (!container) return;
+            
+            let scans = [];
+            try { scans = JSON.parse(localStorage.getItem('fitforge_scans') || '[]'); } catch (e) {}
+            
+            if (scans.length === 0) {
+                container.innerHTML = <div class="col-span-full glass-card p-10 text-center rounded-[2rem] border-glass-border">
+                    <span class="material-symbols-outlined text-4xl text-secondary mb-2">history</span>
+                    <h3 class="text-white font-bold text-lg">No Scan History</h3>
+                    <p class="text-secondary text-xs mt-2">Take a body scan and save it to see your progress here.</p>
+                </div>;
+                return;
+            }
+            
+            container.innerHTML = '';
+            scans.forEach((scan, index) => {
+                const date = new Date(scan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                
+                const card = document.createElement('div');
+                card.className = "glass-card p-6 rounded-2xl border-white/5 space-y-4 hover:border-white/20 transition-colors relative overflow-hidden group";
+                
+                card.innerHTML = 
+                    <div class="flex justify-between items-start border-b border-white/5 pb-3">
+                        <div>
+                            <span class="text-[10px] text-purple-400 font-bold uppercase tracking-widest">Scan Target: </span>
+                            <h3 class="text-sm font-bold text-white mt-0.5"></h3>
+                        </div>
+                        <span class="bg-emerald-500/10 text-emerald-400 px-2 py-1 flex items-center gap-1 rounded-full text-[10px] font-bold border border-emerald-500/20">
+                            <span class="material-symbols-outlined text-[12px]">vital_signs</span> Score: 
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <span class="block text-[10px] text-secondary font-semibold uppercase tracking-wider mb-1">Body Fat</span>
+                            <span class="font-bold text-white text-lg"></span>
+                        </div>
+                        <div class="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <span class="block text-[10px] text-secondary font-semibold uppercase tracking-wider mb-1">BMI</span>
+                            <span class="font-bold text-white text-lg"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-black/30 p-4 rounded-xl border border-white/5 space-y-2 mt-2">
+                         <span class="block text-[10px] text-secondary font-semibold uppercase tracking-wider">Key Metrics & Posture</span>
+                         <div class="flex justify-between items-center text-xs">
+                            <span class="text-white/60">Shoulders:</span>
+                            <span class="font-semibold text-white"></span>
+                         </div>
+                         <div class="flex justify-between items-center text-xs">
+                            <span class="text-white/60">Chest/Waist/Hips:</span>
+                            <span class="font-semibold text-white"> /  / </span>
+                         </div>
+                    </div>
+                ;
+                container.appendChild(card);
+            });
+        }
+</script>
 </body>
 
 </html>
