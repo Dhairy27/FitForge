@@ -928,12 +928,11 @@
                     });
                 }
 
-                // 4. Load saved diet plan if any
+                // 4. Load saved diet plan if any (keep hidden until user synthesizes)
                 const planResponse = await fetch(`/api/user/diet-plan?email=${encodeURIComponent(userEmail)}`);
                 const planData = await planResponse.json();
                 if (planData.plan) {
                     currentDietPlan = planData.plan;
-                    renderDietPlan();
                 }
 
                 // 5. Load today's nutrition logs
@@ -992,7 +991,12 @@
 
                 const planData = await planResponse.json();
                 currentDietPlan = planData.plan;
+                try { localStorage.removeItem(`shoppingCheckOff_${userEmail}`); } catch(e) {}
                 renderDietPlan();
+
+                setTimeout(() => {
+                    document.getElementById('diet-data-dashboard')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
 
             } catch (error) {
                 console.error(error);
@@ -1129,8 +1133,24 @@
             });
         }
 
+        function cleanIngredientName(ing) {
+            if (!ing || typeof ing !== 'string') return '';
+            let str = ing.trim();
+            if (/^(\d+(\.\d+)?\s*(cup|glass|l|ml)?\s*)?water$/i.test(str)) {
+                return '';
+            }
+            str = str.replace(/^[\d\/\.\s]+(g|kg|ml|l|oz|lb|tbsp|tsp|cup|cups|medium|small|large|slice|slices|whole|handful|scoop|scoops|can|cans|pinch|pinches|head|heads)?\b(\s+of\s+)?/i, '').trim();
+            str = str.replace(/^(g|kg|ml|l|oz|lb|tbsp|tsp|cup|cups|medium|small|large|slice|slices|whole|handful|scoop|scoops|can|cans|pinch|pinches|head|heads)\b(\s+of\s+)?/i, '').trim();
+            str = str.replace(/^(cooked|steamed|grilled|baked|sautéed|sauteed|pan-seared|roasted|fresh|organic|ripe)\s+/i, '').trim();
+            if (!str) return '';
+            return str.split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+        }
+
         function renderShoppingChecklist() {
             const checklist = document.getElementById('shopping-checklist-items');
+            if (!checklist || !currentDietPlan) return;
 
             // Adjust the layout of the checklist container to hold sections vertically
             checklist.className = "col-span-full space-y-8";
@@ -1139,24 +1159,23 @@
             const itemsStr = localStorage.getItem(`shoppingCheckOff_${userEmail}`) || '[]';
             const checkedOff = JSON.parse(itemsStr);
 
-            let allItems = [];
-            if (currentDietPlan.shoppingList && currentDietPlan.shoppingList.length > 0) {
-                allItems = currentDietPlan.shoppingList;
-            } else {
-                const listItemsSet = new Set();
-                const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-                mealTypes.forEach(t => {
-                    const meal = currentDietPlan.dailyMeals[t];
-                    if (meal && Array.isArray(meal.ingredients)) {
-                        meal.ingredients.forEach(ing => {
-                            const cleanedText = ing.replace(/^\d+(\.\d+)?\s+(\w+)\s+(of\s+)?/i, '').trim();
-                            const capitalized = cleanedText.charAt(0).toUpperCase() + cleanedText.slice(1);
-                            listItemsSet.add(capitalized);
+            // Extract ingredients ONLY from the active Daily Meal Plan (dailyMeals)
+            const shoppingSet = new Set();
+            if (currentDietPlan.dailyMeals) {
+                Object.keys(currentDietPlan.dailyMeals).forEach(type => {
+                    const m = currentDietPlan.dailyMeals[type];
+                    if (m && Array.isArray(m.ingredients)) {
+                        m.ingredients.forEach(ing => {
+                            const cleaned = cleanIngredientName(ing);
+                            if (cleaned && cleaned.length > 1) {
+                                shoppingSet.add(cleaned);
+                            }
                         });
                     }
                 });
-                allItems = Array.from(listItemsSet);
             }
+
+            const allItems = Array.from(shoppingSet).sort();
 
             // Categorization setup
             const categories = [

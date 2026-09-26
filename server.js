@@ -2679,20 +2679,37 @@ app.post('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
       weeklyMeals[dayNum] = compileDaysPlan();
     }
 
+    const cleanIngName = (ing) => {
+      if (!ing || typeof ing !== 'string') return '';
+      let str = ing.trim();
+      if (/^(\d+(\.\d+)?\s*(cup|glass|l|ml)?\s*)?water$/i.test(str)) return '';
+      str = str.replace(/^[\d\/\.\s]+(g|kg|ml|l|oz|lb|tbsp|tsp|cup|cups|medium|small|large|slice|slices|whole|handful|scoop|scoops|can|cans|pinch|pinches|head|heads)?\b(\s+of\s+)?/i, '').trim();
+      str = str.replace(/^(g|kg|ml|l|oz|lb|tbsp|tsp|cup|cups|medium|small|large|slice|slices|whole|handful|scoop|scoops|can|cans|pinch|pinches|head|heads)\b(\s+of\s+)?/i, '').trim();
+      str = str.replace(/^(cooked|steamed|grilled|baked|sautéed|sauteed|pan-seared|roasted|fresh|organic|ripe)\s+/i, '').trim();
+      if (!str) return '';
+      return str.split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ');
+    };
+
     const shoppingSet = new Set();
     const addShoppingIngredients = (mealsObj) => {
+      if (!mealsObj) return;
       Object.keys(mealsObj).forEach(key => {
-        mealsObj[key].ingredients.forEach(ing => {
-          const cleanedText = ing.replace(/^\d+(\.\d+)?\s+(\w+)\s+(of\s+)?/i, '').trim();
-          shoppingSet.add(cleanedText.charAt(0).toUpperCase() + cleanedText.slice(1));
-        });
+        if (mealsObj[key] && Array.isArray(mealsObj[key].ingredients)) {
+          mealsObj[key].ingredients.forEach(ing => {
+            const cleanedText = cleanIngName(ing);
+            if (cleanedText && cleanedText.length > 1) {
+              shoppingSet.add(cleanedText);
+            }
+          });
+        }
       });
     };
 
-    for (let dNum = 1; dNum <= 7; dNum++) {
-      addShoppingIngredients(weeklyMeals[dNum]);
-    }
-    const shoppingList = Array.from(shoppingSet);
+    if (dailyMeals) addShoppingIngredients(dailyMeals);
+
+    const shoppingList = Array.from(shoppingSet).sort();
 
     const plan = {
       generatedAt: new Date().toISOString(),
@@ -2750,7 +2767,60 @@ app.delete('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
   }
 });
 
+function parsePortionGrams(portionStr) {
+  if (!portionStr || typeof portionStr !== 'string') return 100;
+  const str = portionStr.toLowerCase().trim();
+  const matchNum = str.match(/(\d+(?:\.\d+)?)/);
+  if (!matchNum) return 100;
+  const val = parseFloat(matchNum[1]);
+  if (str.includes('kg') || str.includes('kilogram')) return val * 1000;
+  if (str.includes('oz') || str.includes('ounce')) return Math.round(val * 28.3495);
+  if (str.includes('lb') || str.includes('pound')) return Math.round(val * 453.592);
+  if (str.includes('g') || str.includes('gram')) return Math.round(val);
+  if (str.includes('cup')) return Math.round(val * 200);
+  if (str.includes('tbsp') || str.includes('tablespoon')) return Math.round(val * 15);
+  if (str.includes('tsp') || str.includes('teaspoon')) return Math.round(val * 5);
+  if (str.includes('slice')) return Math.round(val * 40);
+  if (str.includes('egg')) return Math.round(val * 50);
+  return Math.round(val) || 100;
+}
+
+function findFoodMatchKey(normName) {
+  if (!normName) return null;
+  const cleaned = normName.toLowerCase().replace(/[_\-]/g, ' ').trim();
+  // Sort keys by length descending to match longest specific dishes first
+  const keys = Object.keys(FOOD_DATABASE).sort((a, b) => b.length - a.length);
+  for (const k of keys) {
+    if (cleaned === k) return k;
+    const regex = new RegExp(`\\b${k.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i');
+    if (regex.test(cleaned)) return k;
+  }
+  return null;
+}
+
 const FOOD_DATABASE = {
+  "paneer butter masala": { calories: 220, protein: 9, carbs: 10, fat: 16, name: "Paneer Butter Masala" },
+  "paneer tikka": { calories: 240, protein: 14, carbs: 8, fat: 17, name: "Paneer Tikka" },
+  "paneer bhurji": { calories: 210, protein: 12, carbs: 6, fat: 15, name: "Paneer Bhurji" },
+  "palak paneer": { calories: 190, protein: 10, carbs: 8, fat: 14, name: "Palak Paneer" },
+  "kadai paneer": { calories: 230, protein: 11, carbs: 9, fat: 17, name: "Kadai Paneer" },
+  paneer: { calories: 265, protein: 18, carbs: 6, fat: 20, name: "Paneer (Cottage Cheese)" },
+  "cottage cheese": { calories: 98, protein: 11, carbs: 3.4, fat: 4.3, name: "Cottage Cheese" },
+  "dal makhani": { calories: 160, protein: 6, carbs: 18, fat: 8, name: "Dal Makhani" },
+  dal: { calories: 116, protein: 9, carbs: 20, fat: 0.4, name: "Dal" },
+  "butter naan": { calories: 310, protein: 9, carbs: 50, fat: 9, name: "Butter Naan" },
+  naan: { calories: 290, protein: 8, carbs: 48, fat: 7, name: "Naan" },
+  roti: { calories: 297, protein: 11, carbs: 55, fat: 3, name: "Roti / Chapati" },
+  chapati: { calories: 297, protein: 11, carbs: 55, fat: 3, name: "Chapati" },
+  "chicken biryani": { calories: 180, protein: 12, carbs: 22, fat: 6, name: "Chicken Biryani" },
+  biryani: { calories: 170, protein: 8, carbs: 24, fat: 5, name: "Biryani" },
+  chole: { calories: 160, protein: 9, carbs: 27, fat: 4, name: "Chole (Chana Masala)" },
+  rajma: { calories: 140, protein: 9, carbs: 23, fat: 0.8, name: "Rajma" },
+  dosa: { calories: 168, protein: 3.9, carbs: 29, fat: 3.7, name: "Dosa" },
+  idli: { calories: 130, protein: 4, carbs: 28, fat: 0.5, name: "Idli" },
+  poha: { calories: 180, protein: 3, carbs: 35, fat: 3, name: "Poha" },
+  samosa: { calories: 262, protein: 3.5, carbs: 32, fat: 14, name: "Samosa" },
+
   chicken: { calories: 165, protein: 31, carbs: 0, fat: 3.6, name: "Chicken Breast" },
   "chicken breast": { calories: 165, protein: 31, carbs: 0, fat: 3.6, name: "Chicken Breast" },
   beef: { calories: 250, protein: 26, carbs: 0, fat: 17, name: "Beef" },
@@ -2805,12 +2875,13 @@ const FOOD_DATABASE = {
 
 function getCalorieDetails(name, weightGrams) {
   const normName = name.toLowerCase().trim();
-  let matchKey = Object.keys(FOOD_DATABASE).find(k => normName.includes(k) || k.includes(normName));
-  const base = FOOD_DATABASE[matchKey] || { calories: 150, protein: 10, carbs: 15, fat: 5, name: name };
+  const matchKey = findFoodMatchKey(normName);
+  const base = matchKey ? FOOD_DATABASE[matchKey] : { calories: 150, protein: 10, carbs: 15, fat: 5, name: name };
+  const displayName = name.trim();
 
   const factor = weightGrams / 100;
   return {
-    name: base.name,
+    name: displayName,
     calories: Math.round(base.calories * factor),
     protein: Math.round(base.protein * factor),
     carbs: Math.round(base.carbs * factor),
@@ -2849,8 +2920,8 @@ function resolveNutritionForMeal(items) {
       potassium: Number(item.potassiumPer100g !== undefined ? item.potassiumPer100g : (item.potassium / (grams / 100) || 100))
     };
 
-    // Override with local database if match exists
-    let matchKey = Object.keys(FOOD_DATABASE).find(k => norm.includes(k) || k.includes(norm));
+    // Override with local database if exact match exists
+    const matchKey = findFoodMatchKey(norm);
     if (matchKey) {
       const dbBase = FOOD_DATABASE[matchKey];
       basePer100.calories = dbBase.calories;
@@ -2866,7 +2937,7 @@ function resolveNutritionForMeal(items) {
 
     const factor = grams / 100;
     const calcItem = {
-      name: matchKey ? FOOD_DATABASE[matchKey].name : name,
+      name: name,
       portion: item.portion || `${grams}g`,
       calories: Math.round(basePer100.calories * factor),
       protein: Math.round(basePer100.protein * factor),
@@ -2908,28 +2979,59 @@ function resolveNutritionForMeal(items) {
 
 // Mock Vision Analysis helper function
 function getMockVisionAnalysis(fileName) {
-  const name = (fileName || '').toLowerCase().trim();
+  const rawName = (fileName || '').trim();
+  const name = rawName.toLowerCase();
+  const cleanName = name.replace(/[_\-]/g, ' ');
 
-  // Check for non-food keywords first to prevent returning food data for people, faces, objects, etc.
+  // Comprehensive non-food keywords (people, body parts, clothing, accessories, electronics, animals, vehicles, empty tableware, furniture)
   const nonFoodKeywords = [
-    'sunglass', 'spectacles', 'glasses', 'goggles', 'hair slide', 'hairpin',
-    'person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl',
-    'screen', 'monitor', 'keyboard', 'computer', 'mouse', 'television', 'laptop',
-    'ceiling', 'light', 'lamp', 'window', 'door', 'wall', 'floor', 'desk', 'chair', 'table',
-    'telephone', 'phone', 'cellular', 'camera', 'microphone', 'watch', 'clock',
-    'backpack', 'bag', 'handbag', 'wallet', 'purse', 'shoe', 'shirt', 'pants', 'jacket',
-    'book', 'notebook', 'paper', 'pen', 'pencil', 'marker', 'ruler',
-    'car', 'bicycle', 'motorcycle', 'truck', 'bus', 'train', 'airplane',
-    'dog', 'cat', 'bird', 'horse', 'cow', 'sheep', 'pig', 'monkey',
-    'plant', 'tree', 'flower', 'pot', 'soil', 'grass', 'non_food'
+    'person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl', 'guy', 'selfie', 'portrait', 'head',
+    'groom', 'bride', 'bridegroom', 'barber', 'barbershop', 'diver', 'model', 'athlete', 'player', 'actor', 'actress',
+    'arm', 'leg', 'body', 'skin', 'beard', 'mustache', 'hair', 'wig', 'eye', 'nose', 'lip', 'ear', 'neck',
+    'torso', 'chest', 'stomach', 'foot', 'toe', 'shoulder', 'knee', 'wrist', 'elbow', 'skull', 'bone',
+    'clothing', 'shirt', 't-shirt', 'pants', 'jeans', 'suit', 'tie', 'bowtie', 'necktie', 'dress', 'skirt', 'coat', 'jacket', 'sweater',
+    'cardigan', 'hoodie', 'uniform', 'jersey', 'underwear', 'bra', 'brassiere', 'shorts', 'swimsuit', 'bikini', 'trunks', 'pyjamas', 'pajamas',
+    'robe', 'kimono', 'vest', 'blazer', 'tuxedo', 'gown', 'sock', 'socks', 'shoe', 'shoes', 'boot', 'boots', 'sandal', 'sandals',
+    'sneaker', 'sneakers', 'slipper', 'slippers', 'hat', 'cap', 'helmet', 'glove', 'gloves', 'scarf', 'belt', 'ring', 'necklace',
+    'bracelet', 'earring', 'watch', 'glasses', 'sunglasses', 'spectacles', 'goggles', 'mask', 'purse', 'handbag', 'wallet',
+    'backpack', 'suitcase', 'umbrella', 'comb', 'brush', 'razor', 'lipstick', 'makeup', 'perfume', 'lotion', 'soap', 'shampoo',
+    'bed', 'pillow', 'blanket', 'couch', 'sofa', 'television', 'tv', 'monitor', 'screen', 'computer', 'laptop',
+    'keyboard', 'mouse', 'phone', 'cellular', 'smartphone', 'tablet', 'camera', 'headphone', 'earphone', 'speaker', 'cable', 'wire',
+    'charger', 'plug', 'car', 'truck', 'bus', 'van', 'motorcycle', 'bicycle', 'bike', 'scooter', 'wheel', 'tire', 'airplane',
+    'boat', 'ship', 'train', 'building', 'house', 'road', 'street', 'bridge', 'tower', 'garage', 'park', 'forest', 'dirt', 'soil',
+    'dog', 'cat', 'bird', 'pet', 'horse', 'cow', 'pig', 'sheep', 'goat', 'rabbit', 'monkey', 'lion', 'tiger', 'bear', 'elephant', 'snake',
+    'bug', 'spider', 'insect', 'fly', 'paper', 'book', 'pen', 'pencil', 'notebook', 'folder', 'empty plate', 'empty bowl', 'empty_plate', 'empty_bowl', 'non_food'
   ];
 
-  const hasNonFoodKeyword = nonFoodKeywords.some(kw => name.includes(kw));
+  const isExplicitNonFoodTag = name.startsWith('non_food:');
 
-  if (hasNonFoodKeyword || name.startsWith('non_food')) {
+  // Check if any human keyword is present
+  const containsHumanKeyword = ['person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl', 'selfie', 'portrait', 'head', 'body', 'skin', 'shirt', 'clothing'].some(kw => cleanName.includes(kw));
+
+  // Check if food match exists in FOOD_DATABASE or keyword list
+  let matchKey = findFoodMatchKey(cleanName);
+  if (!matchKey) {
+    if (cleanName.includes('chicken') || cleanName.includes('breast')) matchKey = 'chicken';
+    else if (cleanName.includes('pizza')) matchKey = 'pizza';
+    else if (cleanName.includes('burger')) matchKey = 'burger';
+    else if (cleanName.includes('salad')) matchKey = 'salad';
+    else if (cleanName.includes('rice')) matchKey = 'rice';
+    else if (cleanName.includes('paneer')) matchKey = 'paneer butter masala';
+    else if (cleanName.includes('sandwich')) matchKey = 'bread';
+    else if (cleanName.includes('apple')) matchKey = 'apple';
+  }
+
+  // Scenario A: Explicit non-food tag or non-food image with NO food match
+  if ((isExplicitNonFoodTag || nonFoodKeywords.some(kw => cleanName.includes(kw))) && !matchKey) {
     return {
-      foodName: "No Food Detected",
-      confidence: 10,
+      foodDetected: false,
+      reason: "NO_FOOD_DETECTED",
+      foodName: null,
+      confidence: 0,
+      foodItems: [],
+      humanDetected: containsHumanKeyword,
+      humanIgnored: false,
+      requiresRetake: true,
       totalCalories: 0,
       protein: 0,
       carbs: 0,
@@ -2942,17 +3044,7 @@ function getMockVisionAnalysis(fileName) {
       items: [],
       healthAnalysis: {
         isHealthy: false,
-        suitableWeightLoss: false,
-        suitableMuscleGain: false,
-        suitableDiabetic: false,
-        suitableHeartHealth: false,
-        highProtein: false,
-        highFat: false,
-        highSugar: false,
-        highSodium: false,
-        isBalanced: false,
-        healthScore: 0,
-        explanation: "No food was detected in this image. The scanner identified a non-food element or object instead."
+        explanation: "NO FOOD DETECTED. Human or non-food object scanned. Please point the camera at a food item."
       },
       recommendations: {
         bestTimeToEat: "N/A",
@@ -2962,15 +3054,85 @@ function getMockVisionAnalysis(fileName) {
         workoutRecommendation: "N/A",
         foodsToPairWith: []
       },
-      warning: "No food detected in this image. Please upload a clear photo of food."
+      warning: "NO FOOD DETECTED. Human or non-food object detected. Please point the camera at your food."
     };
   }
 
-  // 1. Default fallback keyword checks (for default filename fallbacks or specific inputs)
-  if (name.includes('chicken') || name.includes('breast') || name.includes('poultry') || name.includes('quinoa')) {
+  // Scenario B: Valid Food Recognized (even if human is in image background / holding food)
+  if (matchKey) {
+    const details = getCalorieDetails(matchKey, 250);
+    const dbItem = FOOD_DATABASE[matchKey];
+    const totalCal = details.calories;
+    const isHealthy = details.protein > 10 && details.fat < 25;
+
     return {
-      foodName: "Grilled Chicken & Quinoa with Broccoli",
+      foodDetected: true,
+      reason: "FOOD_ANALYZED",
+      foodName: dbItem.name,
+      confidence: 95,
+      humanDetected: containsHumanKeyword,
+      humanIgnored: containsHumanKeyword,
+      requiresRetake: false,
+      totalCalories: totalCal,
+      protein: details.protein,
+      carbs: details.carbs,
+      fat: details.fat,
+      fiber: Math.round(totalCal * 0.01),
+      sugar: Math.round(details.carbs * 0.1),
+      sodium: Math.round(totalCal * 1.1),
+      cholesterol: Math.round(details.fat * 1.5),
+      potassium: Math.round(details.protein * 10 + details.carbs * 3),
+      items: [
+        {
+          name: dbItem.name,
+          calories: totalCal,
+          protein: details.protein,
+          carbs: details.carbs,
+          fat: details.fat,
+          fiber: Math.round(totalCal * 0.01),
+          sugar: Math.round(details.carbs * 0.1),
+          sodium: Math.round(totalCal * 1.1),
+          cholesterol: Math.round(details.fat * 1.5),
+          potassium: Math.round(details.protein * 10 + details.carbs * 3),
+          portion: "250g"
+        }
+      ],
+      healthAnalysis: {
+        isHealthy,
+        suitableWeightLoss: totalCal < 500,
+        suitableMuscleGain: details.protein > 20,
+        suitableDiabetic: details.carbs < 40,
+        suitableHeartHealth: details.fat < 15,
+        highProtein: details.protein > 20,
+        highFat: details.fat > 20,
+        highSugar: false,
+        highSodium: false,
+        isBalanced: true,
+        healthScore: isHealthy ? 88 : 65,
+        explanation: `Vision calibrated analysis for ${dbItem.name}. Provides ${details.protein}g protein and ${totalCal} kcal.`
+      },
+      recommendations: {
+        bestTimeToEat: "Lunch or Post-Workout Meal",
+        alternatives: ["Swap side with steamed greens", "Use minimal added cooking oils"],
+        portionAdvice: "Keep portion size around 250g",
+        waterRecommendation: "Drink 300ml of water after eating",
+        workoutRecommendation: `Active movement for 30 minutes to burn ${totalCal} kcal`,
+        foodsToPairWith: ["Side salad greens", "Sparkling water with lemon"]
+      },
+      warning: containsHumanKeyword ? "Human detected and ignored." : ""
+    };
+  }
+
+  // Predefined specific food keyword matchers
+  if (name.includes('chicken') || name.includes('breast') || name.includes('quinoa')) {
+    return {
+      foodDetected: true,
+      reason: "FOOD_ANALYZED",
+      foodName: "Grilled Chicken Breast",
       confidence: 96,
+      humanDetected: containsHumanKeyword,
+      humanIgnored: containsHumanKeyword,
+      requiresRetake: false,
       totalCalories: 385,
       protein: 42,
       carbs: 28,
@@ -2992,7 +3154,7 @@ function getMockVisionAnalysis(fileName) {
         highSodium: false,
         isBalanced: true,
         healthScore: 92,
-        explanation: "Excellent lean source of protein combined with complex carbohydrates from quinoa and high fiber from broccoli. Very balanced and heart-healthy."
+        explanation: "Excellent lean source of protein combined with complex carbohydrates."
       },
       recommendations: {
         bestTimeToEat: "Lunch or Post-Workout Meal",
@@ -3006,23 +3168,29 @@ function getMockVisionAnalysis(fileName) {
         { name: "Grilled Chicken Breast", calories: 220, protein: 35, carbs: 0, fat: 5, fiber: 0, sugar: 0, sodium: 280, cholesterol: 85, potassium: 330, portion: "150g" },
         { name: "Cooked Quinoa", calories: 120, protein: 4, carbs: 22, fat: 2, fiber: 3, sugar: 1, sodium: 10, cholesterol: 0, potassium: 170, portion: "100g" },
         { name: "Steamed Broccoli", calories: 45, protein: 3, carbs: 6, fat: 5, fiber: 5, sugar: 2, sodium: 130, cholesterol: 0, potassium: 120, portion: "1 cup" }
-      ]
+      ],
+      warning: containsHumanKeyword ? "Human detected and ignored." : ""
     };
   }
 
-  if (name.includes('pizza') || name.includes('pepperoni') || name.includes('cheese')) {
+  if (name.includes('pizza') || name.includes('pepperoni')) {
     return {
-      foodName: "Pepperoni Pizza Slices",
+      foodDetected: true,
+      reason: "FOOD_ANALYZED",
+      foodName: "Pizza",
       confidence: 94,
-      totalCalories: 680,
-      protein: 26,
-      carbs: 78,
-      fat: 28,
-      fiber: 4,
-      sugar: 9,
-      sodium: 1420,
-      cholesterol: 65,
-      potassium: 340,
+      humanDetected: containsHumanKeyword,
+      humanIgnored: containsHumanKeyword,
+      requiresRetake: false,
+      totalCalories: 580,
+      protein: 22,
+      carbs: 70,
+      fat: 24,
+      fiber: 3,
+      sugar: 7,
+      sodium: 1200,
+      cholesterol: 55,
+      potassium: 280,
       healthAnalysis: {
         isHealthy: false,
         suitableWeightLoss: false,
@@ -3035,27 +3203,32 @@ function getMockVisionAnalysis(fileName) {
         highSodium: true,
         isBalanced: false,
         healthScore: 40,
-        explanation: "High in sodium, refined carbohydrates, and saturated fats. Lacks sufficient potassium and fiber."
+        explanation: "High in sodium, refined carbohydrates, and saturated fats."
       },
       recommendations: {
         bestTimeToEat: "Cheat Meal or Occasional Dinner",
-        alternatives: ["Thin crust whole-wheat pizza", "Cauliflower crust pizza with chicken topping"],
+        alternatives: ["Thin crust whole-wheat pizza"],
         portionAdvice: "Limit to 2 slices and pair with a large side salad",
-        waterRecommendation: "Drink 500ml water to balance the high sodium intake",
-        workoutRecommendation: "60 minutes of brisk walking or 40 minutes of spin class",
-        foodsToPairWith: ["Tossed green salad with light vinaigrette", "Iced green tea"]
+        waterRecommendation: "Drink 500ml water",
+        workoutRecommendation: "60 minutes of brisk walking",
+        foodsToPairWith: ["Tossed green salad"]
       },
       items: [
-        { name: "Pepperoni Pizza Slice (x2)", calories: 580, protein: 22, carbs: 70, fat: 24, fiber: 3, sugar: 7, sodium: 1200, cholesterol: 55, potassium: 280, portion: "2 slices" },
-        { name: "Garlic Dipping Sauce", calories: 100, protein: 4, carbs: 8, fat: 4, fiber: 1, sugar: 2, sodium: 220, cholesterol: 10, potassium: 60, portion: "1 serving" }
-      ]
+        { name: "Pepperoni Pizza Slice", calories: 580, protein: 22, carbs: 70, fat: 24, fiber: 3, sugar: 7, sodium: 1200, cholesterol: 55, potassium: 280, portion: "2 slices" }
+      ],
+      warning: containsHumanKeyword ? "Human detected and ignored." : ""
     };
   }
 
-  if (name.includes('salad') || name.includes('lettuce') || name.includes('green') || name.includes('bowl')) {
+  if (name.includes('salad') || name.includes('lettuce')) {
     return {
-      foodName: "Mixed Green Salad with Feta",
+      foodDetected: true,
+      reason: "FOOD_ANALYZED",
+      foodName: "Salad",
       confidence: 97,
+      humanDetected: containsHumanKeyword,
+      humanIgnored: containsHumanKeyword,
+      requiresRetake: false,
       totalCalories: 245,
       protein: 8,
       carbs: 16,
@@ -3077,37 +3250,41 @@ function getMockVisionAnalysis(fileName) {
         highSodium: false,
         isBalanced: true,
         healthScore: 88,
-        explanation: "High in dietary fiber, vitamins, and minerals. Good healthy fats from vinaigrette, though protein is relatively low."
+        explanation: "High in dietary fiber, vitamins, and minerals."
       },
       recommendations: {
         bestTimeToEat: "Lunch or Starter Meal",
-        alternatives: ["Add grilled chicken or tofu for protein boost", "Use lemon juice instead of vinaigrette to cut fats"],
-        portionAdvice: "Excellent volume-to-calorie ratio, eat as much as desired",
+        alternatives: ["Add grilled chicken or tofu for protein boost"],
+        portionAdvice: "Excellent volume-to-calorie ratio",
         waterRecommendation: "Drink 250ml water",
-        workoutRecommendation: "20 minutes of light yoga or 15 minutes of cycling",
-        foodsToPairWith: ["Grilled chicken breast", "Lentil soup"]
+        workoutRecommendation: "20 minutes of light yoga",
+        foodsToPairWith: ["Grilled chicken breast"]
       },
       items: [
-        { name: "Mixed Green Salad", calories: 60, protein: 2, carbs: 8, fat: 1, fiber: 4, sugar: 3, sodium: 40, cholesterol: 0, potassium: 220, portion: "2 cups" },
-        { name: "Olive Oil & Vinaigrette", calories: 120, protein: 0, carbs: 2, fat: 13, fiber: 0, sugar: 1, sodium: 150, cholesterol: 0, potassium: 10, portion: "1.5 tbsp" },
-        { name: "Feta Cheese Crumbs", calories: 65, protein: 6, carbs: 6, fat: 4, fiber: 2, sugar: 1, sodium: 300, cholesterol: 15, potassium: 150, portion: "25g" }
-      ]
+        { name: "Mixed Green Salad", calories: 60, protein: 2, carbs: 8, fat: 1, fiber: 4, sugar: 3, sodium: 40, cholesterol: 0, potassium: 220, portion: "2 cups" }
+      ],
+      warning: containsHumanKeyword ? "Human detected and ignored." : ""
     };
   }
 
-  if (name.includes('burger') || name.includes('patty') || name.includes('beef') || name.includes('fry') || name.includes('fries')) {
+  if (name.includes('burger') || name.includes('patty') || name.includes('fries')) {
     return {
-      foodName: "Beef Cheeseburger & French Fries",
+      foodDetected: true,
+      reason: "FOOD_ANALYZED",
+      foodName: "Burger",
       confidence: 95,
-      totalCalories: 720,
-      protein: 34,
-      carbs: 64,
-      fat: 36,
-      fiber: 5,
-      sugar: 12,
-      sodium: 1250,
-      cholesterol: 90,
-      potassium: 540,
+      humanDetected: containsHumanKeyword,
+      humanIgnored: containsHumanKeyword,
+      requiresRetake: false,
+      totalCalories: 480,
+      protein: 28,
+      carbs: 38,
+      fat: 24,
+      fiber: 2,
+      sugar: 6,
+      sodium: 850,
+      cholesterol: 80,
+      potassium: 310,
       healthAnalysis: {
         isHealthy: false,
         suitableWeightLoss: false,
@@ -3120,301 +3297,56 @@ function getMockVisionAnalysis(fileName) {
         highSodium: true,
         isBalanced: false,
         healthScore: 50,
-        explanation: "Provides substantial protein and calories, but is offset by high levels of sodium, saturated fats, and refined carbs."
+        explanation: "High protein, but offset by sodium and saturated fats."
       },
       recommendations: {
-        bestTimeToEat: "Post-workout (Bulking Phase) or Dinner",
-        alternatives: ["Turkey burger on lettuce wrap", "Baked sweet potato fries instead of french fries"],
-        portionAdvice: "Skip the high-calorie sauces and cheese to save 200 calories",
+        bestTimeToEat: "Post-workout or Dinner",
+        alternatives: ["Turkey burger on lettuce wrap"],
+        portionAdvice: "Skip high-calorie sauces",
         waterRecommendation: "Drink 400ml water",
-        workoutRecommendation: "50 minutes of high-intensity weight training or 45 minutes swimming",
-        foodsToPairWith: ["Raw carrot sticks", "Sparkling water with lime"]
+        workoutRecommendation: "50 minutes of weight training",
+        foodsToPairWith: ["Raw carrot sticks"]
       },
       items: [
-        { name: "Beef Cheeseburger", calories: 480, protein: 28, carbs: 38, fat: 24, fiber: 2, sugar: 6, sodium: 850, cholesterol: 80, potassium: 310, portion: "1 burger" },
-        { name: "French Fries", calories: 240, protein: 6, carbs: 26, fat: 12, fiber: 3, sugar: 6, sodium: 400, cholesterol: 10, potassium: 230, portion: "1 small serving" }
-      ]
+        { name: "Cheeseburger", calories: 480, protein: 28, carbs: 38, fat: 24, fiber: 2, sugar: 6, sodium: 850, cholesterol: 80, potassium: 310, portion: "1 burger" }
+      ],
+      warning: containsHumanKeyword ? "Human detected and ignored." : ""
     };
   }
 
-  if (name.includes('apple') || name.includes('banana') || name.includes('fruit') || name.includes('berry') || name.includes('orange')) {
-    return {
-      foodName: "Fresh Fruit Bowl",
-      confidence: 99,
-      totalCalories: 155,
-      protein: 2,
-      carbs: 38,
-      fat: 0.5,
-      fiber: 6,
-      sugar: 28,
-      sodium: 5,
-      cholesterol: 0,
-      potassium: 420,
-      healthAnalysis: {
-        isHealthy: true,
-        suitableWeightLoss: true,
-        suitableMuscleGain: false,
-        suitableDiabetic: false,
-        suitableHeartHealth: true,
-        highProtein: false,
-        highFat: false,
-        highSugar: true,
-        isBalanced: false,
-        healthScore: 82,
-        explanation: "Rich in antioxidants, vitamins, and minerals. High natural sugar content means diabetics should consume in moderation."
-      },
-      recommendations: {
-        bestTimeToEat: "Morning Breakfast or Mid-day Snack",
-        alternatives: ["Add Greek yogurt to improve the protein balance", "Include a handful of almonds for healthy fats"],
-        portionAdvice: "Limit total portion size to 1 cup per serving to control fructose intake",
-        waterRecommendation: "Drink 200ml water",
-        workoutRecommendation: "15 minutes of cardio or a 20-minute walk",
-        foodsToPairWith: ["Raw walnuts", "Plain Greek yogurt"]
-      },
-      items: [
-        { name: "Fresh Apple Slices", calories: 95, protein: 1, carbs: 25, fat: 0.3, fiber: 4, sugar: 19, sodium: 2, cholesterol: 0, potassium: 190, portion: "1 medium apple" },
-        { name: "Mixed Berries", calories: 60, protein: 1, carbs: 13, fat: 0.2, fiber: 2, sugar: 9, sodium: 3, cholesterol: 0, potassium: 230, portion: "100g" }
-      ]
-    };
-  }
-
-  if (name.includes('sushi') || name.includes('salmon') || name.includes('fish') || name.includes('tuna')) {
-    return {
-      foodName: "Salmon & Tuna Sushi Combo",
-      confidence: 95,
-      totalCalories: 450,
-      protein: 28,
-      carbs: 58,
-      fat: 10,
-      fiber: 3,
-      sugar: 6,
-      sodium: 950,
-      cholesterol: 45,
-      potassium: 480,
-      healthAnalysis: {
-        isHealthy: true,
-        suitableWeightLoss: true,
-        suitableMuscleGain: true,
-        suitableDiabetic: true,
-        suitableHeartHealth: true,
-        highProtein: true,
-        highFat: false,
-        highSugar: false,
-        highSodium: false,
-        isBalanced: true,
-        healthScore: 90,
-        explanation: "High in heart-healthy Omega-3 fatty acids and high-quality protein. White rice provides simple carbs, which can be balanced with low-sodium soy sauce."
-      },
-      recommendations: {
-        bestTimeToEat: "Lunch or Post-Workout Meal",
-        alternatives: ["Brown rice sushi rolls", "Salmon sashimi to minimize simple carbs"],
-        portionAdvice: "Use low-sodium soy sauce and go easy on the pickled ginger",
-        waterRecommendation: "Drink 350ml water",
-        workoutRecommendation: "30 minutes of jogging or 30 minutes of rowing machine",
-        foodsToPairWith: ["Seaweed salad (Wakame)", "Edamame pods"]
-      },
-      items: [
-        { name: "Salmon Nigiri (x4)", calories: 240, protein: 16, carbs: 32, fat: 4, fiber: 1, sugar: 2, sodium: 400, cholesterol: 25, potassium: 260, portion: "4 pieces" },
-        { name: "Spicy Tuna Roll (x6)", calories: 210, protein: 12, carbs: 26, fat: 6, fiber: 2, sugar: 4, sodium: 550, cholesterol: 20, potassium: 220, portion: "6 pieces" }
-      ]
-    };
-  }
-
-  if (name.includes('egg') || name.includes('scramble') || name.includes('omelet') || name.includes('breakfast') || name.includes('toast')) {
-    return {
-      foodName: "Scrambled Eggs & Sourdough Toast",
-      confidence: 98,
-      totalCalories: 360,
-      protein: 20,
-      carbs: 24,
-      fat: 18,
-      fiber: 2,
-      sugar: 2,
-      sodium: 680,
-      cholesterol: 370,
-      potassium: 290,
-      healthAnalysis: {
-        isHealthy: true,
-        suitableWeightLoss: true,
-        suitableMuscleGain: true,
-        suitableDiabetic: true,
-        suitableHeartHealth: false,
-        highProtein: true,
-        highFat: false,
-        highSugar: false,
-        highSodium: false,
-        isBalanced: true,
-        healthScore: 89,
-        explanation: "Excellent breakfast option. Eggs offer a complete protein source and essential choline, while sourdough is easier on digestion than standard white bread."
-      },
-      recommendations: {
-        bestTimeToEat: "Breakfast or Morning Post-Workout",
-        alternatives: ["Use egg whites to reduce fat/calories/cholesterol", "Swap butter for avocado spread"],
-        portionAdvice: "Perfect morning fuel portion to sustain energy for 4-5 hours",
-        waterRecommendation: "Drink 300ml water",
-        workoutRecommendation: "25 minutes of strength training or 30 minutes brisk walking",
-        foodsToPairWith: ["Fresh orange slices", "Black coffee or herbal tea"]
-      },
-      items: [
-        { name: "Scrambled Eggs (x2)", calories: 140, protein: 12, carbs: 1, fat: 10, fiber: 0, sugar: 0, sodium: 320, cholesterol: 370, potassium: 140, portion: "2 eggs" },
-        { name: "Sourdough Toast (x2)", calories: 160, protein: 6, carbs: 22, fat: 1, fiber: 2, sugar: 1, sodium: 300, cholesterol: 0, potassium: 90, portion: "2 slices" },
-        { name: "Salted Butter Spread", calories: 60, protein: 2, carbs: 1, fat: 7, fiber: 0, sugar: 1, sodium: 60, cholesterol: 0, potassium: 60, portion: "1 pat" }
-      ]
-    };
-  }
-
-  // 2. Try to parse using regex for weights / amounts
-  let parsedItems = [];
-  let match;
-  const itemRegex = /(\d+(?:\.\d+)?)\s*(g|gram|grams|kg|kilogram|kilograms)?\s*(?:of\s+)?([a-zA-Z\s\-_]+?)(?:and|,|\.|$)/gi;
-  while ((match = itemRegex.exec(name)) !== null) {
-    let val = parseFloat(match[1]);
-    let unitStr = (match[2] || 'g').toLowerCase();
-    let nameStr = match[3].trim();
-    nameStr = nameStr.replace(/^(had|ate|took|eat|consumed|with)\s+/i, '').trim();
-    if (!nameStr) continue;
-
-    let weightGrams = val;
-    if (unitStr.startsWith('kg') || unitStr.startsWith('kilogram')) {
-      weightGrams = val * 1000;
-    }
-
-    const details = getCalorieDetails(nameStr, weightGrams);
-    // Add default nutrients for individual items parsed dynamically
-    details.fiber = Math.round(details.calories * 0.015);
-    details.sugar = Math.round(details.carbs * 0.15);
-    details.sodium = Math.round(details.calories * 1.2);
-    details.cholesterol = Math.round(details.fat * 2.5);
-    details.potassium = Math.round(details.protein * 12 + details.carbs * 4);
-    parsedItems.push(details);
-  }
-
-  // 3. If no weights matched, look for keywords in the string directly
-  if (parsedItems.length === 0) {
-    const keywords = Object.keys(FOOD_DATABASE);
-    for (const key of keywords) {
-      if (name.includes(key)) {
-        const details = getCalorieDetails(key, 150);
-        details.fiber = Math.round(details.calories * 0.015);
-        details.sugar = Math.round(details.carbs * 0.15);
-        details.sodium = Math.round(details.calories * 1.2);
-        details.cholesterol = Math.round(details.fat * 2.5);
-        details.potassium = Math.round(details.protein * 12 + details.carbs * 4);
-        parsedItems.push(details); // Default to 150g portion
-      }
-    }
-  }
-
-  // 4. If we matched items from keywords, return them!
-  if (parsedItems.length > 0) {
-    let totalCalories = 0;
-    let protein = 0;
-    let carbs = 0;
-    let fat = 0;
-    let fiber = 0;
-    let sugar = 0;
-    let sodium = 0;
-    let cholesterol = 0;
-    let potassium = 0;
-    parsedItems.forEach(item => {
-      totalCalories += item.calories;
-      protein += item.protein;
-      carbs += item.carbs;
-      fat += item.fat;
-      fiber += (item.fiber || 0);
-      sugar += (item.sugar || 0);
-      sodium += (item.sodium || 0);
-      cholesterol += (item.cholesterol || 0);
-      potassium += (item.potassium || 0);
-    });
-
-    let dominantName = parsedItems.map(item => item.name).join(' & ');
-    if (dominantName.length > 40) {
-      dominantName = parsedItems[0].name + " & others";
-    }
-
-    const isHealthy = (protein > 15 && sugar < 15 && sodium < 800);
-    const healthScore = isHealthy ? 85 : 55;
-
-    return {
-      foodName: dominantName,
-      confidence: 96,
-      totalCalories,
-      protein,
-      carbs,
-      fat,
-      fiber,
-      sugar,
-      sodium,
-      cholesterol,
-      potassium,
-      items: parsedItems,
-      healthAnalysis: {
-        isHealthy,
-        suitableWeightLoss: totalCalories < 500,
-        suitableMuscleGain: protein > 25,
-        suitableDiabetic: sugar < 8 && carbs < 45,
-        suitableHeartHealth: sodium < 600 && fat < 15,
-        highProtein: protein > 25,
-        highFat: fat > 18,
-        highSugar: sugar > 15,
-        highSodium: sodium > 700,
-        isBalanced: (protein > 10 && carbs > 10 && fat > 5),
-        healthScore,
-        explanation: `Custom calibrated nutrition profile. Estimated health score of ${healthScore}/100 based on macro distribution.`
-      },
-      recommendations: {
-        bestTimeToEat: "Lunch or Post-Workout",
-        alternatives: ["Swap sides with steamed greens", "Use minimal added cooking oils"],
-        portionAdvice: "Consume a balanced portion under 500g.",
-        waterRecommendation: "Drink 250ml water following this meal.",
-        workoutRecommendation: `30-40 minutes running or active cycling to burn ${totalCalories} calories.`,
-        foodsToPairWith: ["Mixed green salad", "Fresh fruit slice"]
-      }
-    };
-  }
-
-  // Default fallback if no keywords match at all (e.g. general camera capture with no name, or generic name)
+  // Scenario C: Generic/Uncertain input without a specific food match -> LOW CONFIDENCE / UNKNOWN FOOD (NO hallucinated generic labels!)
   return {
-    foodName: "Healthy Protein Salad Bowl",
-    confidence: 94,
-    totalCalories: 420,
-    protein: 24,
-    carbs: 32,
-    fat: 16,
-    fiber: 6,
-    sugar: 4,
-    sodium: 480,
-    cholesterol: 185,
-    potassium: 420,
+    foodDetected: true,
+    reason: "LOW_FOOD_CONFIDENCE",
+    foodName: "Unknown food",
+    confidence: 54,
+    foodItems: [],
+    humanDetected: containsHumanKeyword,
+    humanIgnored: containsHumanKeyword,
+    requiresRetake: true,
+    totalCalories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    fiber: 0,
+    sugar: 0,
+    sodium: 0,
+    cholesterol: 0,
+    potassium: 0,
+    items: [],
     healthAnalysis: {
-      isHealthy: true,
-      suitableWeightLoss: true,
-      suitableMuscleGain: true,
-      suitableDiabetic: true,
-      suitableHeartHealth: true,
-      highProtein: false,
-      highFat: false,
-      highSugar: false,
-      highSodium: false,
-      isBalanced: true,
-      healthScore: 92,
-      explanation: "Excellent balanced meal containing high dietary fiber, lean protein from hard-boiled eggs, healthy monounsaturated fats from avocado, and antioxidant-rich vegetables."
+      isHealthy: false,
+      explanation: "Food could not be identified clearly. Please place the food clearly in front of the camera and try again."
     },
     recommendations: {
-      bestTimeToEat: "Lunch or Post-Workout Meal",
-      alternatives: ["Swap dressing for lemon vinaigrette", "Add grilled tofu or chicken breast for extra protein"],
-      portionAdvice: "A very nutrient-dense and satisfying choice. Keep portion sizes around 350-400g.",
-      waterRecommendation: "Drink 300ml of water following this meal.",
-      workoutRecommendation: "35 minutes of moderate jogging or 25 minutes of high-intensity spin class.",
-      foodsToPairWith: ["Fresh berries bowl", "Hot green tea"]
+      bestTimeToEat: "N/A",
+      alternatives: [],
+      portionAdvice: "N/A",
+      waterRecommendation: "N/A",
+      workoutRecommendation: "N/A",
+      foodsToPairWith: []
     },
-    items: [
-      { name: "Hard Boiled Eggs (x2)", calories: 140, protein: 12, carbs: 1, fat: 10, fiber: 0, sugar: 0, sodium: 120, cholesterol: 185, potassium: 140, portion: "2 eggs" },
-      { name: "Avocado Slices", calories: 120, protein: 1.5, carbs: 6, fat: 11, fiber: 5, sugar: 0.5, sodium: 5, cholesterol: 0, potassium: 120, portion: "80g" },
-      { name: "Mixed Vegetables (Brussels Sprouts & Tomatoes)", calories: 110, protein: 6.5, carbs: 19, fat: 1, fiber: 6, sugar: 3, sodium: 145, cholesterol: 0, potassium: 100, portion: "1.5 cups" },
-      { name: "Healthy Olive Oil Dressing", calories: 50, protein: 0, carbs: 6, fat: 4, fiber: 1, sugar: 0.5, sodium: 210, cholesterol: 0, potassium: 60, portion: "1 tbsp" }
-    ]
+    warning: "Food could not be identified clearly. Please place the food clearly in front of the camera and try again."
   };
 }
 
@@ -3439,49 +3371,67 @@ app.post('/api/scan-food', async (req, res) => {
           base64Data = parts[1];
         }
 
-        const prompt = `Identify all the food items present in this image. For each item, estimate its portion/weight, and its approximate calories, protein (g), carbs (g), fat (g), fiber (g), sugar (g), sodium (mg), cholesterol (mg), and potassium (mg). Calculate the overall total calories and total macros/micronutrients for the entire meal (including fiber, sugar, sodium, cholesterol, potassium). Perform a health analysis on the meal (suitabilities, flags, balance, health score 0-100, explanation), and generate personalized recommendations (best time to eat, portion advice, water amount, healthier alternatives, suggested workout to burn it, and foods to pair with this meal).
-        CRITICAL: If the image contains no food items, is a selfie/person/face, or has no detectable food, you MUST set the "confidence" field to 0, "totalCalories" to 0, "items" to an empty array [], and set the "warning" field to "No food detected in this image. Please upload a clear photo of food."
-        
-        You must respond ONLY with a JSON object in this exact format (do not include markdown formatting, code blocks, backticks, or comments):
-        {
-          "foodName": "name of the overall meal",
-          "confidence": 95,
-          "totalCalories": 450,
-          "protein": 35,
-          "carbs": 40,
-          "fat": 15,
-          "fiber": 6,
-          "sugar": 5,
-          "sodium": 350,
-          "cholesterol": 20,
-          "potassium": 450,
-          "items": [
-            { "name": "Item Name", "calories": 250, "protein": 30, "carbs": 5, "fat": 8, "fiber": 2, "sugar": 1, "sodium": 150, "cholesterol": 15, "potassium": 280, "portion": "150g" }
-          ],
-          "healthAnalysis": {
-            "isHealthy": true,
-            "suitableWeightLoss": true,
-            "suitableMuscleGain": true,
-            "suitableDiabetic": true,
-            "suitableHeartHealth": true,
-            "highProtein": true,
-            "highFat": false,
-            "highSugar": false,
-            "highSodium": false,
-            "isBalanced": true,
-            "healthScore": 85,
-            "explanation": "Brief explanation of healthiness and why it is suitable or has certain flags"
-          },
-          "recommendations": {
-            "bestTimeToEat": "Post-workout or Lunch",
-            "alternatives": ["Quinoa instead of white rice", "Steamed instead of fried vegetables"],
-            "portionAdvice": "Keep portion size under 400g to manage caloric density",
-            "waterRecommendation": "Drink 300ml of water 15 minutes after eating",
-            "workoutRecommendation": "40 minutes of moderate cycling or 30 minutes HIIT run to burn 450 kcal",
-            "foodsToPairWith": ["Mixed green salad", "Greek yogurt spread"]
-          },
-          "warning": ""
-        }`;
+        const prompt = `SYSTEM ROLE: You are a strict Food Object Detector and Nutrition Analyzer.
+
+EXECUTE THIS EXACT PIPELINE:
+1. OBJECT DETECTION: Detect all objects in the image.
+2. HUMAN & NON-FOOD IGNORE: Ignore all humans, faces, body parts, clothes, furniture, empty plates, rooms, or background objects. If a human is holding food or sitting near food (e.g. a person holding a burger or sandwich), IGNORE THE HUMAN AND ANALYZE ONLY THE VISIBLE FOOD ITEM.
+3. FOOD VALIDATION & CONFIDENCE: Determine if there is a visually recognizable, edible food dish or item in the image. Calculate confidence (0.0 to 1.0) for the food item.
+4. FOOD CLASSIFICATION: Identify the exact food item (e.g. "Burger", "Sandwich", "Pizza", "Apple", "Paneer Butter Masala", "Rice"). DO NOT HALLUCINATE OR GENERATE FAKE GENERIC LABELS like "Grilled Protein Item", "Seasoned Vegetables", "Steamed Grains/Rice", "Protein Meal".
+
+CRITICAL CONFIDENCE & REJECTION RULES:
+- If NO food is in the image (e.g. human face only, selfie, body, clothes, empty plate, room, phone, chair, bed):
+  Set "foodDetected": false, "reason": "NO_FOOD_DETECTED", "foodName": null, "confidence": 0, "totalCalories": 0, "items": [], "requiresRetake": true, "warning": "NO FOOD DETECTED. Human or non-food image detected. Please point the camera at your food."
+- If food confidence < 0.70 or food cannot be specifically identified:
+  Set "foodDetected": true, "reason": "LOW_FOOD_CONFIDENCE", "foodName": "Unknown food", "confidence": <value below 70>, "totalCalories": 0, "items": [], "requiresRetake": true, "warning": "Food could not be identified clearly. Please place the food clearly in front of the camera and try again."
+- If valid food is detected with confidence >= 0.70:
+  Set "foodDetected": true, "reason": "FOOD_ANALYZED", "foodName": "<exact food name>", "confidence": <value 70-100>, "requiresRetake": false. Provide full nutrition metrics and items.
+
+Respond ONLY with a JSON object in this exact format (no markdown, no backticks, no code blocks):
+{
+  "foodDetected": true,
+  "reason": "FOOD_ANALYZED",
+  "foodName": "Burger",
+  "confidence": 95,
+  "humanDetected": false,
+  "humanIgnored": false,
+  "requiresRetake": false,
+  "totalCalories": 450,
+  "protein": 35,
+  "carbs": 40,
+  "fat": 15,
+  "fiber": 6,
+  "sugar": 5,
+  "sodium": 350,
+  "cholesterol": 20,
+  "potassium": 450,
+  "items": [
+    { "name": "Burger", "calories": 450, "protein": 35, "carbs": 40, "fat": 15, "fiber": 6, "sugar": 5, "sodium": 350, "cholesterol": 20, "potassium": 450, "portion": "1 serving" }
+  ],
+  "healthAnalysis": {
+    "isHealthy": true,
+    "suitableWeightLoss": true,
+    "suitableMuscleGain": true,
+    "suitableDiabetic": true,
+    "suitableHeartHealth": true,
+    "highProtein": true,
+    "highFat": false,
+    "highSugar": false,
+    "highSodium": false,
+    "isBalanced": true,
+    "healthScore": 85,
+    "explanation": "Brief explanation of healthiness and why it is suitable"
+  },
+  "recommendations": {
+    "bestTimeToEat": "Post-workout or Lunch",
+    "alternatives": ["Quinoa instead of white rice"],
+    "portionAdvice": "Keep portion size under 400g",
+    "waterRecommendation": "Drink 300ml of water 15 minutes after eating",
+    "workoutRecommendation": "40 minutes of moderate cycling",
+    "foodsToPairWith": ["Mixed green salad"]
+  },
+  "warning": ""
+}`;
 
         const contents = [
           {
@@ -3498,6 +3448,53 @@ app.post('/api/scan-food', async (req, res) => {
         }
 
         const data = cleanAndParseJson(responseText);
+
+        const lowerFoodName = (data.foodName || '').toLowerCase();
+        const lowerWarning = (data.warning || '').toLowerCase();
+        const hasNonFoodKeyword = [
+          'person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl', 'guy', 'selfie', 'portrait', 'head', 'body', 'skin',
+          'clothing', 'shirt', 'suit', 'dress', 'coat', 'jacket', 'hat', 'cap', 'glasses', 'building', 'room', 'car', 'dog', 'cat',
+          'no food', 'non-food', 'not food', 'no detectable food'
+        ].some(kw => lowerFoodName.includes(kw) || lowerWarning.includes(kw));
+
+        // Enforce strict pipeline logic on Gemini response
+        if (!data.foodDetected || hasNonFoodKeyword || data.confidence < 70 || data.totalCalories === 0 || !data.items || data.items.length === 0 || lowerFoodName === 'unknown food' || data.requiresRetake) {
+          const isLowConfidence = data.foodDetected && (data.confidence > 0 && data.confidence < 70);
+          return res.status(200).json({
+            foodDetected: !isLowConfidence ? false : true,
+            reason: isLowConfidence ? "LOW_FOOD_CONFIDENCE" : "NO_FOOD_DETECTED",
+            foodName: isLowConfidence ? "Unknown food" : null,
+            confidence: isLowConfidence ? data.confidence : 0,
+            foodItems: [],
+            humanDetected: true,
+            humanIgnored: false,
+            requiresRetake: true,
+            totalCalories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0,
+            fiber: 0,
+            sugar: 0,
+            sodium: 0,
+            cholesterol: 0,
+            potassium: 0,
+            items: [],
+            healthAnalysis: {
+              isHealthy: false,
+              explanation: isLowConfidence ? "Food could not be identified clearly. Please place the food clearly in front of the camera and try again." : "NO FOOD DETECTED. Human or non-food image detected. Please scan a valid photo of food."
+            },
+            recommendations: {
+              bestTimeToEat: "N/A",
+              alternatives: [],
+              portionAdvice: "N/A",
+              waterRecommendation: "N/A",
+              workoutRecommendation: "N/A",
+              foodsToPairWith: []
+            },
+            warning: isLowConfidence ? "Food could not be identified clearly. Please place the food clearly in front of the camera and try again." : "NO FOOD DETECTED. Human or non-food image detected. Please scan a valid photo of food."
+          });
+        }
+
         if (data.items && data.items.length > 0) {
           data.items.forEach(item => {
             if (!item.estimatedGrams) {
@@ -3521,49 +3518,11 @@ app.post('/api/scan-food', async (req, res) => {
         console.error("Gemini AI failed, using fallback mock analyzer:", geminiError);
         const mockData = getMockVisionAnalysis(name);
         mockData.simulated = true;
-        mockData.warning = "Gemini API key call failed. Showing simulated analysis.";
-        if (mockData.items && mockData.items.length > 0) {
-          mockData.items.forEach(item => {
-            if (!item.estimatedGrams) {
-              item.estimatedGrams = parsePortionGrams(item.portion);
-            }
-          });
-          const resolved = resolveNutritionForMeal(mockData.items);
-          mockData.items = resolved.items;
-          mockData.totalCalories = resolved.totalCalories;
-          mockData.protein = resolved.protein;
-          mockData.carbs = resolved.carbs;
-          mockData.fat = resolved.fat;
-          mockData.fiber = resolved.fiber;
-          mockData.sugar = resolved.sugar;
-          mockData.sodium = resolved.sodium;
-          mockData.cholesterol = resolved.cholesterol;
-          mockData.potassium = resolved.potassium;
-        }
         return res.status(200).json(mockData);
       }
     } else {
       const mockData = getMockVisionAnalysis(name);
       mockData.simulated = true;
-      if (mockData.items && mockData.items.length > 0) {
-        mockData.items.forEach(item => {
-          if (!item.estimatedGrams) {
-            const matchGrams = (item.portion || '').match(/(\d+)g/);
-            item.estimatedGrams = matchGrams ? Number(matchGrams[1]) : 100;
-          }
-        });
-        const resolved = resolveNutritionForMeal(mockData.items);
-        mockData.items = resolved.items;
-        mockData.totalCalories = resolved.totalCalories;
-        mockData.protein = resolved.protein;
-        mockData.carbs = resolved.carbs;
-        mockData.fat = resolved.fat;
-        mockData.fiber = resolved.fiber;
-        mockData.sugar = resolved.sugar;
-        mockData.sodium = resolved.sodium;
-        mockData.cholesterol = resolved.cholesterol;
-        mockData.potassium = resolved.potassium;
-      }
       return res.status(200).json(mockData);
     }
   } catch (error) {
@@ -3675,22 +3634,49 @@ app.post('/api/analyze-text-food', async (req, res) => {
       items.push(details);
       dominantMealName = details.name;
     } else if (text) {
-      let match;
-      const itemRegex = /(\d+(?:\.\d+)?)\s*(g|gram|grams|kg|kilogram|kilograms)?\s*(?:of\s+)?([a-zA-Z\s\-_]+?)(?:and|,|\.|$)/gi;
-      while ((match = itemRegex.exec(text)) !== null) {
-        let val = parseFloat(match[1]);
-        let unitStr = (match[2] || 'g').toLowerCase();
-        let nameStr = match[3].trim();
-        nameStr = nameStr.replace(/^(had|ate|took|eat|consumed|with)\s+/i, '').trim();
-        if (!nameStr) continue;
+      const clauses = text.split(/,|\band\b|\bwith\b|\bplus\b|;|\+|\&|\./gi);
+      for (let clause of clauses) {
+        const trimmedClause = clause.trim();
+        if (!trimmedClause) continue;
 
-        let weightGrams = val;
-        if (unitStr.startsWith('kg') || unitStr.startsWith('kilogram')) {
-          weightGrams = val * 1000;
+        let match = trimmedClause.match(/(\d+(?:\.\d+)?)\s*(g|gram|grams|kg|kilogram|kilograms|oz|ounce|ounces|lb|lbs|pound|pounds|slice|slices|cup|cups|piece|pieces|egg|eggs)?\s*(?:of\s+)?([a-zA-Z\s\-_]+)/i);
+        if (match) {
+          let val = parseFloat(match[1]);
+          let unitStr = (match[2] || '').toLowerCase();
+          let nameStr = match[3].trim();
+          nameStr = nameStr.replace(/^(had|ate|took|eat|consumed|with|a|an)\s+/i, '').trim();
+          if (!nameStr) continue;
+
+          let weightGrams = val;
+          if (unitStr.startsWith('kg') || unitStr.startsWith('kilogram')) {
+            weightGrams = val * 1000;
+          } else if (unitStr.startsWith('oz') || unitStr.startsWith('ounce')) {
+            weightGrams = Math.round(val * 28.35);
+          } else if (unitStr.startsWith('lb') || unitStr.startsWith('pound')) {
+            weightGrams = Math.round(val * 453.59);
+          } else if (unitStr.startsWith('slice')) {
+            weightGrams = Math.round(val * 40);
+          } else if (unitStr.startsWith('cup')) {
+            weightGrams = Math.round(val * 200);
+          } else if (unitStr.startsWith('egg') || nameStr.toLowerCase().includes('egg')) {
+            weightGrams = Math.round(val * 50);
+          } else if (unitStr.startsWith('naan') || unitStr.startsWith('roti') || unitStr.startsWith('piece') || nameStr.toLowerCase().includes('naan') || nameStr.toLowerCase().includes('roti') || nameStr.toLowerCase().includes('chapati') || nameStr.toLowerCase().includes('dosa') || nameStr.toLowerCase().includes('idli') || nameStr.toLowerCase().includes('samosa')) {
+            if (val <= 20) {
+              weightGrams = Math.round(val * 100);
+            } else {
+              weightGrams = val;
+            }
+          } else if (!unitStr || unitStr === 'g' || unitStr === 'gram' || unitStr === 'grams') {
+            if (!unitStr && val <= 10 && (nameStr.toLowerCase().includes('egg') || nameStr.toLowerCase().includes('slice') || nameStr.toLowerCase().includes('apple') || nameStr.toLowerCase().includes('banana'))) {
+              weightGrams = Math.round(val * 100);
+            } else {
+              weightGrams = val;
+            }
+          }
+
+          const details = getCalorieDetails(nameStr, weightGrams);
+          items.push(details);
         }
-
-        const details = getCalorieDetails(nameStr, weightGrams);
-        items.push(details);
       }
 
       if (items.length === 0) {
@@ -4752,6 +4738,77 @@ app.delete('/api/user/account', verifyUserOwnership, async (req, res) => {
 });
 
 // 5. Body Scan Routes
+app.post('/api/bodyscan/analyze', async (req, res) => {
+  try {
+    const { image, fileName } = req.body || {};
+    const name = String(fileName || '').toLowerCase().trim();
+    const imageStr = String(image || '').toLowerCase();
+
+    // Comprehensive list of non-human subjects (animals, birds, insects, reptiles, sea life, food, furniture, items, etc.)
+    const nonHumanKeywords = [
+      // Animals, Pets & Wildlife
+      'animal', 'pet', 'dog', 'cat', 'puppy', 'kitten', 'bird', 'parrot', 'pigeon', 'sparrow', 'eagle', 'hawk', 'owl', 'crow', 'duck', 'chicken', 'hen', 'rooster',
+      'lion', 'tiger', 'bear', 'wolf', 'fox', 'deer', 'rabbit', 'bunny', 'monkey', 'ape', 'gorilla', 'elephant', 'giraffe', 'zebra', 'horse', 'cow', 'bull', 'buffalo', 'goat', 'sheep', 'pig', 'donkey', 'camel', 'kangaroo', 'panda', 'leopard', 'cheetah', 'panther', 'squirrel', 'rat', 'mouse', 'hamster', 'guinea_pig', 'otter', 'seal', 'walrus', 'penguin', 'flamingo', 'peacock', 'swan', 'goose', 'turkey',
+      // Birds, Insects, Reptiles & Sea Creatures
+      'insect', 'bug', 'fly', 'mosquito', 'bee', 'ant', 'spider', 'butterfly', 'beetle', 'cockroach', 'moth', 'caterpillar', 'worm', 'snake', 'lizard', 'reptile', 'turtle', 'frog', 'toad', 'fish', 'shark', 'dolphin', 'whale', 'crab', 'lobster', 'shrimp', 'octopus', 'squid',
+      // Food & Dishes
+      'food', 'burger', 'pizza', 'apple', 'banana', 'rice', 'salad', 'meal', 'dish', 'plate', 'bowl', 'soup', 'bread', 'snack', 'drink', 'fruit', 'veggie', 'pasta', 'sandwich', 'paneer', 'roti', 'curry', 'meat', 'egg', 'vegetable', 'noodle', 'cake', 'cookie', 'chocolate', 'fries', 'taco', 'sushi', 'breakfast', 'lunch', 'dinner',
+      // Furniture, Vehicles, Electronics & Items
+      'table', 'chair', 'bed', 'sofa', 'couch', 'laptop', 'phone', 'mobile', 'car', 'truck', 'bike', 'bicycle', 'motorcycle', 'bus', 'train', 'airplane', 'shoe', 'bottle', 'cup', 'mug', 'paper', 'book', 'pen', 'desk', 'furniture', 'plant', 'flower', 'tree', 'leaf', 'building', 'wall', 'door', 'window', 'clock', 'keyboard', 'mouse', 'toy', 'doll', 'plush', 'stuffed_animal', 'non_human', 'inanimate', 'scenery', 'landscape', 'room', 'kitchen', 'street', 'road', 'sky', 'mountain', 'river', 'lake', 'sea', 'ocean'
+    ];
+
+    const humanKeywords = ['person', 'human', 'face', 'man', 'woman', 'body', 'selfie', 'posture', 'standing', 'girl', 'boy', 'guy', 'athlete', 'torso', 'profile', 'webcam', 'figure', 'character', 'avatar', 'illustration', 'sketch', 'drawing', 'vector', 'model', 'cardigan', 'outfit', 'clothes', 'pose', 'person_scan'];
+
+    // Tokenize filename to avoid false matches on substring inside base64 or combined words
+    const nameTokens = name.split(/[^a-z0-9]+/);
+    const containsNonHumanWord = nameTokens.some(token => nonHumanKeywords.includes(token));
+    const containsHumanWord = nameTokens.some(token => humanKeywords.includes(token));
+
+    if (containsNonHumanWord && !containsHumanWord) {
+      return res.status(200).json({
+        success: false,
+        humanDetected: false,
+        error: "NO_HUMAN_DETECTED",
+        warning: "NO HUMAN DETECTED: The AI Body Scanner strictly scans human bodies and human figures. Animals, birds, insects, food, furniture, and inanimate objects cannot be scanned."
+      });
+    }
+
+    // Try Gemini Vision AI model check if available
+    if (process.env.GEMINI_API_KEY && image && image.startsWith('data:image/')) {
+      try {
+        const mimeType = image.substring(11, image.indexOf(';base64'));
+        const base64Data = image.substring(image.indexOf(';base64,') + 8);
+        const contents = [{
+          parts: [
+            { inlineData: { mimeType: mimeType || 'image/jpeg', data: base64Data } },
+            { text: "Does this image depict a human being, a human body, a human figure, an illustrated person/man/woman, or a standing human character? Answer ONLY 'YES' or 'NO'." }
+          ]
+        }];
+        const aiAnswer = await callGeminiApi(contents, process.env.GEMINI_API_KEY, {}, 6000);
+        if (aiAnswer && aiAnswer.toUpperCase().includes('NO') && !aiAnswer.toUpperCase().includes('YES')) {
+          return res.status(200).json({
+            success: false,
+            humanDetected: false,
+            error: "NO_HUMAN_DETECTED",
+            warning: "NO HUMAN DETECTED: Image contains animals, birds, insects, or non-human objects. Please position a human or human figure in frame."
+          });
+        }
+      } catch (geminiErr) {
+        console.warn("Gemini vision human check note:", geminiErr.message);
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      humanDetected: true,
+      message: "Human body verified successfully."
+    });
+  } catch (error) {
+    console.error('Body scan analysis error:', error);
+    res.status(500).json({ error: error.message || 'Failed to analyze body scan image' });
+  }
+});
+
 app.post('/api/bodyscan', verifyUserOwnership, async (req, res) => {
   try {
     const { email, height, weight, bmi, fitnessScore, posture, shoulderAlignment, bodySymmetry, goal, measurements, recommendations, frontScanImage, sideScanImage } = req.body;
