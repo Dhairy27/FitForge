@@ -352,7 +352,7 @@
             </section>
 
             <!-- Hydration & Macro Status Board (Only shown once plan is active) -->
-            <section id="diet-data-dashboard" class="bento-grid mb-8 hidden">
+            <section id="diet-data-dashboard" class="bento-grid mb-8">
                 <!-- Calorie & Water Bento block -->
                 <div
                     class="col-span-12 md:col-span-6 lg:col-span-6 glass-card rounded-2xl p-6 flex flex-col justify-center items-center text-center">
@@ -409,7 +409,7 @@
             </section>
 
             <!-- Dynamic Diet Content Toggles -->
-            <section id="diet-tabs-section" class="mb-4 hidden">
+            <section id="diet-tabs-section" class="mb-4">
                 <div class="flex border-b border-glass-border mb-6">
                     <button onclick="switchTab('daily', this)"
                         class="diet-tab-btn py-3 px-6 text-sm text-primary font-bold border-b-2 border-primary active:scale-95 transition-all">Daily
@@ -714,7 +714,62 @@
         }
 
         let userProtocol = {};
-        let currentDietPlan = null;
+        const defaultFallbackDietPlan = {
+            dailyCalories: 2000,
+            dailyMeals: {
+                breakfast: {
+                    name: "Greek Yogurt Parfait with Honey & Berries",
+                    calories: 500,
+                    protein: 27,
+                    carbs: 60,
+                    fat: 13,
+                    ingredients: [
+                        "1 cup low fat greek yogurt",
+                        "1 tbsp honey",
+                        "0.5 cup organic berries",
+                        "2 tbsp granola"
+                    ]
+                },
+                lunch: {
+                    name: "Mediterranean Quinoa Bowl with Feta & Olives",
+                    calories: 700,
+                    protein: 22,
+                    carbs: 81,
+                    fat: 27,
+                    ingredients: [
+                        "1 cup cooked quinoa",
+                        "50g Greek feta cheese",
+                        "6 Kalamata olives",
+                        "diced cucumber & tomato"
+                    ]
+                },
+                snack: {
+                    name: "Mixed Dry Roasted Almonds & Raisins",
+                    calories: 200,
+                    protein: 7,
+                    carbs: 18,
+                    fat: 13,
+                    ingredients: [
+                        "30g roasted almonds",
+                        "30g organic dark raisins"
+                    ]
+                },
+                dinner: {
+                    name: "Chickpea Coconut Curry with Basmati Rice",
+                    calories: 600,
+                    protein: 18,
+                    carbs: 81,
+                    fat: 23,
+                    ingredients: [
+                        "1 cup boiled chickpeas",
+                        "0.5 cup light coconut milk",
+                        "curry spices",
+                        "1 cup basmati rice"
+                    ]
+                }
+            }
+        };
+        let currentDietPlan = defaultFallbackDietPlan;
         let selectedWeeklyDay = 1;
 
         function logout() {
@@ -929,12 +984,22 @@
                     });
                 }
 
-                // 4. Load saved diet plan if any (keep hidden until user synthesizes)
-                const planResponse = await fetch(`/api/user/diet-plan?email=${encodeURIComponent(userEmail)}`);
-                const planData = await planResponse.json();
-                if (planData.plan) {
-                    currentDietPlan = planData.plan;
+                // 4. Load saved diet plan if any (render immediately if available, or use default fallback plan)
+                try {
+                    const planResponse = await fetch(`/api/user/diet-plan?email=${encodeURIComponent(userEmail)}`);
+                    if (planResponse.ok) {
+                        const planData = await planResponse.json();
+                        if (planData && planData.plan) {
+                            currentDietPlan = planData.plan;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to load saved diet plan, using fallback:", e);
                 }
+                if (!currentDietPlan) {
+                    currentDietPlan = defaultFallbackDietPlan;
+                }
+                renderDietPlan();
 
                 // 5. Load today's nutrition logs
                 await fetchTodayNutritionLogs();
@@ -1788,6 +1853,8 @@
                 sidebar.classList.add('-translate-x-full');
                 backdrop.classList.add('hidden');
             }
+        }
+
         // Real-time Ecosystem Synchronization (Scanner / Planner / Dashboard)
         try {
             const syncChannel = new BroadcastChannel('fitforge_sync_channel');
