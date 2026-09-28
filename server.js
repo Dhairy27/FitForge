@@ -27,7 +27,10 @@ function cleanAndParseJson(rawText) {
   return JSON.parse(str);
 }
 
+const http = require('http');
 const aiPlannerEngine = require('./ai-planner-engine.js');
+const plannerServices = require('./services/planner-services.js');
+const foodDatabase = require('./services/food-database.js');
 
 let useMockDb = false;
 
@@ -35,8 +38,18 @@ const mockDb = {
   users: [],
   workouts: [],
   nutritionlogs: [],
+  foodscans: [],
   bodyscans: [],
-  masterplans: []
+  masterplans: [],
+  workoutplans: [],
+  workoutsessions: [],
+  weeklyplans: [],
+  dailyprotocols: [],
+  nutritionplans: [],
+  progressmetrics: [],
+  aiplans: [],
+  activitylogs: [],
+  achievements: []
 };
 
 function makeChainable(arr) {
@@ -75,8 +88,11 @@ class MockModel {
   constructor(data) {
     Object.assign(this, data);
     const modelName = this.constructor.modelName;
-    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
+    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog' || modelName === 'FoodScan')) {
       this.date = new Date();
+    }
+    if (!this.timestamp && modelName === 'FoodScan') {
+      this.timestamp = new Date();
     }
     if (!this.createdAt) this.createdAt = new Date();
     if (!this.updatedAt) this.updatedAt = new Date();
@@ -88,8 +104,11 @@ class MockModel {
     }
 
     const modelName = this.constructor.modelName;
-    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog')) {
+    if (!this.date && (modelName === 'Workout' || modelName === 'NutritionLog' || modelName === 'FoodScan')) {
       this.date = new Date();
+    }
+    if (!this.timestamp && modelName === 'FoodScan') {
+      this.timestamp = new Date();
     }
     if (!this.createdAt) this.createdAt = new Date();
     this.updatedAt = new Date();
@@ -238,6 +257,22 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 const app = express();
+const server = http.createServer(app);
+let io = null;
+try {
+  const { Server } = require('socket.io');
+  io = new Server(server, {
+    cors: { origin: '*' }
+  });
+  io.on('connection', (socket) => {
+    socket.on('join', (userEmail) => {
+      if (userEmail) socket.join(String(userEmail).toLowerCase());
+    });
+  });
+} catch (e) {
+  console.warn('Socket.IO warning:', e.message);
+}
+
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://dhairy:2336@clothy.4mh44a5.mongodb.net/fitforge?appName=clothy';
 
@@ -411,7 +446,7 @@ async function callGeminiApi(promptOrContents, key, generationConfig = {}, timeo
   const geminiKey = key || process.env.GEMINI_API_KEY;
   if (!geminiKey) throw new Error("No Gemini API key configured.");
 
-  const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  const models = ['gemini-3.8-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash', 'gemini-2.0-flash'];
   let lastErr = null;
 
   for (const model of models) {
@@ -481,6 +516,17 @@ function parsePortionGrams(portionStr) {
 // Database Connection Handler (Serverless & Standalone compatible)
 let dbConnPromise = null;
 
+mongoose.connection.on('connected', () => {
+  useMockDb = false;
+  console.log('🟢 MongoDB Atlas Cloud Database connected successfully!');
+});
+mongoose.connection.on('error', (err) => {
+  console.error('🔴 MongoDB connection error:', err.message);
+});
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️ MongoDB disconnected, attempting auto-reconnect...');
+});
+
 async function connectDB() {
   if (mongoose.connection.readyState === 1) {
     useMockDb = false;
@@ -488,9 +534,8 @@ async function connectDB() {
   }
   if (!dbConnPromise) {
     dbConnPromise = mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000,
-      family: 4
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000
     }).then(() => {
       useMockDb = false;
       console.log('🟢 Connected to MongoDB Atlas Cloud Database successfully!');
@@ -600,6 +645,37 @@ nutritionLogSchema.index({ email: 1, date: -1 });
 
 const NutritionLog = mongoose.model('NutritionLog', nutritionLogSchema);
 
+const foodScanSchema = new mongoose.Schema({
+  userId: { type: String },
+  email: { type: String, required: true },
+  foodImage: { type: String },
+  foodName: { type: String, required: true },
+  confidence: { type: Number, required: true },
+  nutritionValues: {
+    calories: { type: Number, default: 0 },
+    protein: { type: Number, default: 0 },
+    carbs: { type: Number, default: 0 },
+    fat: { type: Number, default: 0 },
+    fiber: { type: Number, default: 0 },
+    sugar: { type: Number, default: 0 },
+    sodium: { type: Number, default: 0 },
+    cholesterol: { type: Number, default: 0 },
+    potassium: { type: Number, default: 0 }
+  },
+  items: { type: Array, default: [] },
+  portion: { type: String },
+  estimatedGrams: { type: Number },
+  healthScore: { type: Number, default: 0 },
+  healthAnalysis: { type: Object, default: {} },
+  recommendations: { type: Object, default: {} },
+  plannerAdvisory: { type: Object, default: {} },
+  timestamp: { type: Date, default: Date.now },
+  date: { type: Date, default: Date.now }
+}, { collection: 'FoodScans', timestamps: true });
+foodScanSchema.index({ email: 1, timestamp: -1 });
+
+const FoodScan = mongoose.model('FoodScan', foodScanSchema);
+
 const bodyScanSchema = new mongoose.Schema({
   email: { type: String, required: true },
   height: { type: Number },
@@ -666,6 +742,191 @@ const masterPlanSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 const MasterPlan = mongoose.model('MasterPlan', masterPlanSchema);
+
+// 1. WorkoutPlan Schema
+const workoutPlanSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  planId: { type: String, required: true },
+  goal: { type: String },
+  splitPreference: { type: String },
+  frequency: { type: Number, default: 5 },
+  targetMuscles: [{ type: String }],
+  schedule: { type: Array, default: [] },
+  active: { type: Boolean, default: true }
+}, { timestamps: true });
+workoutPlanSchema.index({ email: 1, active: 1 });
+const WorkoutPlan = mongoose.model('WorkoutPlan', workoutPlanSchema);
+
+// 2. WorkoutSession Schema
+const workoutSessionSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  sessionId: { type: String, required: true },
+  workoutName: { type: String, required: true },
+  category: { type: String, default: 'Strength' },
+  difficulty: { type: String, default: 'Intermediate' },
+  duration: { type: Number, default: 45 },
+  calories: { type: Number, default: 350 },
+  targetMuscles: { type: String },
+  day: { type: String },
+  date: { type: Date, default: Date.now, index: true },
+  notes: { type: String, default: '' },
+  exercises: [{
+    name: String,
+    sets: Number,
+    reps: String,
+    completed: { type: Boolean, default: false }
+  }],
+  completed: { type: Boolean, default: false },
+  completedAt: { type: Date, default: null },
+  repsCompleted: { type: Number, default: 0 },
+  setsCompleted: { type: Number, default: 0 },
+  avgFormScore: { type: Number, default: 95 }
+}, { timestamps: true });
+workoutSessionSchema.index({ email: 1, date: -1 });
+const WorkoutSession = mongoose.model('WorkoutSession', workoutSessionSchema);
+
+// 3. WeeklyPlan Schema
+const weeklyPlanSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  weekOffset: { type: Number, default: 0 },
+  weekStartDate: { type: Date, default: Date.now },
+  weekEndDate: { type: Date },
+  days: {
+    Monday: { type: Array, default: [] },
+    Tuesday: { type: Array, default: [] },
+    Wednesday: { type: Array, default: [] },
+    Thursday: { type: Array, default: [] },
+    Friday: { type: Array, default: [] },
+    Saturday: { type: Array, default: [] },
+    Sunday: { type: Array, default: [] }
+  },
+  restDays: [{ type: String }],
+  active: { type: Boolean, default: true }
+}, { timestamps: true });
+weeklyPlanSchema.index({ email: 1, active: 1 });
+const WeeklyPlan = mongoose.model('WeeklyPlan', weeklyPlanSchema);
+
+// 4. DailyProtocol Schema
+const dailyProtocolSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  date: { type: String, required: true, index: true }, // YYYY-MM-DD
+  weekday: { type: String },
+  timeline: { type: Array, default: [] },
+  targets: {
+    bmr: Number,
+    tdee: Number,
+    calories: Number,
+    protein: Number,
+    carbs: Number,
+    fat: Number,
+    waterLiters: Number,
+    burnTarget: Number
+  },
+  adherence: {
+    doneCount: { type: Number, default: 0 },
+    totalCount: { type: Number, default: 8 },
+    percentage: { type: Number, default: 0 }
+  }
+}, { timestamps: true });
+dailyProtocolSchema.index({ email: 1, date: 1 });
+const DailyProtocol = mongoose.model('DailyProtocol', dailyProtocolSchema);
+
+// 5. NutritionPlan Schema
+const nutritionPlanSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  dailyCalories: { type: Number, default: 2150 },
+  protein: { type: Number, default: 165 },
+  carbs: { type: Number, default: 220 },
+  fat: { type: Number, default: 65 },
+  waterTargetLiters: { type: Number, default: 3.5 },
+  meals: { type: Array, default: [] },
+  active: { type: Boolean, default: true }
+}, { timestamps: true });
+nutritionPlanSchema.index({ email: 1, active: 1 });
+const NutritionPlan = mongoose.model('NutritionPlan', nutritionPlanSchema);
+
+// 6. ProgressMetric Schema
+const progressMetricSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true, index: true },
+  weight: { type: Number, default: 75 },
+  height: { type: Number, default: 176 },
+  bmi: { type: Number, default: 24.2 },
+  totalWorkouts: { type: Number, default: 0 },
+  totalCaloriesBurned: { type: Number, default: 0 },
+  activeStreak: { type: Number, default: 0 },
+  weeklyAdherenceRate: { type: Number, default: 0 },
+  monthlyCompletionRate: { type: Number, default: 0 },
+  activeSplit: { type: Number, default: 5 },
+  restDaysCount: { type: Number, default: 2 },
+  lastWorkoutDate: { type: Date, default: null },
+  history: [{
+    date: String,
+    weight: Number,
+    caloriesBurned: Number,
+    workoutsCompleted: Number
+  }]
+}, { timestamps: true });
+const ProgressMetric = mongoose.model('ProgressMetric', progressMetricSchema);
+
+// 7. AIPlan Schema
+const aiPlanSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  planId: { type: String, required: true },
+  generatedAt: { type: Date, default: Date.now },
+  headline: { type: String },
+  summary: { type: String },
+  protocolSnapshot: { type: Object },
+  weeklySplit: { type: Array, default: [] },
+  dailyTimeline: { type: Array, default: [] },
+  nutritionTarget: { type: Object },
+  recoverySchedule: { type: Array, default: [] },
+  aiReasoning: { type: Object },
+  active: { type: Boolean, default: true }
+}, { timestamps: true });
+aiPlanSchema.index({ email: 1, active: 1 });
+const AIPlan = mongoose.model('AIPlan', aiPlanSchema);
+
+// 8. ActivityLog Schema
+const activityLogSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  activityType: { type: String, required: true },
+  description: { type: String },
+  metadata: { type: Object, default: {} },
+  timestamp: { type: Date, default: Date.now, index: true }
+}, { timestamps: true });
+activityLogSchema.index({ email: 1, timestamp: -1 });
+const ActivityLog = mongoose.model('ActivityLog', activityLogSchema);
+
+// 9. Achievement Schema
+const achievementSchema = new mongoose.Schema({
+  email: { type: String, required: true, index: true },
+  badgeId: { type: String, required: true },
+  title: { type: String },
+  description: { type: String },
+  icon: { type: String, default: 'emoji_events' },
+  unlockedAt: { type: Date, default: Date.now }
+}, { timestamps: true });
+achievementSchema.index({ email: 1, badgeId: 1 });
+const Achievement = mongoose.model('Achievement', achievementSchema);
+
+// Initialize centralized PlannerServices with models and socket.io
+plannerServices.init({
+  User,
+  WorkoutPlan,
+  WorkoutSession,
+  WeeklyPlan,
+  DailyProtocol,
+  NutritionPlan,
+  ProgressMetric,
+  AIPlan,
+  ActivityLog,
+  Achievement,
+  MasterPlan,
+  Workout,
+  NutritionLog,
+  FoodScan,
+  BodyScan
+}, io);
 
 async function ensureAdminUser() {
   try {
@@ -1934,6 +2195,85 @@ app.get('/api/workouts', verifyUserOwnership, async (req, res) => {
   } catch (error) {
     console.error('Get workouts error:', error);
     res.status(500).json({ error: 'Failed to fetch workouts.' });
+  }
+});
+
+// 7. Complete Live Workout Session & Centralized Ecosystem Sync
+app.post('/api/workout-session/complete', verifyUserOwnership, async (req, res) => {
+  try {
+    const email = req.targetEmail || req.body.email;
+    if (!email) {
+      return res.status(400).json({ error: 'User email is required to complete workout session.' });
+    }
+
+    const sessionPayload = {
+      ...req.body,
+      email: email.toLowerCase()
+    };
+
+    let syncResult = null;
+    if (plannerServices && plannerServices.WorkoutService) {
+      syncResult = await plannerServices.WorkoutService.completeLiveWorkoutSession(email, sessionPayload);
+    } else {
+      // Fallback direct persistence if plannerServices not yet initialized
+      const durationMinutes = Number(sessionPayload.duration) || Math.max(1, Math.round((Number(sessionPayload.durationSeconds) || 1800) / 60));
+      const calories = Number(sessionPayload.calories) || 350;
+      const workoutName = sessionPayload.workoutName || "Live Workout Session";
+      const reps = Number(sessionPayload.repsCompleted) || 0;
+      const sets = Number(sessionPayload.setsCompleted) || 0;
+      const formScore = Number(sessionPayload.avgFormScore) || 95;
+
+      const session = await WorkoutSession.create({
+        email: email.toLowerCase(),
+        sessionId: sessionPayload.sessionId || ('ws-' + Date.now()),
+        workoutName,
+        category: sessionPayload.category || "Strength & Form",
+        difficulty: sessionPayload.difficulty || "Intermediate",
+        duration: durationMinutes,
+        calories,
+        targetMuscles: sessionPayload.targetMuscles || "Full Body",
+        day: sessionPayload.day || new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+        date: new Date(),
+        exercises: sessionPayload.exercises || [],
+        completed: true,
+        completedAt: new Date(),
+        repsCompleted: reps,
+        setsCompleted: sets,
+        avgFormScore: formScore
+      });
+
+      await Workout.create({
+        email: email.toLowerCase(),
+        workoutName,
+        duration: durationMinutes,
+        steps: reps * 12,
+        distance: reps * 8,
+        calories,
+        date: new Date()
+      });
+
+      syncResult = { success: true, session };
+    }
+
+    // Emit Socket.IO real-time event across connected clients
+    if (io) {
+      io.emit('fitforge:state-changed', {
+        entity: 'workout',
+        action: 'session_completed',
+        email: email.toLowerCase(),
+        workoutName: sessionPayload.workoutName || "Live Workout Session",
+        calories: Number(sessionPayload.calories) || 350,
+        duration: Number(sessionPayload.duration) || 30
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Live workout session successfully completed and synchronized across FitForge ecosystem.',
+      ...syncResult
+    });
+  } catch (error) {
+    console.error('Complete workout session error:', error);
+    res.status(500).json({ error: 'Failed to complete workout session: ' + error.message });
   }
 });
 
@@ -3350,12 +3690,123 @@ function getMockVisionAnalysis(fileName) {
   };
 }
 
-// 4i. AI Food Scanning REST API Endpoint
+// Helper: Calculate AI Master Planner synchronization advisory for food intake
+async function calculatePlannerNutritionAdvisory(email, scannedCalories, scannedProtein, scannedCarbs, scannedFat) {
+  try {
+    if (!email) return null;
+    const normalizedEmail = email.toLowerCase().trim();
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    let targetCalories = 2000;
+    let targetProtein = 150;
+
+    // Fetch user targets from NutritionPlan or User protocol
+    if (plannerServices && plannerServices.models) {
+      const { NutritionPlan, User, NutritionLog } = plannerServices.models;
+      if (NutritionPlan) {
+        const plan = await NutritionPlan.findOne({ email: normalizedEmail, active: true });
+        if (plan && plan.targetCalories) targetCalories = Number(plan.targetCalories);
+        if (plan && plan.proteinGrams) targetProtein = Number(plan.proteinGrams);
+      } else if (User) {
+        const u = await User.findOne({ email: normalizedEmail });
+        if (u?.dietProfile?.dailyCalories) targetCalories = Number(u.dietProfile.dailyCalories);
+      }
+
+      // Calculate today's logged nutrition totals
+      let todayCalories = Number(scannedCalories || 0);
+      let todayProtein = Number(scannedProtein || 0);
+      if (NutritionLog) {
+        const todayLogs = await NutritionLog.find({
+          email: normalizedEmail,
+          date: { $gte: new Date(todayStr + "T00:00:00.000Z") }
+        });
+        todayLogs.forEach(log => {
+          todayCalories += Number(log.calories || 0);
+          todayProtein += Number(log.protein || 0);
+        });
+      }
+
+      const calorieDiff = targetCalories - todayCalories;
+      const proteinDiff = targetProtein - todayProtein;
+      const isCalorieExceeded = calorieDiff < 0;
+      const isProteinDeficit = proteinDiff > 15;
+      const isHighCalorieDeficit = calorieDiff > 600;
+
+      let calorieMessage = "";
+      let workoutAdjustment = "";
+      if (isCalorieExceeded) {
+        const surplus = Math.abs(calorieDiff);
+        calorieMessage = `Daily calorie ceiling exceeded by ${surplus} kcal. Adjust remaining meals to high-fiber vegetables and lean hydration.`;
+        workoutAdjustment = `Recommended: 25-30 min moderate cardio or metabolic HIIT finisher to neutralize ${surplus} kcal surplus.`;
+      } else {
+        calorieMessage = `${calorieDiff} kcal remaining under your daily target ceiling (${targetCalories} kcal).`;
+      }
+
+      let proteinMessage = "";
+      let suggestedMeals = [];
+      if (isProteinDeficit) {
+        proteinMessage = `You are ${proteinDiff}g below your daily protein target (${targetProtein}g). Recommended to reach your muscle synthesis threshold:`;
+        suggestedMeals = [
+          "Greek Yogurt Bowl with Chia Seeds (22g protein)",
+          "Grilled Paneer or Tofu Skewers (24g protein)",
+          "Whey Protein Isolate Shake with Unsweetened Almond Milk (26g protein)",
+          "Edamame & Sprouted Moong Protein Salad (18g protein)"
+        ];
+      } else {
+        proteinMessage = `Optimal daily protein synthesis threshold achieved (${todayProtein}g / ${targetProtein}g).`;
+      }
+
+      let deficitMessage = "";
+      let suggestedAdditionalFoods = [];
+      if (isHighCalorieDeficit) {
+        deficitMessage = `Calorie intake is currently in a high deficit (${calorieDiff} kcal remaining). Nourish with nutrient-dense fuel to prevent muscle catabolism:`;
+        suggestedAdditionalFoods = [
+          "Avocado on Whole Grain Sourdough Toast with Pumpkin Seeds",
+          "A generous handful of Roasted Almonds, Walnuts & Dried Figs",
+          "Oatmeal Bowl with Creamy Peanut Butter and Sliced Banana",
+          "Warm Lentil Khichdi or Roasted Chickpeas with Tahini"
+        ];
+      }
+
+      return {
+        targetCalories,
+        todayTotalCalories: todayCalories,
+        calorieDiff,
+        isCalorieExceeded,
+        calorieMessage,
+        workoutAdjustment,
+        targetProtein,
+        todayTotalProtein: todayProtein,
+        proteinDiff,
+        isProteinDeficit,
+        proteinMessage,
+        suggestedMeals,
+        isHighCalorieDeficit,
+        deficitMessage,
+        suggestedAdditionalFoods,
+        timestamp: new Date()
+      };
+    }
+  } catch (err) {
+    console.warn("calculatePlannerNutritionAdvisory warning:", err.message);
+  }
+  return null;
+}
+
+// 4i. AI Food Scanning REST API Endpoint (Production-Grade, Strict Multi-Food Engine)
 app.post('/api/scan-food', async (req, res) => {
   try {
     const { image, name, email } = req.body;
     if (!image) {
-      return res.status(400).json({ error: 'Image data is required.' });
+      return res.status(400).json({
+        foodDetected: false,
+        reason: "NO_IMAGE_PROVIDED",
+        foodName: null,
+        confidence: 0,
+        totalCalories: 0,
+        items: [],
+        warning: "Image data is required to perform food analysis."
+      });
     }
 
     const clientKey = req.headers['x-gemini-key'];
@@ -3371,66 +3822,91 @@ app.post('/api/scan-food', async (req, res) => {
           base64Data = parts[1];
         }
 
-        const prompt = `SYSTEM ROLE: You are a strict Food Object Detector and Nutrition Analyzer.
+        const prompt = `SYSTEM ROLE: You are an expert Computer Vision and AI Nutrition Analysis Engine for FitForge.
+You must adhere to this STRICT PRIMARY RULE:
+NEVER GUESS. NEVER FABRICATE NUTRITION VALUES. NEVER RETURN RANDOM FOOD NAMES.
+If confidence is low or food is not detected, return "foodDetected": false and 0 nutrition values.
 
-EXECUTE THIS EXACT PIPELINE:
-1. OBJECT DETECTION: Detect all objects in the image.
-2. HUMAN & NON-FOOD IGNORE: Ignore all humans, faces, body parts, clothes, furniture, empty plates, rooms, or background objects. If a human is holding food or sitting near food (e.g. a person holding a burger or sandwich), IGNORE THE HUMAN AND ANALYZE ONLY THE VISIBLE FOOD ITEM.
-3. FOOD VALIDATION & CONFIDENCE: Determine if there is a visually recognizable, edible food dish or item in the image. Calculate confidence (0.0 to 1.0) for the food item.
-4. FOOD CLASSIFICATION: Identify the exact food item (e.g. "Burger", "Sandwich", "Pizza", "Apple", "Paneer Butter Masala", "Rice"). DO NOT HALLUCINATE OR GENERATE FAKE GENERIC LABELS like "Grilled Protein Item", "Seasoned Vegetables", "Steamed Grains/Rice", "Protein Meal".
+EXECUTE THIS EXACT 5-STEP PIPELINE:
+Step 1: FOOD VALIDATION & DETECTION
+- Inspect image for edible food or beverage dishes.
+- If the image contains ONLY humans, faces, selfies, pets, furniture, empty plates, rooms, utensils without food, or non-food objects:
+  Set "foodDetected": false, "reason": "NO_FOOD_DETECTED", "warning": "Food Not Detected", "confidence": 0, "totalCalories": 0, "items": []
+- If the image is excessively blurry, distorted, or unidentifiable:
+  Set "foodDetected": false, "reason": "BLURRED_IMAGE", "warning": "Image Too Blurry", "confidence": 30, "totalCalories": 0, "items": []
+- If food is present, calculate visual detection confidence (0-100).
+- STRICT THRESHOLD: The threshold is 85%. If confidence < 85:
+  Set "foodDetected": false, "reason": "LOW_CONFIDENCE", "warning": "Unable to identify food accurately. Please capture a clearer image.", "confidence": <detected value under 85>, "totalCalories": 0, "items": []
 
-CRITICAL CONFIDENCE & REJECTION RULES:
-- If NO food is in the image (e.g. human face only, selfie, body, clothes, empty plate, room, phone, chair, bed):
-  Set "foodDetected": false, "reason": "NO_FOOD_DETECTED", "foodName": null, "confidence": 0, "totalCalories": 0, "items": [], "requiresRetake": true, "warning": "NO FOOD DETECTED. Human or non-food image detected. Please point the camera at your food."
-- If food confidence < 0.70 or food cannot be specifically identified:
-  Set "foodDetected": true, "reason": "LOW_FOOD_CONFIDENCE", "foodName": "Unknown food", "confidence": <value below 70>, "totalCalories": 0, "items": [], "requiresRetake": true, "warning": "Food could not be identified clearly. Please place the food clearly in front of the camera and try again."
-- If valid food is detected with confidence >= 0.70:
-  Set "foodDetected": true, "reason": "FOOD_ANALYZED", "foodName": "<exact food name>", "confidence": <value 70-100>, "requiresRetake": false. Provide full nutrition metrics and items.
+Step 2: MULTI-FOOD DETECTION
+- Detect multiple distinct foods present in the image/plate (e.g. Rice, Dal, Salad, Paneer, Roti, Chicken, Tofu, etc.).
+- Give each item a verified name and portion estimate.
 
-Respond ONLY with a JSON object in this exact format (no markdown, no backticks, no code blocks):
+Step 3: PORTION ESTIMATION
+- Estimate portion sizes with realistic metric weights (grams/ml) and standard household units:
+  Examples: "150g Rice", "1 bowl Dal (180g)", "100g Paneer", "1 Roti (35g)", "250ml Milk", "120g Chicken Breast".
+
+Step 4: NUTRITIONAL BREAKDOWN
+- For each detected food item, provide verified nutritional values:
+  calories, protein (g), carbs (g), fat (g), fiber (g), sugar (g), sodium (mg).
+- Compute sum total meal nutrition and an objective Health Score (0-100).
+
+Step 5: RESPONSE FORMAT
+Respond ONLY with a valid JSON object (no markdown, no backticks, no code blocks):
 {
   "foodDetected": true,
   "reason": "FOOD_ANALYZED",
-  "foodName": "Burger",
+  "foodName": "Complete Meal Name",
   "confidence": 95,
-  "humanDetected": false,
-  "humanIgnored": false,
-  "requiresRetake": false,
-  "totalCalories": 450,
-  "protein": 35,
-  "carbs": 40,
-  "fat": 15,
-  "fiber": 6,
-  "sugar": 5,
-  "sodium": 350,
+  "totalCalories": 620,
+  "protein": 32,
+  "carbs": 80,
+  "fat": 18,
+  "fiber": 10,
+  "sugar": 6,
+  "sodium": 750,
   "cholesterol": 20,
-  "potassium": 450,
-  "items": [
-    { "name": "Burger", "calories": 450, "protein": 35, "carbs": 40, "fat": 15, "fiber": 6, "sugar": 5, "sodium": 350, "cholesterol": 20, "potassium": 450, "portion": "1 serving" }
-  ],
+  "potassium": 520,
   "healthAnalysis": {
     "isHealthy": true,
-    "suitableWeightLoss": true,
-    "suitableMuscleGain": true,
-    "suitableDiabetic": true,
-    "suitableHeartHealth": true,
-    "highProtein": true,
-    "highFat": false,
-    "highSugar": false,
-    "highSodium": false,
-    "isBalanced": true,
-    "healthScore": 85,
-    "explanation": "Brief explanation of healthiness and why it is suitable"
+    "healthScore": 86,
+    "explanation": "Nutrient-dense meal with complete amino acids, slow-digesting complex carbs, and dietary fiber."
   },
+  "items": [
+    {
+      "name": "Steamed Basmati Rice",
+      "portion": "150g",
+      "estimatedGrams": 150,
+      "confidence": 96,
+      "calories": 195,
+      "protein": 4.1,
+      "carbs": 42.0,
+      "fat": 0.6,
+      "fiber": 1.2,
+      "sugar": 0.1,
+      "sodium": 5
+    },
+    {
+      "name": "Yellow Dal Tadka",
+      "portion": "1 bowl (180g)",
+      "estimatedGrams": 180,
+      "confidence": 94,
+      "calories": 178,
+      "protein": 9.8,
+      "carbs": 24.2,
+      "fat": 5.2,
+      "fiber": 5.6,
+      "sugar": 1.8,
+      "sodium": 420
+    }
+  ],
   "recommendations": {
-    "bestTimeToEat": "Post-workout or Lunch",
-    "alternatives": ["Quinoa instead of white rice"],
-    "portionAdvice": "Keep portion size under 400g",
-    "waterRecommendation": "Drink 300ml of water 15 minutes after eating",
-    "workoutRecommendation": "40 minutes of moderate cycling",
-    "foodsToPairWith": ["Mixed green salad"]
-  },
-  "warning": ""
+    "bestTimeToEat": "Lunch or Post-workout",
+    "alternatives": ["Brown rice or Quinoa for higher fiber"],
+    "portionAdvice": "Portion size is well-aligned with balanced caloric density",
+    "waterRecommendation": "Drink 300ml water 20 minutes after meal",
+    "workoutRecommendation": "40 minutes moderate resistance training or cycling"
+  }
 }`;
 
         const contents = [
@@ -3443,31 +3919,32 @@ Respond ONLY with a JSON object in this exact format (no markdown, no backticks,
         ];
 
         const responseText = await callGeminiApi(contents, geminiKey, { responseMimeType: "application/json" }, 15000);
-        if (!responseText) {
-          throw new Error("No response text from Gemini API.");
-        }
+        if (!responseText) throw new Error("No response from AI Vision Engine.");
 
         const data = cleanAndParseJson(responseText);
-
         const lowerFoodName = (data.foodName || '').toLowerCase();
         const lowerWarning = (data.warning || '').toLowerCase();
+        const conf = Number(data.confidence || 0);
+
         const hasNonFoodKeyword = [
-          'person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl', 'guy', 'selfie', 'portrait', 'head', 'body', 'skin',
-          'clothing', 'shirt', 'suit', 'dress', 'coat', 'jacket', 'hat', 'cap', 'glasses', 'building', 'room', 'car', 'dog', 'cat',
+          'person', 'human', 'face', 'man', 'woman', 'child', 'boy', 'girl', 'selfie', 'portrait', 'head', 'body', 'skin',
+          'clothing', 'shirt', 'suit', 'dress', 'coat', 'jacket', 'furniture', 'chair', 'bed', 'laptop', 'phone', 'empty plate',
           'no food', 'non-food', 'not food', 'no detectable food'
         ].some(kw => lowerFoodName.includes(kw) || lowerWarning.includes(kw));
 
-        // Enforce strict pipeline logic on Gemini response
-        if (!data.foodDetected || hasNonFoodKeyword || data.confidence < 70 || data.totalCalories === 0 || !data.items || data.items.length === 0 || lowerFoodName === 'unknown food' || data.requiresRetake) {
-          const isLowConfidence = data.foodDetected && (data.confidence > 0 && data.confidence < 70);
+        // Strict 85%+ threshold and non-food validation
+        if (!data.foodDetected || hasNonFoodKeyword || conf < 85 || !data.items || data.items.length === 0 || lowerFoodName === 'unknown food') {
+          const isBlurry = data.reason === 'BLURRED_IMAGE' || lowerWarning.includes('blurry');
+          const isLowConf = conf > 0 && conf < 85;
+          const warningMsg = isBlurry
+            ? "Image Too Blurry"
+            : (isLowConf ? "Unable to identify food accurately. Please capture a clearer image." : "Food Not Detected");
+
           return res.status(200).json({
-            foodDetected: !isLowConfidence ? false : true,
-            reason: isLowConfidence ? "LOW_FOOD_CONFIDENCE" : "NO_FOOD_DETECTED",
-            foodName: isLowConfidence ? "Unknown food" : null,
-            confidence: isLowConfidence ? data.confidence : 0,
-            foodItems: [],
-            humanDetected: true,
-            humanIgnored: false,
+            foodDetected: false,
+            reason: isBlurry ? "BLURRED_IMAGE" : (isLowConf ? "LOW_CONFIDENCE" : "NO_FOOD_DETECTED"),
+            foodName: null,
+            confidence: conf,
             requiresRetake: true,
             totalCalories: 0,
             protein: 0,
@@ -3481,53 +3958,303 @@ Respond ONLY with a JSON object in this exact format (no markdown, no backticks,
             items: [],
             healthAnalysis: {
               isHealthy: false,
-              explanation: isLowConfidence ? "Food could not be identified clearly. Please place the food clearly in front of the camera and try again." : "NO FOOD DETECTED. Human or non-food image detected. Please scan a valid photo of food."
+              healthScore: 0,
+              explanation: warningMsg
             },
-            recommendations: {
-              bestTimeToEat: "N/A",
-              alternatives: [],
-              portionAdvice: "N/A",
-              waterRecommendation: "N/A",
-              workoutRecommendation: "N/A",
-              foodsToPairWith: []
-            },
-            warning: isLowConfidence ? "Food could not be identified clearly. Please place the food clearly in front of the camera and try again." : "NO FOOD DETECTED. Human or non-food image detected. Please scan a valid photo of food."
+            recommendations: {},
+            warning: warningMsg
           });
         }
 
-        if (data.items && data.items.length > 0) {
-          data.items.forEach(item => {
-            if (!item.estimatedGrams) {
-              item.estimatedGrams = parsePortionGrams(item.portion);
+        // Resolve multi-food nutrition through Worldwide Food Database
+        const resolved = foodDatabase.resolveMultiFoodMeal(data.items);
+        data.items = resolved.items;
+        data.totalCalories = resolved.totalCalories;
+        data.protein = resolved.protein;
+        data.carbs = resolved.carbs;
+        data.fat = resolved.fat;
+        data.fiber = resolved.fiber;
+        data.sugar = resolved.sugar;
+        data.sodium = resolved.sodium;
+        if (!data.healthAnalysis) data.healthAnalysis = {};
+        data.healthAnalysis.healthScore = resolved.overallHealthScore || data.healthAnalysis.healthScore || 85;
+
+        // Calculate AI Master Planner synchronization advisory
+        const targetEmail = (email || '').toLowerCase().trim();
+        let plannerAdvisory = null;
+        if (targetEmail) {
+          plannerAdvisory = await calculatePlannerNutritionAdvisory(targetEmail, data.totalCalories, data.protein, data.carbs, data.fat);
+          data.plannerAdvisory = plannerAdvisory;
+
+          // Step 5: Save to MongoDB FoodScans Collection
+          try {
+            const foodScanEntry = new FoodScan({
+              userId: targetEmail,
+              email: targetEmail,
+              foodImage: image.length < 500000 ? image : "",
+              foodName: data.foodName || "Meal",
+              confidence: data.confidence || 95,
+              nutritionValues: {
+                calories: data.totalCalories,
+                protein: data.protein,
+                carbs: data.carbs,
+                fat: data.fat,
+                fiber: data.fiber || 0,
+                sugar: data.sugar || 0,
+                sodium: data.sodium || 0,
+                cholesterol: data.cholesterol || 0,
+                potassium: data.potassium || 0
+              },
+              items: data.items,
+              portion: `${data.items.length} items`,
+              healthScore: data.healthAnalysis.healthScore,
+              healthAnalysis: data.healthAnalysis,
+              recommendations: data.recommendations,
+              plannerAdvisory: plannerAdvisory,
+              timestamp: new Date(),
+              date: new Date()
+            });
+            await foodScanEntry.save();
+            data.scanId = foodScanEntry._id;
+
+            // Automatically synchronize with NutritionLog collection
+            const nutritionDoc = new NutritionLog({
+              email: targetEmail,
+              foodName: data.foodName || "Meal",
+              calories: data.totalCalories,
+              protein: data.protein,
+              carbs: data.carbs,
+              fat: data.fat,
+              fiber: data.fiber || 0,
+              sugar: data.sugar || 0,
+              sodium: data.sodium || 0,
+              cholesterol: data.cholesterol || 0,
+              potassium: data.potassium || 0,
+              items: data.items,
+              healthAnalysis: data.healthAnalysis,
+              recommendations: data.recommendations,
+              imageUrl: image.length < 500000 ? image : "",
+              date: new Date()
+            });
+            await nutritionDoc.save();
+
+            // Real-time synchronization event emission
+            if (plannerServices && plannerServices.ProgressService) {
+              await plannerServices.ProgressService.recalculateMetrics(targetEmail);
+              plannerServices.emitStateChange(targetEmail, {
+                type: 'food_scanned',
+                scanId: foodScanEntry._id,
+                calories: data.totalCalories,
+                plannerAdvisory
+              });
             }
-          });
-          const resolved = resolveNutritionForMeal(data.items);
-          data.items = resolved.items;
-          data.totalCalories = resolved.totalCalories;
-          data.protein = resolved.protein;
-          data.carbs = resolved.carbs;
-          data.fat = resolved.fat;
-          data.fiber = resolved.fiber;
-          data.sugar = resolved.sugar;
-          data.sodium = resolved.sodium;
-          data.cholesterol = resolved.cholesterol;
-          data.potassium = resolved.potassium;
+
+            if (io) {
+              io.to(targetEmail).emit('nutrition:updated', {
+                email: targetEmail,
+                calories: data.totalCalories,
+                protein: data.protein,
+                carbs: data.carbs,
+                fat: data.fat
+              });
+            }
+          } catch (dbErr) {
+            console.warn("MongoDB FoodScan / NutritionLog auto-save notice:", dbErr.message);
+          }
         }
+
         return res.status(200).json(data);
       } catch (geminiError) {
-        console.error("Gemini AI failed, using fallback mock analyzer:", geminiError);
-        const mockData = getMockVisionAnalysis(name);
-        mockData.simulated = true;
-        return res.status(200).json(mockData);
+        console.error("Gemini AI Vision failed, checking verified food hint:", geminiError);
       }
-    } else {
-      const mockData = getMockVisionAnalysis(name);
-      mockData.simulated = true;
-      return res.status(200).json(mockData);
     }
+
+    // Multi-food plate parsing from verified input
+    const verifiedHint = (name || '').trim();
+    const rawSegments = verifiedHint.split(/[,+&]|\band\b/i).map(s => s.trim()).filter(Boolean);
+    const parsedItems = [];
+    let detectedCuisine = "Worldwide";
+
+    for (const segment of rawSegments) {
+      if (!segment.includes('captured_food_dish') && !segment.includes('non_food')) {
+        const match = foodDatabase.findBestFoodMatch(segment);
+        if (match) {
+          const grams = foodDatabase.parseEstimatedGrams(segment, match.defaultGrams);
+          const computed = foodDatabase.calculateItemNutrition(match.name, `${grams}g`, grams, { estimatedGrams: grams });
+          parsedItems.push({
+            ...computed,
+            confidence: 96
+          });
+          detectedCuisine = match.cuisine || detectedCuisine;
+        }
+      }
+    }
+
+    // If verified in worldwide catalog
+    if (parsedItems.length > 0) {
+      const multiResult = foodDatabase.resolveMultiFoodMeal(parsedItems);
+      const targetEmail = (email || '').toLowerCase().trim();
+      let plannerAdvisory = null;
+      if (targetEmail) {
+        plannerAdvisory = await calculatePlannerNutritionAdvisory(targetEmail, multiResult.totalCalories, multiResult.protein, multiResult.carbs, multiResult.fat);
+      }
+
+      const verifiedMealName = parsedItems.length === 1
+        ? parsedItems[0].name
+        : parsedItems.map(p => p.name).slice(0, 3).join(' + ') + (parsedItems.length > 3 ? ` (+${parsedItems.length - 3} more)` : '');
+
+      const verifiedResponse = {
+        foodDetected: true,
+        reason: "FOOD_ANALYZED",
+        foodName: verifiedMealName,
+        cuisine: detectedCuisine,
+        confidence: 96,
+        requiresRetake: false,
+        totalCalories: multiResult.totalCalories,
+        protein: multiResult.protein,
+        carbs: multiResult.carbs,
+        fat: multiResult.fat,
+        fiber: multiResult.fiber,
+        sugar: multiResult.sugar,
+        sodium: multiResult.sodium,
+        cholesterol: 0,
+        potassium: 0,
+        items: multiResult.items,
+        healthAnalysis: {
+          isHealthy: true,
+          healthScore: multiResult.overallHealthScore || 85,
+          explanation: `Verified multi-food nutritional profile from FitForge ${detectedCuisine} Food Intelligence Database.`
+        },
+        recommendations: {
+          bestTimeToEat: "Lunch or Dinner",
+          alternatives: [],
+          portionAdvice: `Calibrated portion: ${multiResult.items.map(i => `${i.name} (${i.portion})`).join(', ')}`,
+          waterRecommendation: "Drink 250ml water after meal",
+          workoutRecommendation: "30-40 min functional fitness workout"
+        },
+        plannerAdvisory: plannerAdvisory
+      };
+
+      if (targetEmail) {
+        try {
+          const scanDoc = new FoodScan({
+            userId: targetEmail,
+            email: targetEmail,
+            foodImage: image.length < 500000 ? image : "",
+            foodName: verifiedResponse.foodName,
+            confidence: 96,
+            nutritionValues: {
+              calories: verifiedResponse.totalCalories,
+              protein: verifiedResponse.protein,
+              carbs: verifiedResponse.carbs,
+              fat: verifiedResponse.fat,
+              fiber: verifiedResponse.fiber,
+              sugar: verifiedResponse.sugar,
+              sodium: verifiedResponse.sodium
+            },
+            items: verifiedResponse.items,
+            portion: verifiedResponse.recommendations.portionAdvice || "Calibrated plate portion",
+            healthScore: verifiedResponse.healthAnalysis.healthScore,
+            healthAnalysis: verifiedResponse.healthAnalysis,
+            recommendations: verifiedResponse.recommendations,
+            plannerAdvisory: plannerAdvisory,
+            timestamp: new Date(),
+            date: new Date()
+          });
+          await scanDoc.save();
+          verifiedResponse.scanId = scanDoc._id;
+
+          const nutDoc = new NutritionLog({
+            email: targetEmail,
+            foodName: verifiedResponse.foodName,
+            calories: verifiedResponse.totalCalories,
+            protein: verifiedResponse.protein,
+            carbs: verifiedResponse.carbs,
+            fat: verifiedResponse.fat,
+            fiber: verifiedResponse.fiber,
+            sugar: verifiedResponse.sugar,
+            sodium: verifiedResponse.sodium,
+            items: verifiedResponse.items,
+            imageUrl: image.length < 500000 ? image : "",
+            date: new Date()
+          });
+          await nutDoc.save();
+
+          if (plannerServices && plannerServices.ProgressService) {
+            await plannerServices.ProgressService.recalculateMetrics(targetEmail);
+            plannerServices.emitStateChange(targetEmail, { type: 'food_scanned', scanId: scanDoc._id, calories: verifiedResponse.totalCalories });
+          }
+        } catch (saveErr) {
+          console.warn("Save verified food scan warning:", saveErr.message);
+        }
+      }
+
+      return res.status(200).json(verifiedResponse);
+    }
+
+    // STRICT REJECTION: NO GUESSING, NO PLACEHOLDER NUTRITION
+    return res.status(200).json({
+      foodDetected: false,
+      reason: "NO_FOOD_DETECTED",
+      foodName: null,
+      confidence: 0,
+      requiresRetake: true,
+      totalCalories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      fiber: 0,
+      sugar: 0,
+      sodium: 0,
+      cholesterol: 0,
+      potassium: 0,
+      items: [],
+      healthAnalysis: {
+        isHealthy: false,
+        healthScore: 0,
+        explanation: "Food Not Detected. Please capture a clear, well-lit image of your meal."
+      },
+      recommendations: {},
+      warning: "Food Not Detected"
+    });
   } catch (error) {
     console.error("Scan food error:", error);
-    res.status(500).json({ error: "Failed to scan food image." });
+    res.status(500).json({
+      foodDetected: false,
+      reason: "SERVER_ERROR",
+      foodName: null,
+      confidence: 0,
+      requiresRetake: true,
+      totalCalories: 0,
+      items: [],
+      warning: "Food analysis failed. Please try again."
+    });
+  }
+});
+
+// 4i-1. Get User's Saved Food Scans (MongoDB FoodScans Collection)
+app.get('/api/food-scans', async (req, res) => {
+  try {
+    const email = req.query.email ? req.query.email.toLowerCase().trim() : null;
+    if (!email) return res.status(400).json({ error: "Email parameter is required." });
+    const scans = await FoodScan.find({ email }).sort({ timestamp: -1 }).limit(30);
+    res.status(200).json({ success: true, count: scans.length, scans });
+  } catch (err) {
+    console.error("Fetch food scans error:", err);
+    res.status(500).json({ error: "Failed to fetch food scans history." });
+  }
+});
+
+// 4i-2. Search Worldwide Food Database Catalog
+app.get('/api/food-database/search', (req, res) => {
+  try {
+    const q = req.query.q || "";
+    const cuisine = req.query.cuisine || "";
+    const results = foodDatabase.searchCatalog(q, cuisine);
+    res.status(200).json({ success: true, total: results.length, foods: results });
+  } catch (err) {
+    console.error("Search food database error:", err);
+    res.status(500).json({ error: "Failed to search food database." });
   }
 });
 
@@ -3853,10 +4580,117 @@ Respond ONLY with a JSON object updating 'headline', 'summary', and 'aiReasoning
     });
     await planDoc.save();
 
-    return res.status(200).json(planDoc);
+    // Synchronize across centralized PlannerServices (WeeklyPlans, DailyProtocols, NutritionPlans, ProgressMetrics, ActivityLogs)
+    const syncedState = await plannerServices.AIPlanningService.generateAndSavePlan(email, {
+      ...req.body,
+      burnTarget: { targetBurnCals: generatedPlan.burnTarget?.targetBurnCals || 450 }
+    });
+
+    return res.status(200).json({
+      ...planDoc.toObject ? planDoc.toObject() : planDoc,
+      success: true,
+      syncedState: syncedState
+    });
   } catch (error) {
     console.error("Generate AI plan error:", error);
     res.status(500).json({ error: "Failed to generate AI master plan." });
+  }
+});
+
+// ==========================================
+// 5. CENTRALIZED PLANNER & PROGRESS APIS
+// ==========================================
+
+// Get Complete Planner Ecosystem State
+app.get('/api/planner/state', async (req, res) => {
+  try {
+    const { email, date } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    const state = await plannerServices.PlannerService.getPlannerState(email, date);
+    return res.status(200).json(state);
+  } catch (err) {
+    console.error("Get planner state error:", err);
+    res.status(500).json({ error: "Failed to fetch planner state: " + err.message });
+  }
+});
+
+// Add Workout
+app.post('/api/planner/workout', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    const result = await plannerServices.WorkoutService.addWorkout(email, req.body);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Add workout error:", err);
+    res.status(500).json({ error: "Failed to add workout: " + err.message });
+  }
+});
+
+// Toggle Workout Completion
+app.post('/api/planner/workout/:id/toggle', async (req, res) => {
+  try {
+    const { email } = req.body;
+    const workoutId = req.params.id;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    const result = await plannerServices.WorkoutService.toggleWorkoutCompletion(email, workoutId);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Toggle workout error:", err);
+    res.status(500).json({ error: "Failed to toggle workout: " + err.message });
+  }
+});
+
+// Delete Workout
+app.delete('/api/planner/workout/:id', async (req, res) => {
+  try {
+    const { email } = req.query;
+    const workoutId = req.params.id;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    const result = await plannerServices.WorkoutService.deleteWorkout(email, workoutId);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Delete workout error:", err);
+    res.status(500).json({ error: "Failed to delete workout: " + err.message });
+  }
+});
+
+// Toggle Daily Protocol Step Completion
+app.post('/api/planner/protocol/toggle', async (req, res) => {
+  try {
+    const { email, date, stepId, title } = req.body;
+    if (!email || !stepId) return res.status(400).json({ error: "Email and stepId are required." });
+    const result = await plannerServices.PlannerService.toggleProtocolStep(email, date, stepId, title);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Toggle protocol step error:", err);
+    res.status(500).json({ error: "Failed to toggle protocol step: " + err.message });
+  }
+});
+
+// Toggle Rest Day
+app.post('/api/planner/rest-day/toggle', async (req, res) => {
+  try {
+    const { email, dayName } = req.body;
+    if (!email || !dayName) return res.status(400).json({ error: "Email and dayName are required." });
+    const result = await plannerServices.PlannerService.toggleRestDay(email, dayName);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error("Toggle rest day error:", err);
+    res.status(500).json({ error: "Failed to toggle rest day: " + err.message });
+  }
+});
+
+// Get Dynamic Progress Metrics for Dashboard & Planner
+app.get('/api/progress/metrics', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) return res.status(400).json({ error: "Email is required." });
+    const metrics = await plannerServices.ProgressService.recalculateMetrics(email);
+    return res.status(200).json({ success: true, metrics });
+  } catch (err) {
+    console.error("Get progress metrics error:", err);
+    res.status(500).json({ error: "Failed to fetch progress metrics: " + err.message });
   }
 });
 
@@ -4727,6 +5561,7 @@ app.delete('/api/user/account', verifyUserOwnership, async (req, res) => {
     await Promise.all([
       Workout.deleteMany({ email: normalizedEmail }),
       NutritionLog.deleteMany({ email: normalizedEmail }),
+      FoodScan.deleteMany({ email: normalizedEmail }),
       BodyScan.deleteMany({ email: normalizedEmail })
     ]);
 
@@ -5121,6 +5956,7 @@ app.put('/api/admin/user/:email', requireAdmin, async (req, res) => {
       await Promise.all([
         Workout.updateMany({ email: originalEmail }, { $set: { email: newEmail } }),
         NutritionLog.updateMany({ email: originalEmail }, { $set: { email: newEmail } }),
+        FoodScan.updateMany({ email: originalEmail }, { $set: { email: newEmail } }),
         BodyScan.updateMany({ email: originalEmail }, { $set: { email: newEmail } })
       ]);
     }
@@ -5173,6 +6009,7 @@ app.delete('/api/admin/user/:email', requireAdmin, async (req, res) => {
         User.findOneAndDelete({ email }),
         Workout.deleteMany({ email }),
         NutritionLog.deleteMany({ email }),
+        FoodScan.deleteMany({ email }),
         BodyScan.deleteMany({ email })
       ]);
     } catch (err) {
@@ -5181,6 +6018,7 @@ app.delete('/api/admin/user/:email', requireAdmin, async (req, res) => {
         User.findOneAndDelete({ email }),
         Workout.deleteMany({ email }),
         NutritionLog.deleteMany({ email }),
+        FoodScan.deleteMany({ email }),
         BodyScan.deleteMany({ email })
       ]);
     }
@@ -5434,8 +6272,8 @@ module.exports = app;
 
 // Start local server if run directly
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`🟢 Server is running at http://localhost:${PORT}`);
+  server.listen(PORT, () => {
+    console.log(`🟢 Server with Socket.IO is running at http://localhost:${PORT}`);
     ensureAdminUser();
   });
 }

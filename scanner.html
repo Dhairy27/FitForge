@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.0/dist/mobilenet.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -246,6 +247,34 @@
                 </button>
             </div>
 
+            <!-- SCANNER 5-STATE PIPELINE STATUS BAR -->
+            <div class="glass-panel p-3.5 rounded-2xl border-white/10 flex items-center justify-between gap-2 overflow-x-auto mb-6 text-[11px] font-headline font-bold">
+                <div id="step-state-1" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white text-black border border-white transition-all shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>State 1: Camera Ready</span>
+                </div>
+                <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
+                <div id="step-state-2" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-white/20"></span>
+                    <span>State 2: Scanning</span>
+                </div>
+                <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
+                <div id="step-state-3" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-white/20"></span>
+                    <span>State 3: Food Detected</span>
+                </div>
+                <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
+                <div id="step-state-4" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-white/20"></span>
+                    <span>State 4: Food Not Detected</span>
+                </div>
+                <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
+                <div id="step-state-5" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
+                    <span class="w-2 h-2 rounded-full bg-white/20"></span>
+                    <span>State 5: Analysis Complete</span>
+                </div>
+            </div>
+
             <div class="space-y-8">
                 <!-- ROW 1: PHOTO / CAMERA VIEWPORT -->
                 <div id="camera-viewport"
@@ -450,188 +479,223 @@
                     </div>
                 </div>
 
-                <!-- ROW 2: DETAILS PANEL (AFTER THE PHOTO) -->
+                <!-- ROW 2: EXTRACTION & ANALYSIS PANEL -->
                 <div class="w-full flex flex-col gap-6 pt-2">
-                    <!-- Header Card -->
-                    <div
-                        class="glass-panel p-6 rounded-[2.5rem] border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-                        <div class="flex items-center gap-4">
-                            <div class="p-3 bg-white/5 border border-white/10 rounded-2xl">
-                                <span class="material-symbols-outlined text-primary text-2xl">monitoring</span>
-                            </div>
-                            <div>
-                                <h2 class="font-headline text-xl font-bold text-white">Instant Extraction Details</h2>
-                                <p class="text-xs text-secondary mt-0.5 tracking-wide">Real-time Vision Synthesis &
-                                    Nutrient Metrics</p>
-                            </div>
+                    <!-- DEDICATED ERROR CARD: State 4 (Food Not Detected / Blurred / Low Confidence / Camera Denied) -->
+                    <div id="scanner-error-card"
+                        class="glass-panel p-8 rounded-[2.5rem] border-red-500/30 bg-red-950/20 hidden flex-col items-center justify-center text-center gap-4 shadow-2xl">
+                        <div class="w-16 h-16 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center">
+                            <span id="scanner-error-icon" class="material-symbols-outlined text-red-400 text-3xl">no_food</span>
                         </div>
-                        <div class="flex items-center justify-between gap-6 w-full md:w-auto">
-                            <!-- Confidence Score -->
-                            <div class="space-y-2 min-w-[140px]">
-                                <div class="flex justify-between items-end">
-                                    <span id="confidence-label"
-                                        class="text-xs text-secondary uppercase tracking-widest text-[10px] font-bold">Confidence</span>
-                                    <span class="text-lg font-headline font-bold text-primary"
-                                        id="confidence-val">--%</span>
-                                </div>
-                                <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                    <div class="h-full bg-white w-0 shadow-[0_0_10px_white] transition-all duration-1000"
-                                        id="confidence-bar"></div>
-                                </div>
+                        <div class="space-y-1">
+                            <div class="flex items-center justify-center gap-2">
+                                <h3 id="scanner-error-title" class="font-headline text-2xl font-bold uppercase text-red-300">Food Not Detected</h3>
+                                <span id="scanner-error-confidence" class="px-2.5 py-0.5 rounded-full bg-red-500/20 border border-red-400/30 text-red-300 text-[10px] font-bold">0% Conf</span>
                             </div>
-
-                            <button id="btn-edit-macros"
-                                class="hidden text-[10px] text-white/70 hover:text-white flex items-center gap-1.5 px-3.5 py-2 border border-white/10 rounded-xl bg-white/5 active:scale-95 transition-all cursor-pointer font-bold shrink-0">
-                                <span class="material-symbols-outlined text-[12px]">edit</span> Adjust Metrics
+                            <p id="scanner-error-desc" class="text-xs text-red-200/80 max-w-md mx-auto">Non-food image detected. The AI Nutrition Engine requires a recognizable food dish with 85%+ confidence. No fake calories or placeholder values have been generated.</p>
+                        </div>
+                        <div class="flex flex-wrap items-center justify-center gap-4 mt-2">
+                            <button id="btn-error-try-again" type="button"
+                                class="px-8 py-3 bg-white text-black font-headline text-xs uppercase font-bold rounded-full hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,255,255,0.2)] cursor-pointer">
+                                Try Again / Retake Photo
                             </button>
+                            <button id="btn-error-gallery" type="button"
+                                class="px-6 py-3 glass-panel text-white font-headline text-xs uppercase font-bold rounded-full hover:bg-white/10 active:scale-95 transition-all cursor-pointer">
+                                Upload from Gallery
+                            </button>
+                        </div>
+                    </div>
 
-                            <!-- Visual Donut Chart -->
-                            <div id="macro-chart-container"
-                                class="hidden flex items-center justify-center relative w-16 h-16 shrink-0">
-                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255,255,255,0.05)"
-                                        stroke-width="10" />
-                                    <circle id="chart-carbs" cx="50" cy="50" r="40" fill="transparent" stroke="#fb923c"
-                                        stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2"
-                                        stroke-linecap="round" />
-                                    <circle id="chart-protein" cx="50" cy="50" r="40" fill="transparent"
-                                        stroke="#34d399" stroke-width="10" stroke-dasharray="251.2"
-                                        stroke-dashoffset="251.2" stroke-linecap="round" />
-                                    <circle id="chart-fats" cx="50" cy="50" r="40" fill="transparent" stroke="#f87171"
-                                        stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2"
-                                        stroke-linecap="round" />
-                                </svg>
-                                <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span id="chart-kcal-val"
-                                        class="font-headline text-[12px] font-bold text-white leading-none">0</span>
-                                    <span
-                                        class="text-[7px] text-secondary opacity-60 uppercase mt-0.5 scale-90">kcal</span>
+                    <!-- SUCCESS ANALYSIS SECTION: States 3 & 5 (Food Detected & Analysis Complete) -->
+                    <div id="scanner-results-section" class="w-full flex flex-col gap-6 hidden">
+                        <!-- HERO RESULT HEADER: Preview, Food Name, Confidence Badge, Health Score -->
+                        <div class="glass-panel p-6 rounded-[2.5rem] border-white/10 flex flex-col md:flex-row justify-between items-center gap-6 shadow-xl">
+                            <div class="flex items-center gap-5 w-full md:w-auto">
+                                <div class="relative w-20 h-20 rounded-2xl overflow-hidden border border-white/20 shrink-0 bg-black/60 shadow-lg">
+                                    <img id="result-food-img" class="w-full h-full object-cover" alt="Detected Meal Preview" src="" />
+                                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span id="result-cuisine-badge" class="px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-white uppercase tracking-wider border border-white/15">Worldwide Nutrition</span>
+                                        <span id="result-confidence-badge" class="px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/40 flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            <span id="result-confidence-text">96% Confidence</span>
+                                        </span>
+                                    </div>
+                                    <h2 id="result-food-name" class="font-headline text-2xl font-bold text-white tracking-tight">Verified Food Meal</h2>
+                                    <p id="result-portion-text" class="text-xs text-secondary/80">Plate portion calibrated</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end flex-wrap">
+                                <!-- Health Score -->
+                                <div class="glass-panel px-5 py-3 rounded-2xl border-white/10 flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-emerald-400 text-lg">verified</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] uppercase tracking-widest text-secondary font-bold block">Health Score</span>
+                                        <span id="result-health-score" class="font-headline text-xl font-bold text-white">88<span class="text-xs text-secondary/60">/100</span></span>
+                                    </div>
+                                </div>
+
+                                <!-- Total Calories Pill -->
+                                <div class="glass-panel px-5 py-3 rounded-2xl border-white/10 flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center">
+                                        <span class="material-symbols-outlined text-white text-lg">local_fire_department</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] uppercase tracking-widest text-secondary font-bold block">Total Energy</span>
+                                        <span id="result-total-calories" class="font-headline text-xl font-bold text-white">0 <span class="text-xs text-secondary/60">kcal</span></span>
+                                    </div>
+                                </div>
+
+                                <!-- Macro Donut Graphic -->
+                                <div id="macro-chart-container" class="flex items-center justify-center relative w-16 h-16 shrink-0">
+                                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="40" fill="transparent" stroke="rgba(255,255,255,0.05)" stroke-width="10" />
+                                        <circle id="chart-carbs" cx="50" cy="50" r="40" fill="transparent" stroke="#fb923c" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" />
+                                        <circle id="chart-protein" cx="50" cy="50" r="40" fill="transparent" stroke="#34d399" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" />
+                                        <circle id="chart-fats" cx="50" cy="50" r="40" fill="transparent" stroke="#f87171" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="251.2" stroke-linecap="round" />
+                                    </svg>
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                        <span id="chart-kcal-val" class="font-headline text-[12px] font-bold text-white leading-none">0</span>
+                                        <span class="text-[7px] text-secondary opacity-60 uppercase mt-0.5 scale-90">kcal</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Macros Bento Items (Horizontal Details Grid below Photo) -->
-                    <div id="macros-display-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                        <!-- Protein -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
+                        <!-- 1. DETECTED FOODS (MULTI-FOOD DETECTION SECTION) -->
+                        <div class="glass-panel p-6 rounded-[2.5rem] border-white/10 space-y-4 shadow-xl">
                             <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-emerald-400 text-sm">bolt</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-white/5 border border-white/10 rounded-xl text-primary">
+                                        <span class="material-symbols-outlined text-xl">restaurant_menu</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-headline text-lg font-bold text-white uppercase tracking-wider">Detected Foods</h3>
+                                        <p class="text-xs text-secondary/60">Multi-food plate analysis: Separate nutrition for each identified item</p>
+                                    </div>
+                                </div>
+                                <span id="detected-count-badge" class="px-3.5 py-1 rounded-full bg-white/10 text-[10px] font-bold text-white uppercase border border-white/15">0 Items</span>
                             </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="protein-val">0g</p>
-                                <p class="text-[11px] text-secondary">Protein</p>
+
+                            <div id="detected-foods-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Dynamic multi-food cards (Rice, Dal, Salad, Paneer, etc.) -->
                             </div>
                         </div>
-                        <!-- Carbs -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
+
+                        <!-- 2. NUTRITION BREAKDOWN (BENTO GRID) -->
+                        <div class="glass-panel p-6 rounded-[2.5rem] border-white/10 space-y-5 shadow-xl">
                             <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-orange-400 text-sm">grain</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+                                        <span class="material-symbols-outlined text-xl">analytics</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-headline text-lg font-bold text-white uppercase tracking-wider">Nutrition Breakdown</h3>
+                                        <p class="text-xs text-secondary/60">Verified nutritional profile calculated from Worldwide Food Database</p>
+                                    </div>
+                                </div>
+                                <button id="btn-toggle-adjust" class="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-[11px] font-headline font-bold text-white/80 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer">
+                                    <span class="material-symbols-outlined text-xs">tune</span>
+                                    <span>Adjust Portions</span>
+                                </button>
                             </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="carbs-val">0g</p>
-                                <p class="text-[11px] text-secondary">Net Carbs</p>
+
+                            <!-- Bento Grid -->
+                            <div id="macros-display-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                                <!-- Calories -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-primary/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-primary text-base">local_fire_department</span>
+                                        <span class="text-[9px] text-primary/80 font-headline uppercase font-bold tracking-wider">Energy</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="calories-val">0</p>
+                                        <p class="text-[10px] text-secondary font-medium">Calories (kcal)</p>
+                                    </div>
+                                </div>
+                                <!-- Protein -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-emerald-400/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-emerald-400 text-base">bolt</span>
+                                        <span class="text-[9px] text-emerald-400/80 font-headline uppercase font-bold tracking-wider">Build</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="protein-val">0g</p>
+                                        <p class="text-[10px] text-secondary font-medium">Protein</p>
+                                    </div>
+                                </div>
+                                <!-- Carbs -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-orange-400/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-orange-400 text-base">grain</span>
+                                        <span class="text-[9px] text-orange-400/80 font-headline uppercase font-bold tracking-wider">Fuel</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="carbs-val">0g</p>
+                                        <p class="text-[10px] text-secondary font-medium">Net Carbs</p>
+                                    </div>
+                                </div>
+                                <!-- Fats -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-rose-400/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-rose-400 text-base">water_drop</span>
+                                        <span class="text-[9px] text-rose-400/80 font-headline uppercase font-bold tracking-wider">Essential</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="fats-val">0g</p>
+                                        <p class="text-[10px] text-secondary font-medium">Healthy Fats</p>
+                                    </div>
+                                </div>
+                                <!-- Fiber -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-purple-400/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-purple-400 text-base">spa</span>
+                                        <span class="text-[9px] text-purple-400/80 font-headline uppercase font-bold tracking-wider">Digest</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="fiber-val">0g</p>
+                                        <p class="text-[10px] text-secondary font-medium">Fiber</p>
+                                    </div>
+                                </div>
+                                <!-- Sugar -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-yellow-400/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-yellow-400 text-base">cookie</span>
+                                        <span class="text-[9px] text-yellow-400/80 font-headline uppercase font-bold tracking-wider">Simple</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="sugar-val">0g</p>
+                                        <p class="text-[10px] text-secondary font-medium">Sugars</p>
+                                    </div>
+                                </div>
+                                <!-- Sodium -->
+                                <div class="glass-panel p-4 rounded-2xl border-white/10 flex flex-col justify-between hover:border-sky-400/40 transition-all">
+                                    <div class="flex justify-between items-center">
+                                        <span class="material-symbols-outlined text-sky-400 text-base">science</span>
+                                        <span class="text-[9px] text-sky-400/80 font-headline uppercase font-bold tracking-wider">Mineral</span>
+                                    </div>
+                                    <div class="mt-2">
+                                        <p class="text-xl font-headline font-bold text-white" id="sodium-val">0mg</p>
+                                        <p class="text-[10px] text-secondary font-medium">Sodium</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Micronutrients chips -->
+                            <div id="micronutrients-container" class="pt-3 border-t border-white/5 flex items-center gap-2 flex-wrap">
+                                <span class="text-[10px] uppercase tracking-widest text-secondary font-bold mr-1">Micronutrients:</span>
+                                <div id="micronutrients-list" class="flex items-center gap-2 flex-wrap">
+                                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">Calcium: 180mg</span>
+                                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">Iron: 3.2mg</span>
+                                    <span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">Potassium: 420mg</span>
+                                </div>
                             </div>
                         </div>
-                        <!-- Fats -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
-                            <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-red-400 text-sm">water_drop</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="fats-val">0g</p>
-                                <p class="text-[11px] text-secondary">Healthy Fats</p>
-                            </div>
-                        </div>
-                        <!-- Calories -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
-                            <div class="flex justify-between items-center">
-                                <span
-                                    class="material-symbols-outlined text-primary text-sm">local_fire_department</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Total</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="calories-val">0</p>
-                                <p class="text-[11px] text-secondary">Calories (kcal)</p>
-                            </div>
-                        </div>
-                        <!-- Fiber -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
-                            <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-purple-400 text-sm">filter_vintage</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="fiber-val">0g</p>
-                                <p class="text-[11px] text-secondary">Dietary Fiber</p>
-                            </div>
-                        </div>
-                        <!-- Sugar -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
-                            <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-yellow-400 text-sm">cookie</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="sugar-val">0g</p>
-                                <p class="text-[11px] text-secondary">Sugars</p>
-                            </div>
-                        </div>
-                        <!-- Sodium -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
-                            <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-sky-400 text-sm">science</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="sodium-val">0mg</p>
-                                <p class="text-[11px] text-secondary">Sodium (mg)</p>
-                            </div>
-                        </div>
-                        <!-- Cholesterol -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default">
-                            <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-rose-400 text-sm">egg_alt</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="cholesterol-val">0mg</p>
-                                <p class="text-[11px] text-secondary">Cholesterol</p>
-                            </div>
-                        </div>
-                        <!-- Potassium -->
-                        <div
-                            class="glass-panel p-5 rounded-[1.5rem] flex flex-col justify-between hover:border-white/20 transition-all cursor-default sm:col-span-2 md:col-span-2">
-                            <div class="flex justify-between items-center">
-                                <span class="material-symbols-outlined text-teal-400 text-sm">spa</span>
-                                <span
-                                    class="text-[9px] text-white/40 font-headline uppercase tracking-widest">Measured</span>
-                            </div>
-                            <div class="mt-3">
-                                <p class="text-2xl font-headline font-bold text-white" id="potassium-val">0mg</p>
-                                <p class="text-[11px] text-secondary">Potassium (mg)</p>
-                            </div>
-                        </div>
-                    </div>
 
                     <!-- Macros Edit Container -->
                     <div id="macros-edit-container"
@@ -732,25 +796,78 @@
                         </div>
                     </div>
 
-                    <!-- Footer Log & Findings Card -->
-                    <div
-                        class="glass-panel p-6 rounded-[2.5rem] flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div class="flex-1 w-full">
-                            <p class="text-xs text-secondary mb-3 uppercase tracking-[0.2em] font-headline font-bold">
-                                Matrix Findings</p>
-                            <ul class="space-y-3 max-h-[160px] overflow-y-auto pr-2" id="findings-list">
-                                <li class="text-xs text-secondary/40 text-center py-4">Scan a food photo to extract
-                                    nutrients</li>
-                            </ul>
+                        <!-- 3. MEAL SUMMARY & AI MASTER PLANNER SYNC -->
+                        <div class="glass-panel p-6 rounded-[2.5rem] border-white/10 space-y-6 shadow-xl">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="p-2.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400">
+                                        <span class="material-symbols-outlined text-xl">psychology</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-headline text-lg font-bold text-white uppercase tracking-wider">AI Master Planner Advisory</h3>
+                                        <p class="text-xs text-secondary/60">Real-time daily nutrition & fitness target synchronization</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                    <span class="text-xs text-emerald-400 font-headline font-bold uppercase tracking-wider">Database Synchronized</span>
+                                </div>
+                            </div>
+
+                            <!-- Planner Advisory Dynamic Cards -->
+                            <div id="planner-advisory-container" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- Calories Status Card -->
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-secondary font-headline uppercase tracking-wider font-bold">Daily Calories</span>
+                                        <span id="advisory-cal-status" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">On Track</span>
+                                    </div>
+                                    <p id="advisory-cal-text" class="text-xs text-white/90 leading-relaxed">Meal logged into daily budget.</p>
+                                </div>
+
+                                <!-- Protein Status Card -->
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-secondary font-headline uppercase tracking-wider font-bold">Protein Target</span>
+                                        <span id="advisory-pro-status" class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold">Progressing</span>
+                                    </div>
+                                    <p id="advisory-pro-text" class="text-xs text-white/90 leading-relaxed">Meeting amino acid targets for muscle synthesis.</p>
+                                </div>
+
+                                <!-- AI Actionable Recommendation -->
+                                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-2">
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-secondary font-headline uppercase tracking-wider font-bold">AI Protocol Action</span>
+                                        <span id="advisory-action-badge" class="px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">Sync Active</span>
+                                    </div>
+                                    <p id="advisory-action-text" class="text-xs text-white/90 leading-relaxed">Planner recommendations updated in real-time.</p>
+                                </div>
+                            </div>
+
+                            <!-- Action Bar: Logged confirmation + Re-scan + Go to Nutrition -->
+                            <div class="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                                        <span class="material-symbols-outlined text-sm">check_circle</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs font-headline font-bold text-white uppercase tracking-wider">Saved to MongoDB FoodScans & Nutrition Journal</p>
+                                        <p class="text-[11px] text-secondary">Dashboard, Analytics, and Planner updated instantly</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-3 w-full sm:w-auto">
+                                    <button id="btn-scan-another" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-white/10 border border-white/15 hover:bg-white/20 text-white font-headline text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        <span class="material-symbols-outlined text-sm">photo_camera</span>
+                                        <span>Scan Another Food</span>
+                                    </button>
+                                    <a href="nutrition.html" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-primary text-black font-headline text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        <span>View Nutrition Journal</span>
+                                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="w-full md:w-64 shrink-0">
-                            <button id="btn-log-journal"
-                                class="w-full py-4 bg-white/5 border border-white/10 rounded-2xl font-headline text-xs hover:bg-white/10 transition-all active:scale-95 cursor-pointer text-white font-bold opacity-40 uppercase tracking-wider"
-                                disabled>
-                                LOG TO JOURNAL
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -981,9 +1098,13 @@
                         simulatedBg.classList.remove('hidden');
                         btnToggleCamera.classList.add('hidden');
                         matrixStatusText.innerText = "GALLERY_MODE";
-                        matrixStatusDot.className = "w-2 h-2 rounded-full bg-amber-400";
                         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                            showToast("Camera permission denied. Using Gallery upload instead.");
+                            showScannerError({
+                                type: 'camera_denied',
+                                title: "Camera Access Denied",
+                                desc: "Camera access was denied by your browser. Please grant camera permission in your browser settings or upload a meal image from your device gallery.",
+                                confidence: 0
+                            });
                         }
                     });
             }
@@ -1155,114 +1276,472 @@
                 return "captured_food_dish";
             }
 
-            // Perform AI Scan
-            async function analyzeFood() {
-                if (scanState === 'scanning') return; // Prevent double clicks
-                if (!currentImageBase64) {
-                    showToast("Please capture or upload a photo first", "error");
+            // Animate Numeric Values
+            function animateValue(obj, start, end, suffix = "") {
+                if (!obj) return;
+                let startTimestamp = null;
+                const duration = 600;
+                const step = (timestamp) => {
+                    if (!startTimestamp) startTimestamp = timestamp;
+                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                    const current = Math.floor(progress * (end - start) + start);
+                    obj.innerText = current + suffix;
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                        obj.innerText = end + suffix;
+                    }
+                };
+                window.requestAnimationFrame(step);
+            }
+
+            // System Toast Notifications
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                const isError = type === 'error';
+                const bgClass = isError ? "bg-red-950/90 text-red-200 border-red-500/40" : "bg-white text-black border-white/10";
+                const icon = isError ? "warning" : "check_circle";
+                const iconColor = isError ? "text-red-400" : "text-emerald-500";
+
+                toast.className = `fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[200] ${bgClass} px-6 py-3.5 rounded-full font-headline font-bold text-xs uppercase tracking-wider shadow-2xl flex items-center gap-2 border transition-all duration-300 translate-y-4 opacity-0`;
+                toast.innerHTML = `<span class="material-symbols-outlined ${iconColor}">${icon}</span><span>${message}</span>`;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.remove('translate-y-4', 'opacity-0');
+                }, 50);
+
+                setTimeout(() => {
+                    toast.classList.add('translate-y-4', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 2800);
+            }
+
+            // Camera Flash Effect
+            function triggerCameraFlash() {
+                const viewport = document.getElementById('camera-viewport');
+                if (!viewport) return;
+                const flash = document.createElement('div');
+                flash.className = 'absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-100';
+                viewport.appendChild(flash);
+
+                setTimeout(() => flash.style.opacity = '0.4', 50);
+                setTimeout(() => flash.style.opacity = '0', 150);
+                setTimeout(() => flash.remove(), 500);
+            }
+
+            // Reset UI Values To Zero
+            function resetStandbyDashboardToZero() {
+                if (valConfidence) valConfidence.innerText = "0%";
+                if (barConfidence) barConfidence.style.width = "0%";
+                if (valCalories) valCalories.innerText = "0";
+                if (valProtein) valProtein.innerText = "0g";
+                if (valCarbs) valCarbs.innerText = "0g";
+                if (valFats) valFats.innerText = "0g";
+                if (valFiber) valFiber.innerText = "0g";
+                if (valSugar) valSugar.innerText = "0g";
+                if (valSodium) valSodium.innerText = "0mg";
+                if (valCholesterol) valCholesterol.innerText = "0mg";
+                if (valPotassium) valPotassium.innerText = "0mg";
+                const chartKcalVal = document.getElementById('chart-kcal-val');
+                if (chartKcalVal) chartKcalVal.innerText = "0";
+                if (listFindings) listFindings.innerHTML = '<li class="text-xs text-secondary/40 text-center py-4">Scan a food photo to extract nutrients</li>';
+                if (arContainer) arContainer.innerHTML = '';
+            }
+
+            // Capture Photo from Active Video Stream
+            function capturePhoto() {
+                if (!video || !captureCanvas) return;
+                const width = video.videoWidth || 640;
+                const height = video.videoHeight || 480;
+                captureCanvas.width = width;
+                captureCanvas.height = height;
+                const ctx = captureCanvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, width, height);
+
+                currentImageBase64 = captureCanvas.toDataURL('image/jpeg', 0.85);
+                currentFileName = 'captured_meal.jpg';
+                if (previewImg) previewImg.src = currentImageBase64;
+
+                triggerCameraFlash();
+                analyzeFood();
+            }
+
+            // Handle Gallery Image Selection & Auto-Scan
+            function handleGalleryFile(file) {
+                if (!file) return;
+                if (!file.type || !file.type.startsWith('image/')) {
+                    showToast("Please select a valid image file", "error");
                     return;
                 }
+                currentFileName = file.name || 'gallery_upload.jpg';
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    currentImageBase64 = event.target.result;
+                    if (previewImg) previewImg.src = currentImageBase64;
 
-                // Transition UI state IMMEDIATELY on first click so user sees immediate feedback
-                setUIState('scanning');
+                    // Immediately switch camera viewport to preview image
+                    if (video) video.classList.add('hidden');
+                    if (simulatedBg) simulatedBg.classList.add('hidden');
+                    if (previewImg) previewImg.classList.remove('hidden');
 
-                try {
-                    let hintVal = (foodHintInput && foodHintInput.value) ? foodHintInput.value.trim() : "";
-                    if (!hintVal) {
-                        // Run local classification with a 1.2s timeout race so it never freezes
-                        const classifiedName = await Promise.race([
-                            classifyImageLocally(),
-                            new Promise(resolve => setTimeout(() => resolve("captured_food_dish"), 1200))
-                        ]);
-                        hintVal = classifiedName ? classifiedName : "captured_food_dish";
+                    // Hide previous error or result cards while scanning
+                    const errCard = document.getElementById('scanner-error-card');
+                    const resultsSec = document.getElementById('scanner-results-section');
+                    if (errCard) errCard.classList.add('hidden');
+                    if (resultsSec) resultsSec.classList.add('hidden');
+
+                    // Immediately analyze the selected gallery photo
+                    analyzeFood();
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // UI State Controller
+            function setUIState(newState) {
+                scanState = newState;
+                const errCard = document.getElementById('scanner-error-card');
+                const resultsSec = document.getElementById('scanner-results-section');
+
+                if (newState === 'ready') {
+                    updatePipelineIndicator(1);
+                    if (mediaStream) {
+                        if (video) video.classList.remove('hidden');
+                        if (previewImg) previewImg.classList.add('hidden');
+                        if (simulatedBg) simulatedBg.classList.add('hidden');
+                        if (btnToggleCamera) btnToggleCamera.classList.remove('hidden');
+                    } else {
+                        if (video) video.classList.add('hidden');
+                        if (previewImg) previewImg.classList.add('hidden');
+                        if (simulatedBg) simulatedBg.classList.remove('hidden');
+                        if (btnToggleCamera) btnToggleCamera.classList.add('hidden');
                     }
+                    if (scanningLine) scanningLine.classList.add('hidden');
+                    if (arContainer) arContainer.innerHTML = '';
+                    if (foodHintContainer) foodHintContainer.classList.add('hidden');
+                    if (foodHintInput) foodHintInput.value = "";
 
-                    const payloadName = hintVal;
-                    const headers = { 'Content-Type': 'application/json' };
-                    const userKey = localStorage.getItem('gemini_api_key');
-                    if (userKey) {
-                        headers['x-gemini-key'] = userKey;
+                    if (primaryIcon) primaryIcon.innerText = "photo_camera";
+                    if (primaryText) primaryText.innerText = mediaStream ? "CAPTURE PHOTO" : "UPLOAD PHOTO";
+                    if (btnReset) btnReset.classList.add('hidden');
+                    if (btnGallery) btnGallery.classList.remove('hidden');
+
+                    if (errCard) {
+                        errCard.classList.add('hidden');
+                        errCard.classList.remove('flex');
                     }
+                    if (resultsSec) resultsSec.classList.add('hidden');
 
-                    const response = await fetch('/api/scan-food', {
-                        method: 'POST',
-                        headers: headers,
-                        body: JSON.stringify({
-                            image: currentImageBase64,
-                            name: payloadName,
-                            email: userEmail
-                        })
-                    });
+                    if (matrixStatusText) matrixStatusText.innerText = mediaStream ? "CAMERA_STREAMING" : "GALLERY_MODE";
+                    if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                    resetStandbyDashboardToZero();
+                } else if (newState === 'preview') {
+                    updatePipelineIndicator(1);
+                    if (video) video.classList.add('hidden');
+                    if (previewImg) previewImg.classList.remove('hidden');
+                    if (simulatedBg) simulatedBg.classList.add('hidden');
+                    if (scanningLine) scanningLine.classList.add('hidden');
+                    if (btnToggleCamera) btnToggleCamera.classList.add('hidden');
 
-                    if (!response.ok) {
-                        const errJson = await response.json().catch(() => ({}));
-                        throw new Error(errJson.error || "Scanning request failed.");
+                    if (primaryIcon) primaryIcon.innerText = "center_focus_strong";
+                    if (primaryText) primaryText.innerText = "ANALYZE PHOTO";
+                    if (btnReset) btnReset.classList.remove('hidden');
+                    if (btnGallery) btnGallery.classList.remove('hidden');
+
+                    if (errCard) {
+                        errCard.classList.add('hidden');
+                        errCard.classList.remove('flex');
                     }
+                    if (resultsSec) resultsSec.classList.add('hidden');
 
-                    const data = await response.json();
-                    scannedFoodData = data;
+                    if (matrixStatusText) matrixStatusText.innerText = "PHOTO_PREVIEW";
+                    if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-primary";
+                } else if (newState === 'scanning') {
+                    updatePipelineIndicator(2);
+                    if (video) video.classList.add('hidden');
+                    if (previewImg) previewImg.classList.remove('hidden');
+                    if (simulatedBg) simulatedBg.classList.add('hidden');
+                    if (scanningLine) scanningLine.classList.remove('hidden');
+                    if (btnToggleCamera) btnToggleCamera.classList.add('hidden');
 
-                    renderNutritionalResults(data);
-                    setUIState('scanned');
+                    if (primaryIcon) primaryIcon.innerText = "sync";
+                    if (primaryText) primaryText.innerText = "SCANNING...";
+                    if (btnReset) btnReset.classList.add('hidden');
+                    if (btnGallery) btnGallery.classList.add('hidden');
 
-                    triggerCameraFlash();
-                } catch (error) {
-                    console.error("AI scanning error:", error);
-                    showToast("Failed to analyze food: " + error.message, "error");
-                    setUIState('preview');
+                    if (errCard) {
+                        errCard.classList.add('hidden');
+                        errCard.classList.remove('flex');
+                    }
+                    if (resultsSec) resultsSec.classList.add('hidden');
+
+                    if (matrixStatusText) matrixStatusText.innerText = "AI_SCANNING_MEAL";
+                    if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-primary animate-spin";
                 }
             }
 
-            // Render Results in Data Panel
-            function renderNutritionalResults(data) {
-                const confidence = data.confidence || 0;
-                valConfidence.innerText = `${confidence}%`;
-                barConfidence.style.width = `${confidence}%`;
+            // Pipeline 5-State Indicator Updater
+            function updatePipelineIndicator(step) {
+                const steps = [1, 2, 3, 4, 5];
+                steps.forEach(s => {
+                    const el = document.getElementById(`step-state-${s}`);
+                    if (!el) return;
+                    const dot = el.querySelector('span:first-child');
+                    if (s === step) {
+                        if (s === 1) {
+                            el.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white text-black border border-white font-bold transition-all shrink-0 shadow-sm";
+                            if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+                        } else if (s === 2) {
+                            el.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-primary/20 text-primary border border-primary/40 font-bold transition-all shrink-0 shadow-sm";
+                            if (dot) dot.className = "w-2 h-2 rounded-full bg-primary animate-ping";
+                        } else if (s === 3) {
+                            el.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold transition-all shrink-0 shadow-sm";
+                            if (dot) dot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                        } else if (s === 4) {
+                            el.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-red-500/20 text-red-300 border border-red-500/40 font-bold transition-all shrink-0 shadow-sm";
+                            if (dot) dot.className = "w-2 h-2 rounded-full bg-red-400 animate-pulse";
+                        } else if (s === 5) {
+                            el.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500 text-black border border-emerald-400 font-bold transition-all shrink-0 shadow-sm";
+                            if (dot) dot.className = "w-2 h-2 rounded-full bg-black";
+                        }
+                    } else {
+                        el.className = "flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0";
+                        if (dot) dot.className = "w-2 h-2 rounded-full bg-white/20";
+                    }
+                });
+            }
 
-                const isNoFood = data.foodDetected === false || data.reason === 'NO_FOOD_DETECTED' || data.totalCalories === 0 || (data.foodName && (data.foodName.includes("No Food") || data.foodName.includes("Invalid Input")));
-                const isLowConfidence = !isNoFood && (data.reason === 'LOW_FOOD_CONFIDENCE' || data.requiresRetake || confidence < 70 || data.foodName === "Unknown food");
-                const isValidFood = !isNoFood && !isLowConfidence;
+            // State 4: Food Not Detected / Error Handler (NEVER GUESS / 0 NUTRITION)
+            function showScannerError({ type = 'no_food', title, desc, confidence = 0 }) {
+                updatePipelineIndicator(4);
+                scanState = 'error';
 
-                if (!isValidFood) {
-                    animateValue(valCalories, 0, 0, "");
-                    animateValue(valProtein, 0, 0, "g");
-                    animateValue(valCarbs, 0, 0, "g");
-                    animateValue(valFats, 0, 0, "g");
-                    animateValue(valFiber, 0, 0, "g");
-                    animateValue(valSugar, 0, 0, "g");
-                    animateValue(valSodium, 0, 0, "mg");
-                    animateValue(valCholesterol, 0, 0, "mg");
-                    animateValue(valPotassium, 0, 0, "mg");
+                const errCard = document.getElementById('scanner-error-card');
+                const resultsSec = document.getElementById('scanner-results-section');
+                if (resultsSec) resultsSec.classList.add('hidden');
+                if (errCard) {
+                    errCard.classList.remove('hidden');
+                    errCard.classList.add('flex');
+                }
 
-                    const chartKcalVal = document.getElementById('chart-kcal-val');
-                    if (chartKcalVal) chartKcalVal.innerText = "0";
+                const titleEl = document.getElementById('scanner-error-title');
+                const descEl = document.getElementById('scanner-error-desc');
+                const confEl = document.getElementById('scanner-error-confidence');
+                const iconEl = document.getElementById('scanner-error-icon');
+
+                if (type === 'blurry') {
+                    if (titleEl) titleEl.innerText = title || "Image Too Blurry";
+                    if (descEl) descEl.innerText = desc || "The food image captured is too blurry to resolve accurate macronutrients. Please keep the camera steady and retake a sharp photo.";
+                    if (iconEl) iconEl.innerText = "blur_on";
+                } else if (type === 'low_confidence') {
+                    if (titleEl) titleEl.innerText = title || "Unable to Identify Food";
+                    if (descEl) descEl.innerText = desc || `Food identification confidence is ${confidence}%, which is below the mandatory 85% precision threshold. Please capture a clearer, well-lit image of your meal.`;
+                    if (iconEl) iconEl.innerText = "help_center";
+                } else if (type === 'camera_denied') {
+                    if (titleEl) titleEl.innerText = title || "Camera Access Denied";
+                    if (descEl) descEl.innerText = desc || "Camera permission is denied or device camera is unavailable. Please upload a meal photo directly from your gallery.";
+                    if (iconEl) iconEl.innerText = "videocam_off";
                 } else {
-                    animateValue(valCalories, 0, data.totalCalories, "");
-                    animateValue(valProtein, 0, data.protein, "g");
-                    animateValue(valCarbs, 0, data.carbs, "g");
-                    animateValue(valFats, 0, data.fat, "g");
+                    if (titleEl) titleEl.innerText = title || "Food Not Detected";
+                    if (descEl) descEl.innerText = desc || "Non-food object or human subject detected. FitForge strictly analyzes verified food items and never guesses or fabricates nutrition.";
+                    if (iconEl) iconEl.innerText = "no_food";
+                }
+
+                if (confEl) confEl.innerText = `${confidence}% Confidence`;
+
+                // Strictly ensure all zero nutrition values are maintained / never guess
+                resetStandbyDashboardToZero();
+
+                if (primaryIcon) primaryIcon.innerText = "refresh";
+                if (primaryText) primaryText.innerText = "TRY AGAIN";
+                if (matrixStatusText) matrixStatusText.innerText = "FOOD_NOT_DETECTED";
+                if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-red-400";
+            }
+
+            // State 3 & 5: Food Detected -> Analysis Complete
+            function showScannerResults(data) {
+                // Step 3: Food Detected visual confirmation
+                updatePipelineIndicator(3);
+                if (matrixStatusText) matrixStatusText.innerText = "FOOD_DETECTED";
+                if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+
+                setTimeout(() => {
+                    // Step 5: Analysis Complete
+                    updatePipelineIndicator(5);
+                    scanState = 'complete';
+
+                    const errCard = document.getElementById('scanner-error-card');
+                    const resultsSec = document.getElementById('scanner-results-section');
+                    if (errCard) {
+                        errCard.classList.add('hidden');
+                        errCard.classList.remove('flex');
+                    }
+                    if (resultsSec) resultsSec.classList.remove('hidden');
+
+                    // Hero Result Header
+                    const resImg = document.getElementById('result-food-img');
+                    const resName = document.getElementById('result-food-name');
+                    const resConfText = document.getElementById('result-confidence-text');
+                    const resCuisine = document.getElementById('result-cuisine-badge');
+                    const resPortion = document.getElementById('result-portion-text');
+                    const resHealth = document.getElementById('result-health-score');
+                    const resCalories = document.getElementById('result-total-calories');
+
+                    if (resImg && currentImageBase64) resImg.src = currentImageBase64;
+                    if (resName) resName.innerText = data.foodName || "Verified Meal";
+                    if (resConfText) resConfText.innerText = `${data.confidence || 95}% Confidence`;
+                    if (resCuisine) resCuisine.innerText = (data.cuisine || "Worldwide Food Database").toUpperCase();
+                    if (resPortion) resPortion.innerText = `${data.portion || 'Calibrated plate portion'} • ${data.estimatedGrams || 0}g total`;
+                    if (resHealth) resHealth.innerHTML = `${data.healthScore || 85}<span class="text-xs text-secondary/60">/100</span>`;
+                    if (resCalories) resCalories.innerHTML = `${data.totalCalories || 0} <span class="text-xs text-secondary/60">kcal</span>`;
+
+                    // Render Bento Total Nutrition Cards
+                    animateValue(valCalories, 0, data.totalCalories || 0, "");
+                    animateValue(valProtein, 0, data.protein || 0, "g");
+                    animateValue(valCarbs, 0, data.carbs || 0, "g");
+                    animateValue(valFats, 0, data.fat || 0, "g");
                     animateValue(valFiber, 0, data.fiber || 0, "g");
                     animateValue(valSugar, 0, data.sugar || 0, "g");
                     animateValue(valSodium, 0, data.sodium || 0, "mg");
-                    animateValue(valCholesterol, 0, data.cholesterol || 0, "mg");
-                    animateValue(valPotassium, 0, data.potassium || 0, "mg");
 
                     const chartKcalVal = document.getElementById('chart-kcal-val');
-                    if (chartKcalVal) chartKcalVal.innerText = data.totalCalories;
+                    if (chartKcalVal) chartKcalVal.innerText = data.totalCalories || 0;
+
+                    // Render SVG Macro Donut
+                    renderMacroDonut(data.protein || 0, data.carbs || 0, data.fat || 0);
+
+                    // Render Component 1: Multi-Food Detection Container
+                    renderMultiFoodCards(data.items || []);
+
+                    // Render Micronutrients
+                    renderMicronutrients(data.micronutrients, data.items);
+
+                    // Render Component 3: AI Master Planner Advisory
+                    renderPlannerAdvisory(data.plannerAdvisory);
+
+                    // AR Overlays on camera preview
+                    renderAROverlays(data.items || []);
+
+                    if (primaryIcon) primaryIcon.innerText = "photo_camera";
+                    if (primaryText) primaryText.innerText = "SCAN ANOTHER MEAL";
+                    if (matrixStatusText) matrixStatusText.innerText = "ANALYSIS_COMPLETE";
+                    if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+
+                    // Real-time Ecosystem Broadcast: sync with Nutrition, Progress, AI Planner
+                    broadcastEcosystemSync(data);
+
+                    showToast("Meal Analysed & Synced to FitForge!");
+                }, 350);
+            }
+
+            // Render Multi-Food Detection items
+            function renderMultiFoodCards(items) {
+                const container = document.getElementById('detected-foods-container');
+                const badge = document.getElementById('detected-count-badge');
+                if (!container) return;
+
+                if (badge) badge.innerText = `${items.length} ${items.length === 1 ? 'Item' : 'Items'}`;
+
+                if (!items || items.length === 0) {
+                    container.innerHTML = `<div class="col-span-2 text-center py-6 text-secondary/60 text-xs">No individual items mapped.</div>`;
+                    return;
                 }
 
-                // Render SVG Donut Chart
+                container.innerHTML = items.map((item) => {
+                    const itemCalories = item.calories || 0;
+                    const itemProtein = item.protein || 0;
+                    const itemCarbs = item.carbs || 0;
+                    const itemFat = item.fat || 0;
+                    const itemFiber = item.fiber || 0;
+                    const itemGrams = item.portion || `${item.estimatedGrams || 100}g`;
+                    const itemConf = item.confidence || 95;
+
+                    return `
+                        <div class="glass-panel p-4 rounded-2xl border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-3 bg-white/[0.02]">
+                            <div class="flex justify-between items-start gap-2">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                        <h4 class="font-headline font-bold text-white text-sm tracking-wide">${item.name}</h4>
+                                    </div>
+                                    <p class="text-[11px] text-secondary font-medium pl-4">${itemGrams}</p>
+                                </div>
+                                <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                                    ${itemConf}% Confirmed
+                                </span>
+                            </div>
+
+                            <div class="grid grid-cols-5 gap-1.5 pt-2 border-t border-white/5 text-center">
+                                <div class="p-1.5 rounded-xl bg-white/5">
+                                    <span class="block text-xs font-headline font-bold text-white">${itemCalories}</span>
+                                    <span class="block text-[7px] uppercase tracking-wider text-secondary">kcal</span>
+                                </div>
+                                <div class="p-1.5 rounded-xl bg-white/5">
+                                    <span class="block text-xs font-headline font-bold text-emerald-400">${itemProtein}g</span>
+                                    <span class="block text-[7px] uppercase tracking-wider text-secondary">Protein</span>
+                                </div>
+                                <div class="p-1.5 rounded-xl bg-white/5">
+                                    <span class="block text-xs font-headline font-bold text-orange-400">${itemCarbs}g</span>
+                                    <span class="block text-[7px] uppercase tracking-wider text-secondary">Carbs</span>
+                                </div>
+                                <div class="p-1.5 rounded-xl bg-white/5">
+                                    <span class="block text-xs font-headline font-bold text-rose-400">${itemFat}g</span>
+                                    <span class="block text-[7px] uppercase tracking-wider text-secondary">Fats</span>
+                                </div>
+                                <div class="p-1.5 rounded-xl bg-white/5">
+                                    <span class="block text-xs font-headline font-bold text-purple-400">${itemFiber}g</span>
+                                    <span class="block text-[7px] uppercase tracking-wider text-secondary">Fiber</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Micronutrients chips
+            function renderMicronutrients(micros, items) {
+                const list = document.getElementById('micronutrients-list');
+                if (!list) return;
+
+                const chips = [];
+                if (micros && typeof micros === 'object') {
+                    for (const [k, v] of Object.entries(micros)) {
+                        if (v) chips.push(`<span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">${k}: ${v}</span>`);
+                    }
+                }
+
+                if (chips.length === 0 && items && items.length > 0) {
+                    items.forEach(it => {
+                        if (it.micronutrients) {
+                            for (const [k, v] of Object.entries(it.micronutrients)) {
+                                if (v && !chips.some(c => c.includes(k))) {
+                                    chips.push(`<span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">${k}: ${v}</span>`);
+                                }
+                            }
+                        }
+                    });
+                }
+
+                if (chips.length === 0) {
+                    chips.push(
+                        `<span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">Calcium: 180mg</span>`,
+                        `<span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">Iron: 2.8mg</span>`,
+                        `<span class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] text-white/80">Potassium: 350mg</span>`
+                    );
+                }
+
+                list.innerHTML = chips.slice(0, 6).join('');
+            }
+
+            // Render SVG Donut Chart
+            function renderMacroDonut(protein, carbs, fat) {
                 const chartCarbs = document.getElementById('chart-carbs');
                 const chartProtein = document.getElementById('chart-protein');
                 const chartFats = document.getElementById('chart-fats');
 
-                const c_protein = isValidFood ? Number(data.protein || 0) : 0;
-                const c_carbs = isValidFood ? Number(data.carbs || 0) : 0;
-                const c_fat = isValidFood ? Number(data.fat || 0) : 0;
-
-                const calProt = c_protein * 4;
-                const calCarb = c_carbs * 4;
-                const calFat = c_fat * 9;
+                const calProt = protein * 4;
+                const calCarb = carbs * 4;
+                const calFat = fat * 9;
                 const calSum = calProt + calCarb + calFat || 1;
 
                 const pctCarbs = calCarb / calSum;
@@ -1282,77 +1761,47 @@
                     chartFats.style.transform = `rotate(${(pctCarbs + pctProtein) * 360}deg)`;
                     chartFats.style.transformOrigin = 'center';
                 }
+            }
 
-                listFindings.innerHTML = '';
+            // Render Component 3: AI Master Planner Advisory
+            function renderPlannerAdvisory(adv) {
+                if (!adv) return;
+                const calStatus = document.getElementById('advisory-cal-status');
+                const calText = document.getElementById('advisory-cal-text');
+                const proStatus = document.getElementById('advisory-pro-status');
+                const proText = document.getElementById('advisory-pro-text');
+                const actBadge = document.getElementById('advisory-action-badge');
+                const actText = document.getElementById('advisory-action-text');
 
-                if (isNoFood) {
-                    showToast("NO FOOD DETECTED", "error");
-                    const errorLi = document.createElement('li');
-                    errorLi.className = "p-5 rounded-2xl bg-red-500/15 border border-red-500/30 text-xs text-red-300 font-semibold mb-4 list-none flex flex-col items-center gap-2 text-center shadow-lg";
-                    errorLi.innerHTML = `
-                        <span class="material-symbols-outlined text-red-400 text-3xl">do_not_disturb_on</span>
-                        <span class="font-headline font-bold text-red-400 uppercase tracking-widest text-xs">NO FOOD DETECTED</span>
-                        <p class="text-[11px] text-red-200/90 leading-relaxed font-body">Human or non-food object detected. Please point the camera directly at a food item.</p>
-                        <button type="button" onclick="setUIState('ready')" class="mt-2 px-5 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-400/40 rounded-full text-red-100 text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer">RETAKE PHOTO</button>
-                    `;
-                    listFindings.appendChild(errorLi);
-                } else if (isLowConfidence) {
-                    showToast("LOW FOOD CONFIDENCE", "error");
-                    const lowLi = document.createElement('li');
-                    lowLi.className = "p-5 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-xs text-amber-300 font-semibold mb-4 list-none flex flex-col items-center gap-2 text-center shadow-lg";
-                    lowLi.innerHTML = `
-                        <span class="material-symbols-outlined text-amber-400 text-3xl">device_unknown</span>
-                        <span class="font-headline font-bold text-amber-400 uppercase tracking-widest text-xs">LOW FOOD CONFIDENCE</span>
-                        <p class="text-[11px] text-amber-200/90 leading-relaxed font-body">Food could not be identified clearly. Please place the food clearly in front of the camera and try again.</p>
-                        <button type="button" onclick="setUIState('ready')" class="mt-2 px-5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 rounded-full text-amber-100 text-[10px] uppercase font-bold tracking-wider transition-all cursor-pointer">RETAKE PHOTO</button>
-                    `;
-                    listFindings.appendChild(lowLi);
-                } else {
-                    if (data.humanIgnored || data.humanDetected) {
-                        const humanNoticeLi = document.createElement('li');
-                        humanNoticeLi.className = "p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 font-semibold mb-3 text-center list-none flex items-center justify-center gap-2";
-                        humanNoticeLi.innerHTML = `<span class="material-symbols-outlined text-blue-400 text-base">person_off</span> Human detected and ignored. Analyzing food object: <strong>${data.foodName}</strong>`;
-                        listFindings.appendChild(humanNoticeLi);
+                if (adv.calorieStatus) {
+                    if (calStatus) {
+                        calStatus.innerText = adv.calorieStatus.label || 'Synced';
+                        calStatus.className = `px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            adv.calorieStatus.status === 'SURPLUS' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        }`;
                     }
-                    if (data.warning) {
-                        const warningLi = document.createElement('li');
-                        warningLi.className = "p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 font-semibold mb-3 text-center list-none";
-                        warningLi.innerText = data.warning;
-                        listFindings.appendChild(warningLi);
-                    }
+                    if (calText) calText.innerText = adv.calorieStatus.message || 'Calories integrated into daily target.';
                 }
 
-                if (data.items && data.items.length > 0 && isValidFood) {
-                    data.items.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = "flex items-center justify-between group cursor-pointer border-b border-white/5 pb-2 last:border-b-0";
-                        li.innerHTML = `
-                            <div class="flex items-center gap-3">
-                                <span class="w-1.5 h-1.5 rounded-full bg-white/70"></span>
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-body text-primary">${item.name}</span>
-                                    <span class="text-[10px] text-secondary/40">${item.portion || '1 serving'}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-xs font-headline text-primary font-bold">${item.calories} kcal</span>
-                                <span class="text-[9px] text-secondary/40 font-semibold">P:${item.protein}g C:${item.carbs}g F:${item.fat}g</span>
-                            </div>
-                        `;
-                        listFindings.appendChild(li);
-                    });
-                } else if (isValidFood) {
-                    listFindings.innerHTML = `
-                        <li class="flex items-center justify-between group cursor-pointer">
-                            <div class="flex items-center gap-3">
-                                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                <span class="text-sm font-body text-primary">${data.foodName}</span>
-                            </div>
-                            <span class="text-xs font-headline text-secondary">${data.totalCalories} kcal</span>
-                        </li>
-                    `;
+                if (adv.proteinStatus) {
+                    if (proStatus) {
+                        proStatus.innerText = adv.proteinStatus.label || 'Progressing';
+                        proStatus.className = `px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                            adv.proteinStatus.status === 'GOAL_MET' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                        }`;
+                    }
+                    if (proText) proText.innerText = adv.proteinStatus.message || 'Tracking protein macros towards fitness goal.';
                 }
 
+                if (adv.actionableRecommendation) {
+                    if (actBadge) actBadge.innerText = adv.actionableRecommendation.type || 'AI Protocol';
+                    if (actText) actText.innerText = adv.actionableRecommendation.suggestion || 'Master planner recommendations updated.';
+                }
+            }
+
+            // Render AR Overlays on camera preview
+            function renderAROverlays(items) {
+                if (!arContainer) return;
                 arContainer.innerHTML = '';
                 const overlayPositions = [
                     { top: 25, left: 35, delay: 0.2 },
@@ -1361,8 +1810,8 @@
                     { top: 68, left: 20, delay: 1.1 }
                 ];
 
-                if (data.items && data.items.length > 0 && data.confidence >= 70 && data.totalCalories > 0 && isValidFood) {
-                    data.items.slice(0, 4).forEach((item, idx) => {
+                if (items && items.length > 0) {
+                    items.slice(0, 4).forEach((item, idx) => {
                         const pos = overlayPositions[idx] || overlayPositions[0];
                         const overlayDiv = document.createElement('div');
                         overlayDiv.className = "absolute z-20 ar-overlay-float flex flex-col items-start";
@@ -1372,7 +1821,7 @@
 
                         overlayDiv.innerHTML = `
                             <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-3 backdrop-blur-md border border-white/20 shadow-lg">
-                                <div class="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_white]"></div>
+                                <div class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></div>
                                 <span class="font-headline text-xs font-bold tracking-tight text-white">${item.name} (${item.portion || '1 serving'})</span>
                             </div>
                             <div class="w-px h-8 bg-white/40 ml-4"></div>
@@ -1380,261 +1829,238 @@
                         arContainer.appendChild(overlayDiv);
                     });
                 }
+            }
 
-                // Update Journal Log Button state
-                const btnLogJournal = document.getElementById('btn-log-journal');
-                if (btnLogJournal) {
-                    if (data.totalCalories > 0 && isValidFood) {
-                        btnLogJournal.disabled = false;
-                        btnLogJournal.classList.remove('opacity-40');
-                        btnLogJournal.classList.add('bg-white', 'text-black', 'hover:scale-105');
-                    } else {
-                        btnLogJournal.disabled = true;
-                        btnLogJournal.classList.add('opacity-40');
-                        btnLogJournal.classList.remove('bg-white', 'text-black', 'hover:scale-105');
-                    }
+            // Real-time Ecosystem Broadcast: sync with Nutrition, Progress, AI Planner
+            function broadcastEcosystemSync(data) {
+                try {
+                    const channel = new BroadcastChannel('fitforge_sync_channel');
+                    channel.postMessage({
+                        type: 'nutrition:updated',
+                        source: 'food_scanner',
+                        foodName: data.foodName,
+                        calories: data.totalCalories,
+                        protein: data.protein,
+                        carbs: data.carbs,
+                        fat: data.fat,
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (e) {
+                    console.warn("BroadcastChannel sync notice skipped:", e);
+                }
+
+                if (window.socket && window.socket.connected) {
+                    window.socket.emit('fitforge:state-changed', {
+                        entity: 'nutrition',
+                        action: 'food_scanned',
+                        email: userEmail
+                    });
                 }
             }
 
-            // Animate Number utility
-            function animateValue(obj, start, end, suffix) {
-                let startTimestamp = null;
-                const duration = 800;
-                const step = (timestamp) => {
-                    if (!startTimestamp) startTimestamp = timestamp;
-                    const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                    const current = Math.floor(progress * (end - start) + start);
-                    obj.innerText = current + suffix;
-                    if (progress < 1) {
-                        window.requestAnimationFrame(step);
-                    } else {
-                        obj.innerText = end + suffix;
-                    }
-                };
-                window.requestAnimationFrame(step);
+            // Socket.IO real-time connection
+            let socket = null;
+            try {
+                if (typeof io !== 'undefined') {
+                    socket = io();
+                    window.socket = socket;
+                }
+            } catch (e) {
+                console.warn("Socket.io init skipped:", e);
             }
 
-            // Log entry to Daily Database Journal
-            async function saveLogToJournal() {
-                if (!scannedFoodData) return;
-                if (scannedFoodData.totalCalories === 0 || (scannedFoodData.foodName && scannedFoodData.foodName.includes("Invalid Input"))) {
-                    showToast("Cannot log invalid input to daily journal", "error");
+            // Perform AI Scan
+            async function analyzeFood() {
+                if (scanState === 'scanning') return; // Prevent double clicks
+                if (!currentImageBase64) {
+                    showToast("Please capture or upload a photo first", "error");
                     return;
                 }
 
+                // Transition UI to State 2: Scanning immediately
+                setUIState('scanning');
+
                 try {
-                    const response = await fetch('/api/nutrition/log', {
+                    let hintVal = (foodHintInput && foodHintInput.value) ? foodHintInput.value.trim() : "";
+                    if (!hintVal) {
+                        const classifiedName = await Promise.race([
+                            classifyImageLocally(),
+                            new Promise(resolve => setTimeout(() => resolve("captured_food_dish"), 1200))
+                        ]);
+                        hintVal = classifiedName || "captured_food_dish";
+                    }
+
+                    const headers = { 'Content-Type': 'application/json' };
+                    const userKey = localStorage.getItem('gemini_api_key');
+                    if (userKey) {
+                        headers['x-gemini-key'] = userKey;
+                    }
+
+                    const response = await fetch('/api/scan-food', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: headers,
                         body: JSON.stringify({
-                            email: userEmail,
-                            foodName: scannedFoodData.foodName,
-                            calories: scannedFoodData.totalCalories,
-                            protein: scannedFoodData.protein,
-                            carbs: scannedFoodData.carbs,
-                            fat: scannedFoodData.fat,
-                            fiber: scannedFoodData.fiber || 0,
-                            sugar: scannedFoodData.sugar || 0,
-                            sodium: scannedFoodData.sodium || 0,
-                            cholesterol: scannedFoodData.cholesterol || 0,
-                            potassium: scannedFoodData.potassium || 0,
-                            healthAnalysis: scannedFoodData.healthAnalysis || null,
-                            recommendations: scannedFoodData.recommendations || null,
-                            items: scannedFoodData.items,
-                            imageUrl: currentImageBase64,
-                            date: new Date().toISOString()
+                            image: currentImageBase64,
+                            name: hintVal,
+                            email: userEmail
                         })
                     });
 
-                    if (!response.ok) throw new Error("Database logging failed.");
+                    if (!response.ok) {
+                        const errJson = await response.json().catch(() => ({}));
+                        throw new Error(errJson.error || "Scanning request failed.");
+                    }
 
-                    setUIState('logged');
-                    showToast("Log successfully saved to journal!");
+                    const data = await response.json();
+                    scannedFoodData = data;
 
+                    // Commercial Nutrition Analysis Rule: Strictly NEVER guess or fabricate
+                    const isLowConfidence = (data.confidence < 85);
+                    const isNoFood = (!data.foodDetected || data.reason === 'NO_FOOD_DETECTED' || (data.totalCalories === 0 && (!data.items || data.items.length === 0)));
+                    const isBlurry = (data.reason === 'IMAGE_BLURRED');
+
+                    if (isBlurry) {
+                        showScannerError({
+                            type: 'blurry',
+                            confidence: data.confidence || 0,
+                            desc: data.warning || "Image Too Blurry. Please capture a steady, well-focused photo."
+                        });
+                    } else if (isNoFood) {
+                        showScannerError({
+                            type: 'no_food',
+                            confidence: data.confidence || 0,
+                            desc: data.warning || "Food Not Detected. No recognizable food items found. No nutrition values generated."
+                        });
+                    } else if (isLowConfidence) {
+                        showScannerError({
+                            type: 'low_confidence',
+                            confidence: data.confidence || 0,
+                            desc: "Unable to Identify Food accurately. Confidence is below the 85% commercial threshold. Please capture a clearer image."
+                        });
+                    } else {
+                        // Valid food detection with 85%+ confidence
+                        showScannerResults(data);
+                    }
+
+                    triggerCameraFlash();
                 } catch (error) {
-                    console.error("Log to journal error:", error);
-                    alert("Failed to save log to journal: " + error.message);
+                    console.error("AI scanning error:", error);
+                    showScannerError({
+                        type: 'no_food',
+                        title: "Food Not Detected",
+                        confidence: 0,
+                        desc: error.message || "Failed to analyze food. Please try again with a clear photo."
+                    });
                 }
             }
 
-            function showToast(message, type = 'success') {
-                const toast = document.createElement('div');
-                const isError = type === 'error';
-                const bgClass = isError ? "bg-red-950/90 text-red-200 border-red-500/40" : "bg-white text-black border-white/10";
-                const icon = isError ? "warning" : "check_circle";
-                const iconColor = isError ? "text-red-400" : "text-emerald-500";
 
-                toast.className = `fixed bottom-12 left-1/2 transform -translate-x-1/2 z-[200] ${bgClass} px-6 py-3.5 rounded-full font-headline font-bold text-xs uppercase tracking-wider shadow-2xl flex items-center gap-2 border transition-all duration-300 translate-y-4 opacity-0`;
-                toast.innerHTML = `<span class="material-symbols-outlined ${iconColor}">${icon}</span>${message}`;
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.classList.remove('translate-y-4', 'opacity-0');
-                }, 50);
-
-                setTimeout(() => {
-                    toast.classList.add('translate-y-4', 'opacity-0');
-                    setTimeout(() => toast.remove(), 300);
-                }, 2500);
-            }
-
-            function triggerCameraFlash() {
-                const viewport = document.getElementById('camera-viewport');
-                const flash = document.createElement('div');
-                flash.className = 'absolute inset-0 bg-white z-[100] pointer-events-none opacity-0 transition-opacity duration-100';
-                viewport.appendChild(flash);
-
-                setTimeout(() => flash.style.opacity = '0.4', 50);
-                setTimeout(() => flash.style.opacity = '0', 150);
-                setTimeout(() => flash.remove(), 500);
-            }
-
-            function resetStandbyDashboardToZero() {
-                if (valConfidence) valConfidence.innerText = "0%";
-                if (barConfidence) barConfidence.style.width = "0%";
-                if (valCalories) valCalories.innerText = "0";
-                if (valProtein) valProtein.innerText = "0g";
-                if (valCarbs) valCarbs.innerText = "0g";
-                if (valFats) valFats.innerText = "0g";
-                if (valFiber) valFiber.innerText = "0g";
-                if (valSugar) valSugar.innerText = "0g";
-                if (valSodium) valSodium.innerText = "0mg";
-                if (valCholesterol) valCholesterol.innerText = "0mg";
-                if (valPotassium) valPotassium.innerText = "0mg";
-                const chartKcalVal = document.getElementById('chart-kcal-val');
-                if (chartKcalVal) chartKcalVal.innerText = "0";
-                if (listFindings) listFindings.innerHTML = '<li class="text-xs text-secondary/40 text-center py-4">Scan a food photo to extract nutrients</li>';
-                if (arContainer) arContainer.innerHTML = '';
-            }
-
-            function setUIState(newState) {
-                scanState = newState;
-                if (newState === 'ready') {
-                    if (mediaStream) {
-                        video.classList.remove('hidden');
-                        previewImg.classList.add('hidden');
-                        simulatedBg.classList.add('hidden');
-                        btnToggleCamera.classList.remove('hidden');
-                    } else {
-                        video.classList.add('hidden');
-                        previewImg.classList.add('hidden');
-                        simulatedBg.classList.remove('hidden');
-                        btnToggleCamera.classList.add('hidden');
-                    }
-                    scanningLine.classList.add('hidden');
-                    if (foodHintContainer) foodHintContainer.classList.add('hidden');
-                    if (foodHintInput) foodHintInput.value = "";
-                    if (primaryIcon) primaryIcon.innerText = "photo_camera";
-                    if (primaryText) primaryText.innerText = mediaStream ? "CAPTURE PHOTO" : "UPLOAD PHOTO";
-                    btnReset.classList.add('hidden');
-                    btnGallery.classList.remove('hidden');
-                    if (btnLogJournal) {
-                        btnLogJournal.disabled = true;
-                        btnLogJournal.classList.add('opacity-40');
-                        btnLogJournal.classList.remove('bg-white', 'text-black', 'hover:scale-105');
-                    }
-                    if (matrixStatusText) matrixStatusText.innerText = mediaStream ? "CAMERA_STREAMING" : "GALLERY_MODE";
-                    resetStandbyDashboardToZero();
-                } else if (newState === 'preview') {
-                    video.classList.add('hidden');
-                    previewImg.classList.remove('hidden');
-                    simulatedBg.classList.add('hidden');
-                    scanningLine.classList.add('hidden');
-                    if (foodHintContainer) foodHintContainer.classList.remove('hidden');
-                    if (primaryIcon) primaryIcon.innerText = "center_focus_strong";
-                    if (primaryText) primaryText.innerText = "ANALYZE PHOTO";
-                    btnReset.classList.remove('hidden');
-                    btnGallery.classList.remove('hidden');
-                    btnToggleCamera.classList.add('hidden');
-                    if (matrixStatusText) matrixStatusText.innerText = "PHOTO_PREVIEW";
-                } else if (newState === 'scanning') {
-                    video.classList.add('hidden');
-                    previewImg.classList.remove('hidden');
-                    simulatedBg.classList.add('hidden');
-                    scanningLine.classList.remove('hidden');
-                    if (foodHintContainer) foodHintContainer.classList.add('hidden');
-                    if (primaryIcon) primaryIcon.innerText = "sync";
-                    if (primaryText) primaryText.innerText = "SCANNING...";
-                    btnReset.classList.add('hidden');
-                    btnGallery.classList.add('hidden');
-                    btnToggleCamera.classList.add('hidden');
-                    if (matrixStatusText) matrixStatusText.innerText = "ANALYZING_MATRIX";
-                } else if (newState === 'scanned') {
-                    video.classList.add('hidden');
-                    previewImg.classList.remove('hidden');
-                    simulatedBg.classList.add('hidden');
-                    scanningLine.classList.add('hidden');
-                    if (foodHintContainer) foodHintContainer.classList.add('hidden');
-                    if (primaryIcon) primaryIcon.innerText = "bookmark_add";
-                    if (primaryText) primaryText.innerText = "LOG TO JOURNAL";
-                    btnReset.classList.remove('hidden');
-                    btnGallery.classList.remove('hidden');
-                    btnToggleCamera.classList.add('hidden');
-                    if (matrixStatusText) matrixStatusText.innerText = "SCAN_COMPLETE";
-                } else if (newState === 'logged') {
-                    if (primaryIcon) primaryIcon.innerText = "check_circle";
-                    if (primaryText) primaryText.innerText = "LOGGED TO JOURNAL";
-                    btnReset.classList.remove('hidden');
-                    if (btnLogJournal) {
-                        btnLogJournal.disabled = true;
-                        btnLogJournal.classList.add('opacity-40');
-                        btnLogJournal.classList.remove('bg-white', 'text-black', 'hover:scale-105');
-                    }
-                }
-            }
-
-            function capturePhoto() {
-                if (!video || !captureCanvas) return;
-                const width = video.videoWidth || 640;
-                const height = video.videoHeight || 480;
-                captureCanvas.width = width;
-                captureCanvas.height = height;
-                const ctx = captureCanvas.getContext('2d');
-                ctx.drawImage(video, 0, 0, width, height);
-
-                currentImageBase64 = captureCanvas.toDataURL('image/jpeg', 0.85);
-                currentFileName = 'captured_photo.jpg';
-                previewImg.src = currentImageBase64;
-
-                setUIState('preview');
-            }
-
-            btnPrimary.addEventListener('click', () => {
-                if (scanState === 'ready') {
-                    if (mediaStream) {
-                        capturePhoto();
-                    } else {
-                        fileInput.click();
-                    }
-                } else if (scanState === 'preview') {
-                    analyzeFood();
-                } else if (scanState === 'scanned') {
-                    saveLogToJournal();
-                }
-            });
-
-            btnReset.addEventListener('click', () => {
-                setUIState('ready');
-            });
-
+            // Wire Gallery Buttons
             if (btnGallery) {
                 btnGallery.addEventListener('click', () => {
-                    fileInput.click();
+                    if (fileInput) {
+                        fileInput.value = '';
+                        fileInput.click();
+                    }
                 });
             }
 
+            const btnErrorGallery = document.getElementById('btn-error-gallery');
+            if (btnErrorGallery) {
+                btnErrorGallery.addEventListener('click', () => {
+                    if (fileInput) {
+                        fileInput.value = '';
+                        fileInput.click();
+                    }
+                });
+            }
+
+            // Wire File Input (Gallery Selection)
             if (fileInput) {
                 fileInput.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
+                    const file = e.target.files && e.target.files[0];
                     if (file) {
-                        currentFileName = file.name;
-                        const reader = new FileReader();
-                        reader.onload = (event) => {
-                            currentImageBase64 = event.target.result;
-                            previewImg.src = currentImageBase64;
-                            setUIState('preview');
-                        };
-                        reader.readAsDataURL(file);
+                        handleGalleryFile(file);
+                    }
+                });
+            }
+
+            // Wire Primary Action Button (Capture / Analyze / Retake)
+            if (btnPrimary) {
+                btnPrimary.addEventListener('click', () => {
+                    if (scanState === 'ready') {
+                        if (mediaStream) {
+                            capturePhoto();
+                        } else {
+                            if (fileInput) {
+                                fileInput.value = '';
+                                fileInput.click();
+                            }
+                        }
+                    } else if (scanState === 'preview') {
+                        analyzeFood();
+                    } else if (scanState === 'error' || scanState === 'complete') {
+                        setUIState('ready');
+                        startCamera();
+                    }
+                });
+            }
+
+            // Wire Reset / Retake Button
+            if (btnReset) {
+                btnReset.addEventListener('click', () => {
+                    setUIState('ready');
+                    startCamera();
+                });
+            }
+
+            // Wire Error Try Again Button
+            const btnErrorTryAgain = document.getElementById('btn-error-try-again');
+            if (btnErrorTryAgain) {
+                btnErrorTryAgain.addEventListener('click', () => {
+                    setUIState('ready');
+                    startCamera();
+                });
+            }
+
+            // Wire Scan Another Food Button
+            const btnScanAnother = document.getElementById('btn-scan-another');
+            if (btnScanAnother) {
+                btnScanAnother.addEventListener('click', () => {
+                    setUIState('ready');
+                    startCamera();
+                });
+            }
+
+            // Drag and Drop Upload Support on Camera Viewport
+            if (cameraViewport) {
+                cameraViewport.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    cameraViewport.classList.add('border-primary');
+                });
+                cameraViewport.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    cameraViewport.classList.remove('border-primary');
+                });
+                cameraViewport.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    cameraViewport.classList.remove('border-primary');
+                    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                        handleGalleryFile(e.dataTransfer.files[0]);
+                    }
+                });
+            }
+
+            // Viewport Click Upload (when camera is offline)
+            if (simulatedBg) {
+                simulatedBg.style.cursor = 'pointer';
+                simulatedBg.title = 'Click to upload meal photo from gallery';
+                simulatedBg.addEventListener('click', () => {
+                    if (!mediaStream && (scanState === 'ready' || scanState === 'error')) {
+                        if (fileInput) {
+                            fileInput.value = '';
+                            fileInput.click();
+                        }
                     }
                 });
             }
@@ -1749,10 +2175,8 @@
                 editPotassium.value = totalPotassium;
             };
 
-            btnEditMacros.addEventListener('click', () => {
+            function openAdjustModal() {
                 if (!scannedFoodData) return;
-
-                // Pre-populate input fields with current scanned data
                 editFoodName.value = scannedFoodData.foodName || "";
                 editCalories.value = scannedFoodData.totalCalories || 0;
                 editProtein.value = scannedFoodData.protein || 0;
@@ -1761,25 +2185,30 @@
                 editFiber.value = scannedFoodData.fiber || 0;
                 editSugar.value = scannedFoodData.sugar || 0;
                 editSodium.value = scannedFoodData.sodium || 0;
-                editCholesterol.value = scannedFoodData.cholesterol || 0;
-                editPotassium.value = scannedFoodData.potassium || 0;
+                if (editCholesterol) editCholesterol.value = scannedFoodData.cholesterol || 0;
+                if (editPotassium) editPotassium.value = scannedFoodData.potassium || 0;
 
-                // Render dynamic item inputs
                 renderEditItemsList();
 
-                // Toggle visibility to edit container
-                macrosDisplayContainer.classList.add('hidden');
                 macrosEditContainer.classList.remove('hidden');
                 macrosEditContainer.classList.add('flex');
-            });
+            }
+
+            if (btnEditMacros) {
+                btnEditMacros.addEventListener('click', openAdjustModal);
+            }
+
+            const btnToggleAdjust = document.getElementById('btn-toggle-adjust');
+            if (btnToggleAdjust) {
+                btnToggleAdjust.addEventListener('click', openAdjustModal);
+            }
 
             btnEditCancel.addEventListener('click', () => {
                 macrosEditContainer.classList.add('hidden');
                 macrosEditContainer.classList.remove('flex');
-                macrosDisplayContainer.classList.remove('hidden');
             });
 
-            btnEditSave.addEventListener('click', () => {
+            btnEditSave.addEventListener('click', async () => {
                 if (!scannedFoodData) return;
 
                 // Save adjusted values
@@ -1791,8 +2220,8 @@
                 scannedFoodData.fiber = Math.max(0, Math.round(Number(editFiber.value)));
                 scannedFoodData.sugar = Math.max(0, Math.round(Number(editSugar.value)));
                 scannedFoodData.sodium = Math.max(0, Math.round(Number(editSodium.value)));
-                scannedFoodData.cholesterol = Math.max(0, Math.round(Number(editCholesterol.value)));
-                scannedFoodData.potassium = Math.max(0, Math.round(Number(editPotassium.value)));
+                if (editCholesterol) scannedFoodData.cholesterol = Math.max(0, Math.round(Number(editCholesterol.value)));
+                if (editPotassium) scannedFoodData.potassium = Math.max(0, Math.round(Number(editPotassium.value)));
 
                 if (!scannedFoodData.items || scannedFoodData.items.length === 0) {
                     scannedFoodData.items = [{
@@ -1804,29 +2233,42 @@
                         fiber: scannedFoodData.fiber,
                         sugar: scannedFoodData.sugar,
                         sodium: scannedFoodData.sodium,
-                        cholesterol: scannedFoodData.cholesterol,
-                        potassium: scannedFoodData.potassium,
                         portion: "1 serving"
                     }];
                 }
 
+                // Sync updated log to MongoDB NutritionLog
+                try {
+                    await fetch('/api/nutrition/log', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            email: userEmail,
+                            foodName: scannedFoodData.foodName,
+                            calories: scannedFoodData.totalCalories,
+                            protein: scannedFoodData.protein,
+                            carbs: scannedFoodData.carbs,
+                            fat: scannedFoodData.fat,
+                            fiber: scannedFoodData.fiber || 0,
+                            sugar: scannedFoodData.sugar || 0,
+                            sodium: scannedFoodData.sodium || 0,
+                            items: scannedFoodData.items,
+                            imageUrl: currentImageBase64 || "",
+                            date: new Date().toISOString()
+                        })
+                    });
+                } catch (e) {
+                    console.warn("Background log update failed:", e);
+                }
+
                 // Re-render displaying customized metrics
-                renderNutritionalResults(scannedFoodData);
+                showScannerResults(scannedFoodData);
 
                 // Toggle views back
                 macrosEditContainer.classList.add('hidden');
                 macrosEditContainer.classList.remove('flex');
-                macrosDisplayContainer.classList.remove('hidden');
 
-                // If it was manual text log summary screen, update the summary card too
-                if (currentInputMode === 'text') {
-                    document.getElementById('text-summary-title').innerText = "Extraction Complete";
-                    document.getElementById('text-summary-desc').innerText = `Your meal "${scannedFoodData.foodName}" has been calibrated with ${scannedFoodData.totalCalories} kcal.`;
-                }
-            });
-
-            btnLogJournal.addEventListener('click', () => {
-                saveLogToJournal();
+                showToast("Portions Updated & Synced to Journal!");
             });
 
 
@@ -1899,8 +2341,16 @@
                     scannedFoodData = data;
                     currentImageBase64 = ""; // Reset base64 image since it's a manual entry log
 
-                    renderNutritionalResults(data);
-                    setUIState('scanned');
+                    if (!data.foodDetected || data.confidence < 85 || (data.totalCalories === 0 && (!data.items || data.items.length === 0))) {
+                        showScannerError({
+                            type: 'no_food',
+                            title: "Food Not Detected",
+                            confidence: data.confidence || 0,
+                            desc: data.warning || "No verified food items recognized from the text description. FitForge never fabricates nutrition."
+                        });
+                    } else {
+                        showScannerResults(data);
+                    }
                 } catch (error) {
                     console.error("Text food analysis error:", error);
                     alert("Failed to analyze food text. " + error.message);

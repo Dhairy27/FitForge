@@ -590,6 +590,17 @@
             }
         });
 
+        // Real-Time Cross-Module Sync Channel
+        if (typeof BroadcastChannel !== 'undefined') {
+            const syncChannel = new BroadcastChannel('fitforge_sync_channel');
+            syncChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'fitforge:state-changed') {
+                    console.log('[Dashboard] Ecosystem update received from Planner:', event.data.action);
+                    fetchStatsAndLogs();
+                }
+            };
+        }
+
         // Parallel telemetry database fetcher
         async function fetchStatsAndLogs() {
             try {
