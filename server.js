@@ -5623,7 +5623,11 @@ app.post('/api/bodyscan/analyze', async (req, res) => {
           ]
         }];
         const aiAnswer = await callGeminiApi(contents, process.env.GEMINI_API_KEY, {}, 6000);
-        if (aiAnswer && aiAnswer.toUpperCase().includes('NO') && !aiAnswer.toUpperCase().includes('YES')) {
+        const cleanAnswer = String(aiAnswer || '').trim();
+        const isErrorString = /error|unavailable|capacity|failed|exception|503/i.test(cleanAnswer);
+        const isExplicitNo = /^NO[\s.,!]*$/i.test(cleanAnswer) || (/^NO\b/i.test(cleanAnswer) && !/YES/i.test(cleanAnswer) && !isErrorString);
+
+        if (!isErrorString && isExplicitNo) {
           return res.status(200).json({
             success: false,
             humanDetected: false,

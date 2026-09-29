@@ -1191,8 +1191,8 @@
                     'insect', 'bug', 'fly', 'mosquito', 'bee', 'ant', 'spider', 'butterfly', 'beetle', 'cockroach', 'moth', 'caterpillar', 'worm', 'snake', 'lizard', 'reptile', 'turtle', 'frog', 'toad', 'fish', 'shark', 'dolphin', 'whale', 'crab', 'lobster', 'shrimp', 'octopus', 'squid',
                     // Food & Dishes
                     'food', 'burger', 'pizza', 'apple', 'banana', 'rice', 'salad', 'meal', 'dish', 'plate', 'bowl', 'soup', 'bread', 'snack', 'drink', 'fruit', 'veggie', 'pasta', 'sandwich', 'paneer', 'roti', 'curry', 'meat', 'egg', 'vegetable', 'noodle', 'cake', 'cookie', 'chocolate', 'fries', 'taco', 'sushi', 'breakfast', 'lunch', 'dinner',
-                    // Furniture, Vehicles, Electronics & Items
-                    'table', 'chair', 'bed', 'sofa', 'couch', 'laptop', 'phone', 'mobile', 'car', 'truck', 'bike', 'bicycle', 'motorcycle', 'bus', 'train', 'airplane', 'shoe', 'bottle', 'cup', 'mug', 'paper', 'book', 'pen', 'desk', 'furniture', 'plant', 'flower', 'tree', 'leaf', 'building', 'wall', 'door', 'window', 'clock', 'keyboard', 'mouse', 'toy', 'doll', 'plush', 'stuffed_animal', 'non_human', 'inanimate', 'scenery', 'landscape', 'room', 'kitchen', 'street', 'road', 'sky', 'mountain', 'river', 'lake', 'sea', 'ocean'
+                    // Vehicles & Objects
+                    'car', 'truck', 'bike', 'bicycle', 'motorcycle', 'bus', 'train', 'airplane', 'toy', 'doll', 'plush', 'stuffed_animal', 'vehicle', 'automobile'
                 ];
 
                 const humanKeywords = ['person', 'human', 'face', 'man', 'woman', 'body', 'selfie', 'posture', 'standing', 'girl', 'boy', 'guy', 'athlete', 'torso', 'profile', 'webcam', 'figure', 'character', 'avatar', 'illustration', 'sketch', 'drawing', 'vector', 'model', 'cardigan', 'outfit', 'clothes', 'pose', 'person_scan', 'capture', 'photo', 'image', 'img', 'upload'];
@@ -1221,49 +1221,21 @@
                         ctx.drawImage(img, 0, 0, w, h);
                         const data = ctx.getImageData(0, 0, w, h).data;
 
-                        let foodWarmPixels = 0;
-                        let edgePixelsCount = 0;
-                        let topEdgeCount = 0;
-                        let minSubY = h, maxSubY = 0;
-                        let minSubX = w, maxSubX = 0;
+                        let nonBlankPixels = 0;
 
                         for (let y = 1; y < h - 1; y++) {
                             for (let x = 1; x < w - 1; x++) {
                                 const idx = (y * w + x) * 4;
-                                const idxRight = (y * w + (x + 1)) * 4;
-                                const idxDown = ((y + 1) * w + x) * 4;
+                                const r = data[idx], g = data[idx + 1], b = data[idx + 2], a = data[idx + 3];
 
-                                const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-                                const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-
-                                if (r > 140 && g > 60 && b < 95 && (r - b) > 45) {
-                                    foodWarmPixels++;
-                                }
-
-                                const lumRight = 0.299 * data[idxRight] + 0.587 * data[idxRight + 1] + 0.114 * data[idxRight + 2];
-                                const lumDown = 0.299 * data[idxDown] + 0.587 * data[idxDown + 1] + 0.114 * data[idxDown + 2];
-
-                                const grad = Math.abs(lum - lumRight) + Math.abs(lum - lumDown);
-                                if (grad > 16) {
-                                    edgePixelsCount++;
-                                    if (y < minSubY) minSubY = y;
-                                    if (y > maxSubY) maxSubY = y;
-                                    if (x < minSubX) minSubX = x;
-                                    if (x > maxSubX) maxSubX = x;
-
-                                    if (y >= 10 && y <= 35) topEdgeCount++;
+                                if (a > 30 && (r > 15 || g > 15 || b > 15)) {
+                                    nonBlankPixels++;
                                 }
                             }
                         }
 
-                        if (foodWarmPixels > 380 && topEdgeCount < 15) {
-                            return resolve(false);
-                        }
-
-                        const subHeight = maxSubY - minSubY;
-                        const subWidth = maxSubX - minSubX;
-
-                        if (subWidth > 65 && subHeight < 28) {
+                        // Reject completely blank/black screen captures
+                        if (nonBlankPixels < 500) {
                             return resolve(false);
                         }
 
