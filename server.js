@@ -826,8 +826,10 @@ const dailyProtocolSchema = new mongoose.Schema({
     doneCount: { type: Number, default: 0 },
     totalCount: { type: Number, default: 8 },
     percentage: { type: Number, default: 0 }
-  }
-}, { timestamps: true });
+  },
+  meals: { type: Array, default: [] },
+  workout: { type: Object, default: null }
+}, { timestamps: true, strict: false });
 dailyProtocolSchema.index({ email: 1, date: 1 });
 const DailyProtocol = mongoose.model('DailyProtocol', dailyProtocolSchema);
 
@@ -4497,7 +4499,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
 // 5a. Generate AI Master Plan based o// 5a. Generate AI Master Plan based on Protocol Data
 app.post('/api/ai/generate-plan', async (req, res) => {
   try {
-    const { email, protocol, seed, forceNew, burnGoal } = req.body;
+    const { email, protocol, seed, forceNew, burnGoal, targetDate } = req.body;
     if (!email) {
       return res.status(400).json({ error: "User email is required." });
     }

@@ -79,8 +79,22 @@ class PlannerServicesManager {
                     healthConditions: user?.dietProfile?.healthConditions || []
                 };
 
-                // Run scientific calculations via aiPlannerEngine
-                const masterPlan = aiPlannerEngine.buildMasterPlan(profile, Date.now(), { targetBurnCals: profile.targetBurnCals });
+                const targetDateStr = options.targetDate || options.date || getTodayDateString(0);
+                const dateParts = targetDateStr.split('-').map(Number);
+                const targetDateObj = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                const targetWeekday = DAYS_OF_WEEK[targetDateObj.getDay() === 0 ? 6 : targetDateObj.getDay() - 1];
+
+                // Deterministic seed for this specific day so each day gets distinct meals & workouts
+                const seedString = `${normalizedEmail}_${targetDateStr}`;
+                let hash = 0;
+                for (let i = 0; i < seedString.length; i++) {
+                    hash = ((hash << 5) - hash) + seedString.charCodeAt(i);
+                    hash |= 0;
+                }
+                const dateSeed = Math.abs(hash) + (options.seed || 0) + (options.forceNew ? Math.floor(Date.now() / 1000) : 0);
+
+                // Run scientific calculations via aiPlannerEngine with day-specific seed
+                const masterPlan = aiPlannerEngine.buildMasterPlan(profile, dateSeed, { targetBurnCals: profile.targetBurnCals });
 
                 // Construct full 7-day scientific weekly workout schedule
                 const weeklyWorkouts = self.buildWeeklyWorkoutSchedule(profile, masterPlan);
@@ -105,11 +119,31 @@ class PlannerServicesManager {
                     }
                 });
 
-                const todayWeekday = getTodayWeekdayName();
-                const todayWorkouts = daysMap[todayWeekday] || [];
+                const todayWorkouts = daysMap[targetWeekday] || [];
+                const isRestDay = restDays.includes(targetWeekday);
 
-                // 24-Hour Chronological Protocol for today
-                const dailyTimeline = self.buildDailyProtocolTimeline(profile, masterPlan, todayWorkouts[0]);
+                // Generate smart Indian meals unique to this specific day & seed
+                const rawMealObjects = aiPlannerEngine.generateSmartMealPlan(
+                    masterPlan.dailyTarget,
+                    profile.dietaryType || 'non-vegetarian',
+                    profile.allergies || [],
+                    dateSeed
+                );
+
+                const mealSlotNames = ['Breakfast', 'Mid-Morning', 'Lunch', 'Afternoon Refuel', 'Dinner'];
+                const meals = rawMealObjects.map((m, idx) => ({
+                    mealType: m.details?.mealType || mealSlotNames[idx] || 'Meal',
+                    time: m.time,
+                    title: m.details?.suggestedMeal || m.title,
+                    calories: m.details?.targetCalories || 400,
+                    protein: m.details?.protein || 25,
+                    carbs: m.details?.carbs || 45,
+                    fat: m.details?.fat || 12,
+                    ingredients: m.details?.ingredients || []
+                }));
+
+                // 24-Hour Chronological Protocol for this day
+                const dailyTimeline = self.buildDailyProtocolTimeline(profile, masterPlan, isRestDay ? null : todayWorkouts[0], meals);
 
                 // 1. Deactivate old AI Plans & Weekly Plans
                 await AIPlan.updateMany({ email: normalizedEmail }, { active: false });
@@ -129,7 +163,7 @@ class PlannerServicesManager {
                     dailyTimeline: dailyTimeline,
                     nutritionTarget: masterPlan.dailyTarget,
                     recoverySchedule: [
-                        { day: "Wednesday", focus: "Central Nervous System Deload, Gentle Walk, 3.5L Hydration" },
+                        { day: "Wednesday", focus: "Central Nervous System Deload, Gentle Walk, 8h Sleep" },
                         { day: "Sunday", focus: "Full Glycogen Repletion, Cold/Hot Contrast, 8h Sleep" }
                     ],
                     aiReasoning: masterPlan.aiReasoning || {},
@@ -162,14 +196,15 @@ class PlannerServicesManager {
                 });
                 await workoutPlanDoc.save();
 
-                // 5. Save DailyProtocol for today
-                const todayDateStr = getTodayDateString(0);
-                await DailyProtocol.deleteMany({ email: normalizedEmail, date: todayDateStr });
+                // 5. Save DailyProtocol for the target date
+                await DailyProtocol.deleteMany({ email: normalizedEmail, date: targetDateStr });
                 const dailyProtocolDoc = new DailyProtocol({
                     email: normalizedEmail,
-                    date: todayDateStr,
-                    weekday: todayWeekday,
+                    date: targetDateStr,
+                    weekday: targetWeekday,
                     timeline: dailyTimeline,
+                    meals: meals,
+                    workout: isRestDay ? null : todayWorkouts[0],
                     targets: {
                         bmr: masterPlan.dailyTarget?.bmr || 1780,
                         tdee: masterPlan.dailyTarget?.tdee || 2450,
@@ -189,13 +224,6 @@ class PlannerServicesManager {
                 await dailyProtocolDoc.save();
 
                 // 6. Save NutritionPlan
-                const meals = [
-                    { mealType: 'Breakfast', time: '08:45 AM', title: 'High-Protein Moong Dal Chilla & Paneer Filling', calories: 480, protein: 28, carbs: 45, fat: 14, ingredients: ['Sprouted Moong', 'Cottage Cheese (Paneer)', 'Mint Chutney'] },
-                    { mealType: 'Mid-Morning', time: '11:30 AM', title: 'Cellular Electrolyte Boost & Raw Almonds', calories: 180, protein: 6, carbs: 12, fat: 14, ingredients: ['Coconut Water', 'Himalayan Salt', 'Almonds'] },
-                    { mealType: 'Lunch', time: '01:15 PM', title: 'Tandoori Spiced Paneer Tikka Quinoa Bowl', calories: 620, protein: 38, carbs: 62, fat: 18, ingredients: ['Quinoa', 'Grilled Paneer', 'Greek Yogurt Raita', 'Spinach'] },
-                    { mealType: 'Afternoon Refuel', time: '04:30 PM', title: 'Roasted Chana & Probiotic Spiced Chaas', calories: 240, protein: 14, carbs: 28, fat: 6, ingredients: ['Roasted Chickpeas', 'Buttermilk (Chaas)', 'Roasted Cumin'] },
-                    { mealType: 'Dinner', time: '07:45 PM', title: 'Yellow Lentil Tadka with Steamed Rice & Broccoli', calories: 540, protein: 26, carbs: 70, fat: 12, ingredients: ['Moong/Tur Dal', 'Basmati Rice', 'Steamed Broccoli', 'Carrots'] }
-                ];
                 const nutritionPlanDoc = new NutritionPlan({
                     email: normalizedEmail,
                     dailyCalories: masterPlan.dailyTarget?.calories || 2150,
@@ -236,11 +264,11 @@ class PlannerServicesManager {
                 await ActivityLog.create({
                     email: normalizedEmail,
                     activityType: 'plan_generated',
-                    description: `Generated AI Master Protocol calibrated for ${profile.goal} (${profile.frequency} days/week).`,
-                    metadata: { planId, goal: profile.goal, calories: masterPlan.dailyTarget?.calories }
+                    description: `Generated AI Master Protocol for ${targetDateStr} calibrated for ${profile.goal} (${profile.frequency} days/week).`,
+                    metadata: { planId, goal: profile.goal, date: targetDateStr, calories: masterPlan.dailyTarget?.calories }
                 });
 
-                const state = await self.PlannerService.getPlannerState(normalizedEmail);
+                const state = await self.PlannerService.getPlannerState(normalizedEmail, targetDateStr);
                 self.emitStateChange(normalizedEmail, state);
                 return state;
             }
@@ -264,9 +292,30 @@ class PlannerServicesManager {
                 let metrics = await ProgressMetric.findOne({ email: normalizedEmail });
                 let aiPlan = await AIPlan.findOne({ email: normalizedEmail, active: true });
 
-                // If not found, auto-generate initial protocol state
-                if (!weeklyPlan || !dailyProtocol) {
-                    return await self.AIPlanningService.generateAndSavePlan(normalizedEmail);
+                const allWorkouts = [];
+                if (weeklyPlan && weeklyPlan.days) {
+                    for (const day of DAYS_OF_WEEK) {
+                        if (Array.isArray(weeklyPlan.days[day])) {
+                            allWorkouts.push(...weeklyPlan.days[day]);
+                        }
+                    }
+                }
+
+                // CRITICAL: Do NOT auto-generate default plans! Users generate their plan daily.
+                if (!dailyProtocol) {
+                    return {
+                        success: true,
+                        email: normalizedEmail,
+                        date: targetDate,
+                        hasPlan: false,
+                        aiPlan: null,
+                        weeklyPlan: weeklyPlan || null,
+                        workouts: allWorkouts,
+                        restDays: weeklyPlan?.restDays || ['Sunday'],
+                        dailyProtocol: null,
+                        nutritionPlan: null,
+                        progressMetrics: metrics || await self.ProgressService.recalculateMetrics(normalizedEmail)
+                    };
                 }
 
                 // Ensure latest workout session statuses match weekly plan days
@@ -292,25 +341,20 @@ class PlannerServicesManager {
                     }
                 }
 
-                const allWorkouts = [];
-                if (weeklyPlan && weeklyPlan.days) {
-                    for (const day of DAYS_OF_WEEK) {
-                        if (Array.isArray(weeklyPlan.days[day])) {
-                            allWorkouts.push(...weeklyPlan.days[day]);
-                        }
-                    }
-                }
-
                 return {
                     success: true,
                     email: normalizedEmail,
                     date: targetDate,
+                    hasPlan: true,
                     aiPlan,
                     weeklyPlan,
                     workouts: allWorkouts,
                     restDays: weeklyPlan?.restDays || ['Sunday'],
                     dailyProtocol,
-                    nutritionPlan,
+                    nutritionPlan: {
+                        ...(nutritionPlan ? (nutritionPlan.toObject ? nutritionPlan.toObject() : nutritionPlan) : {}),
+                        meals: (dailyProtocol.meals && dailyProtocol.meals.length > 0) ? dailyProtocol.meals : (nutritionPlan?.meals || [])
+                    },
                     progressMetrics: metrics || await self.ProgressService.recalculateMetrics(normalizedEmail)
                 };
             },
@@ -959,94 +1003,82 @@ class PlannerServicesManager {
     // =========================================================================
     // HELPER: BUILD 24-HOUR DAILY PROTOCOL TIMELINE
     // =========================================================================
-    buildDailyProtocolTimeline(profile, masterPlan, todayWorkout = null) {
-        const workoutTitle = todayWorkout ? todayWorkout.title : "Circadian Resistance & Metabolic Training";
-        const workoutDuration = todayWorkout ? todayWorkout.duration : 45;
-        const workoutCals = todayWorkout ? todayWorkout.calories : (profile.targetBurnCals || 450);
-        const workoutCategory = todayWorkout ? todayWorkout.category : "Strength";
+    buildDailyProtocolTimeline(profile, masterPlan, todayWorkout = null, meals = []) {
+        const timeline = [];
 
-        return [
-            {
-                id: "step-wake",
-                time: "06:30 AM",
-                type: "wake",
-                title: "Circadian Awakening & Cellular Rehydration",
-                desc: "500ml room-temperature electrolyte water with pink Himalayan salt + natural sunlight retina exposure.",
-                icon: "wb_sunny",
-                color: "text-amber-400",
-                isDone: false
-            },
-            {
+        // 1. Circadian Awakening
+        timeline.push({
+            id: "step-wake",
+            time: "06:30 AM",
+            type: "wake",
+            title: "Circadian Awakening & Natural Sunlight",
+            desc: "Natural sunlight exposure upon waking to anchor circadian clock and boost metabolic alertness.",
+            icon: "wb_sunny",
+            color: "text-amber-400",
+            isDone: false
+        });
+
+        // 2. Scheduled Training or Active Recovery Walk
+        if (todayWorkout) {
+            timeline.push({
                 id: "step-workout",
-                time: "07:30 AM",
+                time: todayWorkout.time || "07:30 AM",
                 type: "workout",
-                title: workoutTitle,
-                desc: `${workoutCategory} • ${workoutDuration} mins • Target: ${workoutCals} kcal • Progressive overload biomechanical training.`,
+                title: todayWorkout.title,
+                desc: `${todayWorkout.category} • ${todayWorkout.duration} mins • Target: ${todayWorkout.calories} kcal • Progressive overload biomechanical training.`,
                 icon: "fitness_center",
                 color: "text-purple-400",
                 isDone: false
-            },
-            {
-                id: "step-meal-1",
-                time: "08:45 AM",
-                type: "meal",
-                title: "Breakfast: High-Protein Moong Dal Chilla & Paneer",
-                desc: "Sprouted moong batter with grated paneer filling + fresh mint chutney (480 kcal • 28g Protein).",
-                icon: "restaurant",
-                color: "text-accent-emerald",
+            });
+        } else {
+            timeline.push({
+                id: "step-workout",
+                time: "07:30 AM",
+                type: "workout",
+                title: "Active Rest & Light Mobility Walk",
+                desc: "20-30 min gentle walk or stretching to promote muscular recovery and blood flow.",
+                icon: "self_improvement",
+                color: "text-sky-400",
                 isDone: false
-            },
-            {
-                id: "step-hydration-1",
-                time: "11:30 AM",
-                type: "hydration",
-                title: "Mid-Morning Cellular Hydration & Electrolytes",
-                desc: "750ml pure water with tender coconut water electrolytes + a hand of raw almonds.",
-                icon: "water_drop",
-                color: "text-accent-sky",
-                isDone: false
-            },
-            {
-                id: "step-meal-2",
-                time: "01:15 PM",
-                type: "meal",
-                title: "Lunch: Tandoori Paneer Tikka Quinoa Power Bowl",
-                desc: "Grilled marinated paneer, high-fiber quinoa, baby spinach, and spiced Greek yogurt raita (620 kcal • 38g Protein).",
-                icon: "restaurant",
-                color: "text-accent-emerald",
-                isDone: false
-            },
-            {
-                id: "step-meal-3",
-                time: "04:30 PM",
-                type: "meal",
-                title: "Afternoon Refuel: Roasted Chana & Digestive Chaas",
-                desc: "Crisp roasted chickpea mix with digestive probiotic masala buttermilk (240 kcal • 14g Protein).",
-                icon: "nutrition",
-                color: "text-amber-400",
-                isDone: false
-            },
-            {
-                id: "step-meal-4",
-                time: "07:45 PM",
-                type: "meal",
-                title: "Dinner: Spiced Yellow Lentil Tadka with Rice",
-                desc: "Yellow dal tadka, steamed basmati rice, roasted broccoli and carrots (540 kcal • 26g Protein).",
-                icon: "restaurant",
-                color: "text-accent-emerald",
-                isDone: false
-            },
-            {
-                id: "step-sleep",
-                time: "10:15 PM",
-                type: "sleep",
-                title: "Circadian Sleep Architecture & Melatonin Optimization",
-                desc: "Screen off, cold dark room (19°C), magnesium glycinate supplement, 8h deep sleep recovery.",
-                icon: "bedtime",
-                color: "text-purple-400",
-                isDone: false
-            }
+            });
+        }
+
+        // 3. Dynamic Meals Matrix (Distinct meals per day, no hydration items)
+        const defaultMeals = [
+            { mealType: 'Breakfast', time: '08:30 AM', title: 'High-Protein Breakfast Protocol', calories: 480, protein: 28 },
+            { mealType: 'Mid-Morning', time: '11:00 AM', title: 'Nutrient Dense Morning Refuel', calories: 180, protein: 8 },
+            { mealType: 'Lunch', time: '01:30 PM', title: 'Balanced Macronutrient Lunch', calories: 620, protein: 38 },
+            { mealType: 'Afternoon Refuel', time: '04:30 PM', title: 'Pre-Evening Metabolic Snack', calories: 240, protein: 14 },
+            { mealType: 'Dinner', time: '07:30 PM', title: 'Nutrient Rich Recovery Dinner', calories: 540, protein: 26 }
         ];
+        const activeMeals = (meals && meals.length > 0) ? meals : defaultMeals;
+
+        activeMeals.forEach((m, idx) => {
+            timeline.push({
+                id: `step-meal-${idx + 1}`,
+                time: m.time || (idx === 0 ? "08:30 AM" : idx === 1 ? "11:00 AM" : idx === 2 ? "01:30 PM" : idx === 3 ? "04:30 PM" : "07:30 PM"),
+                type: "meal",
+                title: `${m.mealType}: ${m.title}`,
+                desc: `Calibrated meal: ${m.calories} kcal • ${m.protein}g Protein${m.carbs ? ` • ${m.carbs}g Carbs` : ''}${m.fat ? ` • ${m.fat}g Fat` : ''}.`,
+                icon: "restaurant",
+                color: "text-accent-emerald",
+                isDone: false
+            });
+        });
+
+        // 4. Sleep
+        timeline.push({
+            id: "step-sleep",
+            time: "10:15 PM",
+            type: "sleep",
+            title: "Circadian Sleep Architecture & Melatonin Optimization",
+            desc: "Screen off, cool dark room (19°C), 8h deep restorative sleep for cellular and neural recovery.",
+            icon: "bedtime",
+            color: "text-purple-400",
+            isDone: false
+        });
+
+        return timeline;
     }
 }
 

@@ -237,38 +237,10 @@
 
             <!-- Header Quick Actions -->
             <div class="flex items-center gap-2 sm:gap-3">
-                <button onclick="openAddWorkoutModal()" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white border border-white/10 font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer">
-                    <span class="material-symbols-outlined text-sm">add</span>
-                    <span class="hidden sm:inline">Add Workout</span>
+                <button onclick="openAIPlannerModal()" class="px-4 py-2 bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-xs sm:text-sm rounded-full uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(139,92,246,0.3)] hover:scale-105">
+                    <span class="material-symbols-outlined text-sm sm:text-base">auto_awesome</span>
+                    <span>Generate AI Plan</span>
                 </button>
-
-                <button onclick="openAIPlannerModal()" class="px-3.5 py-2 bg-purple-600/80 hover:bg-purple-600 text-white font-bold text-xs rounded-full uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(139,92,246,0.3)]">
-                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
-                    <span class="hidden md:inline">Generate AI Plan</span>
-                </button>
-
-                <!-- Options Dropdown -->
-                <div class="relative">
-                    <button id="btn-quick-options" onclick="toggleQuickOptionsMenu()" class="p-2 rounded-full text-secondary hover:text-white bg-white/5 hover:bg-white/10 transition-colors border border-white/10 cursor-pointer" aria-label="Planner options">
-                        <span class="material-symbols-outlined text-lg">more_vert</span>
-                    </button>
-                    <!-- Dropdown -->
-                    <div id="quick-options-dropdown" class="hidden absolute right-0 mt-2 w-52 glass-card rounded-2xl shadow-2xl z-50 py-2 text-xs text-secondary border border-glass-border">
-                        <button onclick="copyPreviousWeekSchedule(); toggleQuickOptionsMenu();" class="w-full text-left px-4 py-2.5 hover:bg-white/5 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer">
-                            <span class="material-symbols-outlined text-base text-accent-sky">content_copy</span>
-                            <span>Duplicate / Copy Week</span>
-                        </button>
-                        <button onclick="openAIPlannerModal(); toggleQuickOptionsMenu();" class="w-full text-left px-4 py-2.5 hover:bg-white/5 hover:text-white flex items-center gap-2.5 transition-colors cursor-pointer">
-                            <span class="material-symbols-outlined text-base text-purple-400">tune</span>
-                            <span>Calibrate Target</span>
-                        </button>
-                        <hr class="border-white/5 my-1">
-                        <button onclick="confirmClearSchedule(); toggleQuickOptionsMenu();" class="w-full text-left px-4 py-2.5 hover:bg-rose-500/10 hover:text-rose-400 text-rose-400 flex items-center gap-2.5 transition-colors cursor-pointer">
-                            <span class="material-symbols-outlined text-base">delete_sweep</span>
-                            <span>Clear Schedule</span>
-                        </button>
-                    </div>
-                </div>
 
                 <a href="profile.html" class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 ml-1" title="Profile">
                     <span class="material-symbols-outlined text-2xl">account_circle</span>
@@ -450,88 +422,47 @@
                         </button>
                     </div>
 
-                    <!-- Telemetry Metric Badges -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-center">
+                    <!-- Telemetry Metric Badges (5 Metrics) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-center">
                         <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
                             <span class="text-[9px] uppercase font-semibold text-secondary block mb-1">Mifflin BMR</span>
-                            <span id="tele-bmr" class="text-sm sm:text-base font-bold text-white font-headline">1,780 kcal</span>
+                            <span id="tele-bmr" class="text-sm sm:text-base font-bold text-white font-headline">—</span>
                         </div>
                         <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
                             <span class="text-[9px] uppercase font-semibold text-secondary block mb-1">Active TDEE</span>
-                            <span id="tele-tdee" class="text-sm sm:text-base font-bold text-purple-400 font-headline">2,450 kcal</span>
+                            <span id="tele-tdee" class="text-sm sm:text-base font-bold text-purple-400 font-headline">—</span>
                         </div>
                         <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
                             <span class="text-[9px] uppercase font-semibold text-secondary block mb-1">Daily Intake</span>
-                            <span id="tele-intake" class="text-sm sm:text-base font-bold text-white font-headline">2,150 kcal</span>
+                            <span id="tele-intake" class="text-sm sm:text-base font-bold text-white font-headline">—</span>
                         </div>
                         <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
                             <span class="text-[9px] uppercase font-semibold text-secondary block mb-1">Protein Goal</span>
-                            <span id="tele-protein" class="text-sm sm:text-base font-bold text-accent-emerald font-headline">165 g</span>
+                            <span id="tele-protein" class="text-sm sm:text-base font-bold text-accent-emerald font-headline">—</span>
                         </div>
                         <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
                             <span class="text-[9px] uppercase font-semibold text-secondary block mb-1">Active Burn</span>
-                            <span id="tele-burn" class="text-sm sm:text-base font-bold text-accent-amber font-headline">500 kcal</span>
-                        </div>
-                        <div class="bg-white/5 p-3 rounded-2xl border border-white/5">
-                            <span class="text-[9px] uppercase font-semibold text-secondary block mb-1">Hydration</span>
-                            <span id="tele-water" class="text-sm sm:text-base font-bold text-accent-sky font-headline">3.5 L</span>
+                            <span id="tele-burn" class="text-sm sm:text-base font-bold text-accent-amber font-headline">—</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. TODAY'S MEALS & RECOVERY PROTOCOL -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Today's Nutrition Meals -->
-                    <div class="lg:col-span-2 glass-card p-6 rounded-3xl border-glass-border space-y-4">
-                        <div class="flex items-center justify-between border-b border-white/5 pb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="w-8 h-8 rounded-xl bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald flex items-center justify-center">
-                                    <span class="material-symbols-outlined text-base">restaurant</span>
-                                </span>
-                                <div>
-                                    <h4 class="text-sm font-bold text-white font-headline">Today's Nutrition Targets</h4>
-                                    <p class="text-[11px] text-secondary">Calibrated meals & macro timing</p>
-                                </div>
+                <!-- 3. TODAY'S NUTRITION PROTOCOL -->
+                <div class="glass-card p-6 sm:p-7 rounded-3xl border-glass-border space-y-4">
+                    <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-xl bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald flex items-center justify-center">
+                                <span class="material-symbols-outlined text-base">restaurant</span>
+                            </span>
+                            <div>
+                                <h4 class="text-sm font-bold text-white font-headline">Today's Nutrition Targets</h4>
+                                <p class="text-[11px] text-secondary">Calibrated meals & macro timing</p>
                             </div>
-                            <span id="nutrition-total-cals-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-purple-300 border border-white/10 font-mono">2,150 kcal</span>
                         </div>
-                        <div id="daily-meals-container" class="space-y-2.5">
-                            <!-- Populated dynamically by JS -->
-                        </div>
+                        <span id="nutrition-total-cals-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-purple-300 border border-white/10 font-mono">0 kcal</span>
                     </div>
-
-                    <!-- Hydration & Recovery Tasks Card -->
-                    <div class="glass-card p-6 rounded-3xl border-glass-border space-y-4 flex flex-col justify-between">
-                        <div class="space-y-4">
-                            <div class="flex items-center gap-2 border-b border-white/5 pb-3">
-                                <span class="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center">
-                                    <span class="material-symbols-outlined text-base">self_improvement</span>
-                                </span>
-                                <div>
-                                    <h4 class="text-sm font-bold text-white font-headline">Hydration & Recovery</h4>
-                                    <p class="text-[11px] text-secondary">Neural & muscular restoration</p>
-                                </div>
-                            </div>
-
-                            <!-- Hydration Progress Card -->
-                            <div class="p-4 bg-white/5 rounded-2xl border border-white/5 space-y-2">
-                                <div class="flex items-center justify-between text-xs">
-                                    <span class="text-secondary flex items-center gap-1.5">
-                                        <span class="material-symbols-outlined text-sky-400 text-sm">water_drop</span> Water Target
-                                    </span>
-                                    <span id="card-water-goal" class="font-bold text-sky-300 font-mono">3.5 L / day</span>
-                                </div>
-                                <div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
-                                    <div id="card-water-bar" class="h-full bg-sky-400 rounded-full" style="width: 75%"></div>
-                                </div>
-                                <p class="text-[10px] text-secondary opacity-70">500ml upon waking + 250ml per hour active</p>
-                            </div>
-
-                            <!-- Recovery Tasks -->
-                            <div id="daily-recovery-tasks" class="space-y-2 text-xs">
-                                <!-- Populated dynamically by JS -->
-                            </div>
-                        </div>
+                    <div id="daily-meals-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <!-- Populated dynamically by JS -->
                     </div>
                 </div>
 
@@ -1036,8 +967,6 @@
                     closeWorkoutModal();
                     closeAIPlannerModal();
                     closeConfirmModal();
-                    const dropdown = document.getElementById('quick-options-dropdown');
-                    if (dropdown) dropdown.classList.add('hidden');
                 }
             });
         });
@@ -1164,7 +1093,6 @@
             const workoutContainer = document.getElementById('daily-workout-card-container');
             const timelineContainer = document.getElementById('protocol-timeline-container');
             const mealsContainer = document.getElementById('daily-meals-container');
-            const recoveryContainer = document.getElementById('daily-recovery-tasks');
 
             const targetDateStr = getDateStringForOffset(currentDayOffset);
             const targetWeekday = getWeekdayForOffset(currentDayOffset);
@@ -1174,10 +1102,85 @@
             targetDate.setDate(targetDate.getDate() + currentDayOffset);
             const dateNum = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
+            const hasProtocolForDay = !!(plannerState.dailyProtocol && (plannerState.dailyProtocol.date === targetDateStr || (!plannerState.dailyProtocol.date && isToday)));
+
+            // 1. IF NO PLAN GENERATED FOR THIS DAY -> REQUIRE USER TO GENERATE PLAN DAILY
+            if (!hasProtocolForDay) {
+                if (workoutContainer) {
+                    workoutContainer.innerHTML = `
+                        <div class="glass-card p-8 sm:p-10 rounded-3xl border border-glass-border text-center space-y-4">
+                            <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(139,92,246,0.15)]">
+                                <span class="material-symbols-outlined text-3xl">auto_awesome</span>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 inline-block mb-1">
+                                    ${isToday ? 'Today' : targetWeekday} • ${dateNum}
+                                </span>
+                                <h3 class="text-xl sm:text-2xl font-bold text-white font-headline">No AI Protocol Generated for ${isToday ? 'Today' : targetWeekday}</h3>
+                                <p class="text-xs text-secondary max-w-md mx-auto leading-relaxed">
+                                    FitForge generates unique, dynamic plans every day. Generate your personalized plan to calculate today's biometric nutrition targets, workouts, and 24-hour schedule.
+                                </p>
+                            </div>
+                            <div class="flex items-center justify-center pt-2">
+                                <button onclick="openAIPlannerModal()" class="px-6 py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-[0_0_18px_rgba(139,92,246,0.35)] hover:scale-105 cursor-pointer">
+                                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                                    <span>Generate Plan for ${isToday ? 'Today' : targetWeekday}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Reset Telemetry Badges
+                const teleBmr = document.getElementById('tele-bmr');
+                const teleTdee = document.getElementById('tele-tdee');
+                const teleIntake = document.getElementById('tele-intake');
+                const teleProtein = document.getElementById('tele-protein');
+                const teleBurn = document.getElementById('tele-burn');
+                if (teleBmr) teleBmr.textContent = '—';
+                if (teleTdee) teleTdee.textContent = '—';
+                if (teleIntake) teleIntake.textContent = '—';
+                if (teleProtein) teleProtein.textContent = '—';
+                if (teleBurn) teleBurn.textContent = '—';
+
+                const headlineEl = document.getElementById('protocol-headline');
+                const summaryEl = document.getElementById('protocol-summary');
+                if (headlineEl) headlineEl.textContent = 'AI Daily Master Schedule (Pending Generation)';
+                if (summaryEl) summaryEl.textContent = `Protocol not yet calibrated for ${targetWeekday}, ${dateNum}. Generate your daily protocol to view biometric nutrition and schedule.`;
+
+                // Empty state for meals
+                if (mealsContainer) {
+                    const badge = document.getElementById('nutrition-total-cals-badge');
+                    if (badge) badge.textContent = '0 kcal';
+                    mealsContainer.innerHTML = `
+                        <div class="p-8 text-center text-secondary border border-dashed border-white/10 rounded-2xl col-span-full">
+                            <span class="material-symbols-outlined text-2xl text-purple-400 mb-1 block">restaurant</span>
+                            <p class="text-xs">No nutrition targets calibrated for this date. Generate today's protocol above.</p>
+                        </div>
+                    `;
+                }
+
+                // Empty state for timeline
+                if (timelineContainer) {
+                    const badgeEl = document.getElementById('timeline-completion-badge');
+                    if (badgeEl) {
+                        badgeEl.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-secondary border border-white/10";
+                        badgeEl.textContent = "0/0 Ticked • Pending Plan";
+                    }
+                    timelineContainer.innerHTML = `
+                        <div class="p-8 text-center text-secondary border border-dashed border-white/10 rounded-2xl">
+                            <span class="material-symbols-outlined text-2xl text-purple-400 mb-1 block">schedule</span>
+                            <p class="text-xs">No chronological timeline scheduled for this date. Generate today's protocol above.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
+            // 2. PROTOCOL IS GENERATED FOR THIS DAY
             const dayWorkouts = userWorkouts.filter(w => w.day === targetWeekday);
             const isRestDay = restDaysSet.has(targetWeekday);
 
-            // 1. HERO WORKOUT CARD OR EMPTY STATE
             if (workoutContainer) {
                 if (dayWorkouts.length > 0) {
                     const mainWorkout = dayWorkouts[0];
@@ -1197,7 +1200,6 @@
                                     <p class="text-xs text-secondary">${mainWorkout.category} • ${mainWorkout.duration} mins • ${mainWorkout.calories} kcal • Target: ${mainWorkout.targetMuscles || 'Full Body'}</p>
                                 </div>
 
-                                <!-- PROMINENT TICK MARK BUTTON FOR WORKOUT -->
                                 <div class="flex items-center gap-3 w-full md:w-auto">
                                     <button onclick="toggleWorkoutCompletion('${mainWorkout.id}')"
                                         class="w-full md:w-auto px-6 py-3 rounded-2xl font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg ${isAllDone ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:scale-105' : 'bg-rose-500/15 hover:bg-emerald-500/20 text-rose-400 hover:text-emerald-400 border border-rose-500/30 hover:border-emerald-500/40 shadow-[0_0_15px_rgba(244,63,94,0.15)] hover:scale-105'}">
@@ -1207,7 +1209,6 @@
                                 </div>
                             </div>
 
-                            <!-- Movement Checkpoints List -->
                             <div class="pt-3 border-t border-white/5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
                                 ${(mainWorkout.exercises || []).map((ex, idx) => `
                                     <div class="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between gap-2">
@@ -1237,7 +1238,7 @@
                                         <span class="text-xs text-secondary font-mono">${targetWeekday}, ${dateNum}</span>
                                     </div>
                                     <h3 class="text-lg sm:text-xl font-bold text-white font-headline">Muscular & CNS Recovery Day</h3>
-                                    <p class="text-xs text-secondary">Target 3.5L hydration, 8 hours deep sleep, and light 20-min mobility walk.</p>
+                                    <p class="text-xs text-secondary">Target 8 hours deep restorative sleep and a gentle 20-30 min mobility walk.</p>
                                 </div>
                             </div>
                             <button onclick="toggleRestDay('${targetWeekday}')" class="px-4 py-2.5 bg-white/5 hover:bg-white/10 text-secondary hover:text-white border border-glass-border text-xs font-bold rounded-xl transition-all cursor-pointer">
@@ -1246,7 +1247,6 @@
                         </div>
                     `;
                 } else {
-                    // REQUIRED HIGH-END SAAS EMPTY STATE
                     workoutContainer.innerHTML = `
                         <div class="glass-card p-8 sm:p-10 rounded-3xl border border-glass-border text-center space-y-4">
                             <div class="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center mx-auto">
@@ -1255,17 +1255,13 @@
                             <div>
                                 <h3 class="text-xl font-bold text-white font-headline">No Workout Scheduled for ${isToday ? 'Today' : targetWeekday}</h3>
                                 <p class="text-xs text-secondary max-w-md mx-auto mt-1 leading-relaxed">
-                                    Generate an AI adaptive training protocol or add a scheduled workout to synchronize your daily goals and maintain your active streak.
+                                    Generate an AI adaptive training protocol to calibrate your routine for today and maintain your active streak.
                                 </p>
                             </div>
-                            <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                            <div class="flex items-center justify-center pt-2">
                                 <button onclick="openAIPlannerModal()" class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(139,92,246,0.3)] cursor-pointer">
                                     <span class="material-symbols-outlined text-sm">auto_awesome</span>
                                     <span>Generate AI Plan</span>
-                                </button>
-                                <button onclick="openAddWorkoutForDay('${targetWeekday}')" class="px-5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-glass-border text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer">
-                                    <span class="material-symbols-outlined text-sm">add</span>
-                                    <span>Add Workout</span>
                                 </button>
                             </div>
                         </div>
@@ -1273,14 +1269,13 @@
                 }
             }
 
-            // 2. DYNAMIC TELEMETRY BINDING
+            // 3. DYNAMIC TELEMETRY BINDING
             const targets = plannerState.dailyProtocol?.targets || {
                 bmr: 1780,
                 tdee: 2450,
                 calories: 2150,
                 protein: 165,
-                burnTarget: 500,
-                waterLiters: 3.5
+                burnTarget: 500
             };
 
             const teleBmr = document.getElementById('tele-bmr');
@@ -1288,86 +1283,57 @@
             const teleIntake = document.getElementById('tele-intake');
             const teleProtein = document.getElementById('tele-protein');
             const teleBurn = document.getElementById('tele-burn');
-            const teleWater = document.getElementById('tele-water');
 
-            if (teleBmr) teleBmr.textContent = `${targets.bmr.toLocaleString()} kcal`;
-            if (teleTdee) teleTdee.textContent = `${targets.tdee.toLocaleString()} kcal`;
-            if (teleIntake) teleIntake.textContent = `${targets.calories.toLocaleString()} kcal`;
-            if (teleProtein) teleProtein.textContent = `${targets.protein} g`;
+            if (teleBmr) teleBmr.textContent = `${(targets.bmr || 1780).toLocaleString()} kcal`;
+            if (teleTdee) teleTdee.textContent = `${(targets.tdee || 2450).toLocaleString()} kcal`;
+            if (teleIntake) teleIntake.textContent = `${(targets.calories || 2150).toLocaleString()} kcal`;
+            if (teleProtein) teleProtein.textContent = `${targets.protein || 165} g`;
             if (teleBurn) teleBurn.textContent = `${targets.burnTarget || targets.burnGoal || 500} kcal`;
-            if (teleWater) teleWater.textContent = `${targets.waterLiters || 3.5} L`;
 
-            // 3. TODAY'S MEALS NUTRITION TARGETS
+            const headlineEl = document.getElementById('protocol-headline');
+            const summaryEl = document.getElementById('protocol-summary');
+            if (headlineEl) headlineEl.textContent = 'AI Dynamic Master Schedule';
+            if (summaryEl) summaryEl.textContent = `Adaptive 24-hour protocol, 5-meal nutrition, and schedule calibrated for ${targetWeekday}.`;
+
+            // 4. TODAY'S MEALS NUTRITION TARGETS (Distinct meals from plan)
             if (mealsContainer) {
-                const meals = plannerState.nutritionPlan?.meals || [
-                    { mealType: 'Breakfast', time: '08:45 AM', title: 'High-Protein Moong Dal Chilla & Paneer', calories: 480, protein: 28, carbs: 45, fat: 14, ingredients: ['Sprouted Moong', 'Paneer', 'Mint Chutney'] },
-                    { mealType: 'Mid-Morning', time: '11:30 AM', title: 'Cellular Electrolytes & Raw Almonds', calories: 180, protein: 6, carbs: 12, fat: 14, ingredients: ['Coconut Water', 'Himalayan Salt', 'Almonds'] },
-                    { mealType: 'Lunch', time: '01:15 PM', title: 'Tandoori Spiced Paneer Quinoa Bowl', calories: 620, protein: 38, carbs: 62, fat: 18, ingredients: ['Quinoa', 'Grilled Paneer', 'Greek Yogurt', 'Spinach'] },
-                    { mealType: 'Afternoon Refuel', time: '04:30 PM', title: 'Roasted Chana & Probiotic Chaas', calories: 240, protein: 14, carbs: 28, fat: 6, ingredients: ['Roasted Chickpeas', 'Spiced Buttermilk'] },
-                    { mealType: 'Dinner', time: '07:45 PM', title: 'Yellow Lentil Tadka with Rice & Broccoli', calories: 540, protein: 26, carbs: 70, fat: 12, ingredients: ['Moong Dal', 'Basmati Rice', 'Steamed Veggies'] }
-                ];
-
+                const meals = plannerState.dailyProtocol?.meals || plannerState.nutritionPlan?.meals || [];
                 const totalMealCals = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
                 const badge = document.getElementById('nutrition-total-cals-badge');
                 if (badge) badge.textContent = `${totalMealCals.toLocaleString()} kcal`;
 
-                mealsContainer.innerHTML = meals.map(m => `
-                    <div class="p-3 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-between gap-3 hover:border-white/10 transition-colors">
-                        <div class="space-y-1 flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20">${m.mealType}</span>
-                                <span class="font-mono text-[11px] text-secondary opacity-70">${m.time}</span>
+                if (meals.length > 0) {
+                    mealsContainer.innerHTML = meals.map(m => `
+                        <div class="p-3 bg-white/5 rounded-2xl border border-white/5 flex flex-col justify-between gap-2.5 hover:border-white/10 transition-colors">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded-full bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20">${m.mealType}</span>
+                                    <span class="font-mono text-[11px] text-secondary opacity-70">${m.time}</span>
+                                </div>
+                                <h5 class="text-xs font-bold text-white leading-tight">${m.title}</h5>
+                                ${m.ingredients && m.ingredients.length > 0 ? `<p class="text-[10px] text-secondary opacity-60 truncate">${m.ingredients.join(', ')}</p>` : ''}
                             </div>
-                            <h5 class="text-xs font-bold text-white leading-tight">${m.title}</h5>
-                            <div class="flex items-center gap-3 text-[10px] text-secondary font-mono">
+                            <div class="flex items-center justify-between text-[10px] text-secondary font-mono border-t border-white/5 pt-1.5">
                                 <span class="text-white font-semibold">${m.calories} kcal</span>
                                 <span>P: ${m.protein}g</span>
                                 <span>C: ${m.carbs}g</span>
                                 <span>F: ${m.fat}g</span>
                             </div>
                         </div>
-                        <span class="text-[10px] font-mono px-2 py-1 rounded-lg bg-white/5 text-purple-300 font-semibold shrink-0">Calibrated</span>
-                    </div>
-                `).join('');
-            }
-
-            // 4. RECOVERY TASKS & HYDRATION
-            if (recoveryContainer) {
-                const waterTarget = targets.waterLiters || 3.5;
-                const waterGoalEl = document.getElementById('card-water-goal');
-                if (waterGoalEl) waterGoalEl.textContent = `${waterTarget} L / day`;
-
-                const recoveryTasks = [
-                    { title: "Circadian Sunlight & Hydration", desc: "500ml water + 10 min natural sunlight upon waking", done: true },
-                    { title: "Post-Workout Glycogen Repletion", desc: "Consume balanced carbohydrates within 60 mins", done: true },
-                    { title: "Soft Tissue Mobility & Foam Rolling", desc: "15 min gentle release targeting active muscle groups", done: false },
-                    { title: "Sleep Architecture Optimization", desc: "Dark cool bedroom (19°C) + 8 hours uninterrupted rest", done: false }
-                ];
-
-                recoveryContainer.innerHTML = recoveryTasks.map((t, idx) => `
-                    <div class="p-2.5 rounded-xl bg-white/5 border border-white/5 flex items-start gap-2.5">
-                        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="showToast('Recovery task updated', 'info')"
-                            class="w-3.5 h-3.5 mt-0.5 rounded border-white/20 bg-surface text-sky-400 focus:ring-0 cursor-pointer">
-                        <div class="space-y-0.5">
-                            <span class="font-semibold text-white block text-[11px] ${t.done ? 'line-through opacity-50' : ''}">${t.title}</span>
-                            <p class="text-[10px] text-secondary opacity-70 leading-relaxed">${t.desc}</p>
+                    `).join('');
+                } else {
+                    mealsContainer.innerHTML = `
+                        <div class="p-6 text-center text-secondary border border-dashed border-white/10 rounded-2xl col-span-full">
+                            <span class="material-symbols-outlined text-2xl text-purple-400 mb-1 block">restaurant</span>
+                            <p class="text-xs">No meals calibrated for this day. Generate your daily plan above.</p>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                }
             }
 
             // 5. 24-HOUR MASTER TIMELINE
             if (timelineContainer) {
-                const timeline = plannerState.dailyProtocol?.timeline || [
-                    { id: "step-wake", time: "06:30 AM", type: "wake", title: "Circadian Awakening & Rehydration", desc: "500ml electrolyte water + direct sunlight exposure to anchor circadian rhythm.", isDone: false },
-                    { id: "step-workout", time: "07:30 AM", type: "workout", title: "Targeted Resistance & Metabolic Workout", desc: "45-minute calibrated progressive training session.", isDone: false },
-                    { id: "step-meal-1", time: "08:45 AM", type: "meal", title: "Breakfast: High-Protein Moong Dal Chilla", desc: "Sprouted moong batter with paneer/tofu filling + mint chutney. (480 kcal • 28g Protein).", isDone: false },
-                    { id: "step-hydration-1", time: "11:30 AM", type: "hydration", title: "Mid-Morning Cellular Hydration", desc: "750ml pure water with coconut water electrolytes + hand of raw almonds.", isDone: false },
-                    { id: "step-meal-2", time: "01:15 PM", type: "meal", title: "Lunch: Paneer Tikka Quinoa Power Bowl", desc: "Grilled paneer, quinoa, baby spinach, cucumber and spiced Greek yogurt raita. (620 kcal • 38g Protein).", isDone: false },
-                    { id: "step-meal-3", time: "04:30 PM", type: "meal", title: "Afternoon Refuel: Roasted Chana & Masala Buttermilk", desc: "Crisp roasted chickpea mix with digestive probiotic chaas. (240 kcal • 14g Protein).", isDone: false },
-                    { id: "step-meal-4", time: "07:45 PM", type: "meal", title: "Dinner: Spiced Lentil Curry with Steamed Rice", desc: "Yellow dal tadka, steamed basmati rice, roasted broccoli & carrots. (540 kcal • 26g Protein).", isDone: false },
-                    { id: "step-sleep", time: "10:15 PM", type: "sleep", title: "Circadian Sleep Architecture & Melatonin Optimization", desc: "Screen off, cold dark room (19°C), magnesium glycinate supplement, 8h deep sleep recovery.", isDone: false }
-                ];
+                const timeline = plannerState.dailyProtocol?.timeline || [];
 
                 const completedCount = timeline.filter(s => s.isDone).length;
                 const totalCount = timeline.length;
@@ -1375,49 +1341,57 @@
 
                 const badgeEl = document.getElementById('timeline-completion-badge');
                 if (badgeEl) {
-                    badgeEl.className = completedCount === totalCount
+                    badgeEl.className = completedCount === totalCount && totalCount > 0
                         ? "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
                         : "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/5 text-secondary border border-white/10";
                     badgeEl.innerHTML = `${completedCount}/${totalCount} Ticked • <span class="${incompleteCount > 0 ? 'text-rose-400 font-semibold' : 'text-emerald-400'}">${incompleteCount} Incomplete</span>`;
                 }
 
-                timelineContainer.innerHTML = timeline.map(item => {
-                    const isStepDone = !!item.isDone;
-                    const safeTitle = (item.title || '').replace(/'/g, "\\'");
-                    let icon = 'schedule';
-                    let iconColor = 'text-purple-400';
-                    if (item.type === 'wake') { icon = 'wb_sunny'; iconColor = 'text-amber-400'; }
-                    else if (item.type === 'workout') { icon = 'fitness_center'; iconColor = 'text-purple-400'; }
-                    else if (item.type === 'meal') { icon = 'restaurant'; iconColor = 'text-accent-emerald'; }
-                    else if (item.type === 'hydration') { icon = 'water_drop'; iconColor = 'text-accent-sky'; }
-                    else if (item.type === 'sleep') { icon = 'bedtime'; iconColor = 'text-purple-400'; }
+                if (timeline.length > 0) {
+                    timelineContainer.innerHTML = timeline.map(item => {
+                        const isStepDone = !!item.isDone;
+                        const safeTitle = (item.title || '').replace(/'/g, "\\'");
+                        let icon = 'schedule';
+                        let iconColor = 'text-purple-400';
+                        if (item.type === 'wake') { icon = 'wb_sunny'; iconColor = 'text-amber-400'; }
+                        else if (item.type === 'workout') { icon = 'fitness_center'; iconColor = 'text-purple-400'; }
+                        else if (item.type === 'meal') { icon = 'restaurant'; iconColor = 'text-accent-emerald'; }
+                        else if (item.type === 'sleep') { icon = 'bedtime'; iconColor = 'text-purple-400'; }
 
-                    return `
-                        <div class="glass-card p-4 rounded-2xl border transition-all ${isStepDone ? 'border-emerald-500/30 bg-emerald-500/[0.02]' : 'border-glass-border hover:border-white/20'} flex items-start justify-between gap-4">
-                            <div class="flex items-start gap-4">
-                                <div class="w-10 h-10 rounded-2xl ${isStepDone ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/5 border border-white/10'} flex items-center justify-center shrink-0 transition-colors">
-                                    <span class="material-symbols-outlined text-lg ${isStepDone ? 'text-emerald-400' : iconColor}">${icon}</span>
-                                </div>
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-mono text-xs font-bold text-purple-400">${item.time}</span>
-                                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-secondary border border-white/10">${item.type}</span>
-                                        ${isStepDone ? '<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Ticked Done</span>' : '<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400/80 border border-rose-500/20">Incomplete</span>'}
+                        return `
+                            <div class="glass-card p-4 rounded-2xl border transition-all ${isStepDone ? 'border-emerald-500/30 bg-emerald-500/[0.02]' : 'border-glass-border hover:border-white/20'} flex items-start justify-between gap-4">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 rounded-2xl ${isStepDone ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/5 border border-white/10'} flex items-center justify-center shrink-0 transition-colors">
+                                        <span class="material-symbols-outlined text-lg ${isStepDone ? 'text-emerald-400' : iconColor}">${icon}</span>
                                     </div>
-                                    <h5 class="text-sm font-bold text-white font-headline ${isStepDone ? 'text-emerald-300' : ''}">${item.title}</h5>
-                                    <p class="text-xs text-secondary leading-relaxed opacity-80">${item.desc}</p>
+                                    <div class="space-y-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-mono text-xs font-bold text-purple-400">${item.time}</span>
+                                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/5 text-secondary border border-white/10">${item.type}</span>
+                                            ${isStepDone ? '<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Ticked Done</span>' : '<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400/80 border border-rose-500/20">Incomplete</span>'}
+                                        </div>
+                                        <h5 class="text-sm font-bold text-white font-headline ${isStepDone ? 'text-emerald-300' : ''}">${item.title}</h5>
+                                        <p class="text-xs text-secondary leading-relaxed opacity-80">${item.desc}</p>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <button type="button" onclick="toggleProtocolStep('${item.id}', '${safeTitle}')"
-                                class="px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${isStepDone ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.3)] hover:scale-105' : 'bg-rose-500/10 hover:bg-emerald-500/20 text-rose-400/90 hover:text-emerald-400 border border-rose-500/20 hover:border-emerald-500/40 hover:scale-105'}"
-                                title="${isStepDone ? 'Ticked Done (Tap to mark incomplete)' : 'Unticked: Incomplete (Tap to tick Done)'}">
-                                <span class="material-symbols-outlined text-lg ${isStepDone ? 'font-black' : ''}">${isStepDone ? 'check_box' : 'check_box_outline_blank'}</span>
-                                <span class="font-semibold">${isStepDone ? 'Done' : 'Incomplete'}</span>
-                            </button>
+                                <button type="button" onclick="toggleProtocolStep('${item.id}', '${safeTitle}')"
+                                    class="px-3.5 py-2 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${isStepDone ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-[0_0_12px_rgba(16,185,129,0.3)] hover:scale-105' : 'bg-rose-500/10 hover:bg-emerald-500/20 text-rose-400/90 hover:text-emerald-400 border border-rose-500/20 hover:border-emerald-500/40 hover:scale-105'}"
+                                    title="${isStepDone ? 'Ticked Done (Tap to mark incomplete)' : 'Unticked: Incomplete (Tap to tick Done)'}">
+                                    <span class="material-symbols-outlined text-lg ${isStepDone ? 'font-black' : ''}">${isStepDone ? 'check_box' : 'check_box_outline_blank'}</span>
+                                    <span class="font-semibold">${isStepDone ? 'Done' : 'Incomplete'}</span>
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    timelineContainer.innerHTML = `
+                        <div class="p-6 text-center text-secondary border border-dashed border-white/10 rounded-2xl">
+                            <span class="material-symbols-outlined text-2xl text-purple-400 mb-1 block">schedule</span>
+                            <p class="text-xs">No chronological timeline scheduled for this date. Generate your daily plan above.</p>
                         </div>
                     `;
-                }).join('');
+                }
             }
         }
 
@@ -1502,10 +1476,6 @@
                                     class="p-1 rounded-lg text-xs transition-colors cursor-pointer ${isRestDay ? 'text-accent-sky bg-sky-500/10 border border-sky-500/20' : 'text-secondary opacity-60 hover:opacity-100 hover:text-white'}">
                                     <span class="material-symbols-outlined text-base">bed</span>
                                 </button>
-                                <button type="button" onclick="openAddWorkoutForDay('${dayName}')" title="Add workout to ${dayName}"
-                                    class="p-1 rounded-lg text-secondary opacity-60 hover:opacity-100 hover:text-white transition-colors cursor-pointer">
-                                    <span class="material-symbols-outlined text-base">add</span>
-                                </button>
                             </div>
                         </div>
 
@@ -1515,7 +1485,7 @@
                                 <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-2 my-auto">
                                     <span class="material-symbols-outlined text-2xl text-accent-sky">self_improvement</span>
                                     <h5 class="text-xs font-bold text-white uppercase tracking-wider">Rest & Recovery</h5>
-                                    <p class="text-[11px] text-secondary leading-relaxed opacity-80">Hydrate (3.5L), 8h sleep, and take a 20-min mobility walk.</p>
+                                    <p class="text-[11px] text-secondary leading-relaxed opacity-80">8h sleep, hydration, and light mobility walk.</p>
                                     <button onclick="toggleRestDay('${dayName}')" class="text-[10px] text-secondary hover:text-white underline cursor-pointer mt-1 inline-block">
                                         Switch to Training Day
                                     </button>
@@ -1524,10 +1494,7 @@
                                 <div class="flex-1 flex flex-col items-center justify-center p-6 text-center text-secondary border border-dashed ${isToday ? 'border-purple-500/30 bg-purple-500/[0.02]' : 'border-white/10'} rounded-2xl my-2">
                                     <span class="material-symbols-outlined text-2xl ${isToday ? 'text-purple-400' : 'text-secondary opacity-40'} mb-1">fitness_center</span>
                                     <p class="text-xs font-bold text-white">No workout scheduled</p>
-                                    <p class="text-[10px] text-secondary opacity-60 mt-0.5">Drag card here or tap +</p>
-                                    <button onclick="openAddWorkoutForDay('${dayName}')" class="mt-3 px-3 py-1.5 rounded-xl text-purple-400 hover:text-purple-300 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer">
-                                        <span class="material-symbols-outlined text-sm">add</span> Schedule
-                                    </button>
+                                    <p class="text-[10px] text-secondary opacity-60 mt-0.5">Generate daily plan to sync</p>
                                 </div>
                             ` : `
                                 ${dayWorkouts.map(w => renderWorkoutCard(w)).join('')}
@@ -2005,11 +1972,14 @@
             const frequency = parseInt(document.querySelector('input[name="ai-frequency"]:checked')?.value, 10) || 5;
 
             try {
+                const targetDateStr = getDateStringForOffset(currentDayOffset);
                 const res = await fetch('/api/ai/generate-plan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: userEmail,
+                        targetDate: targetDateStr,
+                        forceNew: true,
                         goal: goal,
                         burnGoal: { targetBurnCals: burnCals },
                         burnTarget: { targetBurnCals: burnCals },
@@ -2035,6 +2005,7 @@
                     
                     broadcastStateChange('plan_generated');
                     closeAIPlannerModal();
+                    await loadPlannerEcosystemState(true);
                     renderActiveView();
                     updateTelemetryAndStats();
                     showToast("AI Protocol Generated & Synchronized Across Ecosystem! 🔥", "success");
@@ -2403,11 +2374,6 @@
                 sidebar.classList.toggle('-translate-x-full');
                 backdrop.classList.toggle('hidden');
             }
-        }
-
-        function toggleQuickOptionsMenu() {
-            const menu = document.getElementById('quick-options-dropdown');
-            if (menu) menu.classList.toggle('hidden');
         }
     </script>
 </body>
