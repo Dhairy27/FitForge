@@ -2916,9 +2916,10 @@ app.post('/api/user/diet-profile', verifyUserOwnership, async (req, res) => {
       allergies: Array.isArray(allergies) ? allergies : [],
       healthConditions: Array.isArray(healthConditions) ? healthConditions : [],
       budget: budget || 'mid',
-      dailyCalories: Number(dailyCalories) || 2000
+      dailyCalories: (dailyCalories !== undefined && dailyCalories !== null) ? Number(dailyCalories) : 0
     };
 
+    user.markModified('dietProfile');
     await user.save();
     res.status(200).json({ message: "Diet profile updated successfully.", dietProfile: user.dietProfile });
   } catch (error) {
@@ -3061,6 +3062,7 @@ app.post('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
     };
 
     user.dietPlan = plan;
+    user.markModified('dietPlan');
     await user.save();
 
     res.status(200).json({ plan });
@@ -3099,6 +3101,7 @@ app.delete('/api/user/diet-plan', verifyUserOwnership, async (req, res) => {
       return res.status(404).json({ error: 'User not found.' });
     }
     user.dietPlan = null;
+    user.markModified('dietPlan');
     await user.save();
     res.status(200).json({ message: "Diet plan deleted successfully." });
   } catch (error) {

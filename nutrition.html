@@ -339,7 +339,7 @@
                             <label
                                 class="block text-[10px] text-secondary/40 uppercase tracking-wider font-bold mb-2">Caloric
                                 Load Goal (kcal)</label>
-                            <input type="number" id="diet-calories-input" min="1000" max="6000"
+                            <input type="number" id="diet-calories-input" min="0" max="6000" placeholder="0" value="0"
                                 class="w-full bg-surface-container border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:outline-none focus:border-primary">
                         </div>
                         <button id="btn-generate-diet"
@@ -352,7 +352,7 @@
             </section>
 
             <!-- Hydration & Macro Status Board (Only shown once plan is active) -->
-            <section id="diet-data-dashboard" class="bento-grid mb-8">
+            <section id="diet-data-dashboard" class="bento-grid mb-8 hidden">
                 <!-- Calorie & Water Bento block -->
                 <div
                     class="col-span-12 md:col-span-6 lg:col-span-6 glass-card rounded-2xl p-6 flex flex-col justify-center items-center text-center">
@@ -409,7 +409,7 @@
             </section>
 
             <!-- Dynamic Diet Content Toggles -->
-            <section id="diet-tabs-section" class="mb-4">
+            <section id="diet-tabs-section" class="mb-4 hidden">
                 <div class="flex border-b border-glass-border mb-6">
                     <button onclick="switchTab('daily', this)"
                         class="diet-tab-btn py-3 px-6 text-sm text-primary font-bold border-b-2 border-primary active:scale-95 transition-all">Daily
@@ -769,7 +769,7 @@
                 }
             }
         };
-        let currentDietPlan = defaultFallbackDietPlan;
+        let currentDietPlan = null;
         let selectedWeeklyDay = 1;
 
         function logout() {
@@ -782,10 +782,86 @@
             window.location.href = 'login.html';
         }
 
+        function applyDietProfile(dProfile) {
+            if (!dProfile) return;
+
+            const elCal = document.getElementById('diet-calories-input');
+            if (elCal) {
+                const val = Number(dProfile.dailyCalories);
+                elCal.value = (!isNaN(val) && val >= 100) ? val : 0;
+            }
+            if (dProfile.dietaryType) {
+                const el = document.getElementById('diet-type-select');
+                if (el) el.value = dProfile.dietaryType;
+            }
+            if (dProfile.budget) {
+                const el = document.getElementById('diet-budget-select');
+                if (el) el.value = dProfile.budget;
+            }
+
+            if (Array.isArray(dProfile.allergies)) {
+                const checkboxes = document.querySelectorAll('.diet-allergy-cb');
+                checkboxes.forEach(cb => {
+                    const isChecked = dProfile.allergies.includes(cb.value);
+                    if (cb.checked !== isChecked) {
+                        cb.checked = isChecked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            if (Array.isArray(dProfile.healthConditions)) {
+                const checkboxes = document.querySelectorAll('.diet-health-cb');
+                checkboxes.forEach(cb => {
+                    const isChecked = dProfile.healthConditions.includes(cb.value);
+                    if (cb.checked !== isChecked) {
+                        cb.checked = isChecked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+        }
+
+        function saveDietProfileToLocal() {
+            try {
+                const cbList = document.querySelectorAll('.diet-allergy-cb:checked');
+                const allergies = Array.from(cbList).map(cb => cb.value);
+
+                const hcList = document.querySelectorAll('.diet-health-cb:checked');
+                const healthConditions = Array.from(hcList).map(cb => cb.value);
+
+                const dietaryType = document.getElementById('diet-type-select')?.value || 'non-vegetarian';
+                const budget = document.getElementById('diet-budget-select')?.value || 'mid';
+                const rawCal = document.getElementById('diet-calories-input')?.value;
+                const numCal = Number(rawCal);
+                const dailyCalories = (rawCal !== '' && !isNaN(numCal) && numCal >= 100) ? numCal : 0;
+
+                const profile = { dietaryType, budget, allergies, healthConditions, dailyCalories };
+                localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(profile));
+            } catch(e) {}
+        }
+
+        function attachDietProfileAutoSave() {
+            ['diet-type-select', 'diet-budget-select', 'diet-calories-input'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', saveDietProfileToLocal);
+                    el.addEventListener('input', saveDietProfileToLocal);
+                }
+            });
+            document.querySelectorAll('.diet-allergy-cb').forEach(cb => {
+                cb.addEventListener('change', saveDietProfileToLocal);
+            });
+            document.querySelectorAll('.diet-health-cb').forEach(cb => {
+                cb.addEventListener('change', saveDietProfileToLocal);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadUserProfileAndCalculate();
             setupAllergiesChips();
             setupHealthChips();
+            attachDietProfileAutoSave();
 
             document.getElementById('btn-generate-diet').addEventListener('click', generatePlan);
         });
@@ -941,65 +1017,37 @@
                 const waterGoalEl = document.getElementById('calced-water-goal');
                 if (waterGoalEl) waterGoalEl.innerText = `${recWater} L`;
 
-                // Set input default calorie
-                document.getElementById('diet-calories-input').value = calorieTarget;
+                // Set input default calorie to 0
+                document.getElementById('diet-calories-input').value = 0;
 
-                // 3. Load saved diet profile
-                const profileResponse = await fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`);
-                const profData = await profileResponse.json();
-                const dProfile = profData.dietProfile || {};
-
-                if (dProfile.dailyCalories) {
-                    document.getElementById('diet-calories-input').value = dProfile.dailyCalories;
-                }
-                if (dProfile.dietaryType) {
-                    document.getElementById('diet-type-select').value = dProfile.dietaryType;
-                }
-                if (dProfile.budget) {
-                    document.getElementById('diet-budget-select').value = dProfile.budget;
-                }
-
-                // Check allergy checkboxes
-                if (Array.isArray(dProfile.allergies)) {
-                    const checkboxes = document.querySelectorAll('.diet-allergy-cb');
-                    checkboxes.forEach(cb => {
-                        if (dProfile.allergies.includes(cb.value)) {
-                            cb.checked = true;
-                            cb.dispatchEvent(new Event('change'));
-                        }
-                    });
-                }
-
-                // Check health condition checkboxes
-                if (Array.isArray(dProfile.healthConditions)) {
-                    const checkboxes = document.querySelectorAll('.diet-health-cb');
-                    checkboxes.forEach(cb => {
-                        if (dProfile.healthConditions.includes(cb.value)) {
-                            cb.checked = true;
-                            cb.dispatchEvent(new Event('change'));
-                        } else {
-                            cb.checked = false;
-                            cb.dispatchEvent(new Event('change'));
-                        }
-                    });
-                }
-
-                // 4. Load saved diet plan if any (render immediately if available, or use default fallback plan)
+                // 3. Load saved diet profile (load from local cache first for instant render, then fetch from server)
                 try {
-                    const planResponse = await fetch(`/api/user/diet-plan?email=${encodeURIComponent(userEmail)}`);
-                    if (planResponse.ok) {
-                        const planData = await planResponse.json();
-                        if (planData && planData.plan) {
-                            currentDietPlan = planData.plan;
+                    const cachedProf = localStorage.getItem(`dietProfile_${userEmail}`);
+                    if (cachedProf) {
+                        applyDietProfile(JSON.parse(cachedProf));
+                    }
+                } catch(e) {}
+
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                    const profileResponse = await fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`, { headers });
+                    if (profileResponse.ok) {
+                        const profData = await profileResponse.json();
+                        const dProfile = profData.dietProfile || {};
+                        if (dProfile && Object.keys(dProfile).length > 0) {
+                            applyDietProfile(dProfile);
+                            try { localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(dProfile)); } catch(e) {}
                         }
                     }
                 } catch (e) {
-                    console.error("Failed to load saved diet plan, using fallback:", e);
+                    console.error("Failed to load diet profile from server:", e);
                 }
-                if (!currentDietPlan) {
-                    currentDietPlan = defaultFallbackDietPlan;
-                }
-                renderDietPlan();
+
+                // 4. Ensure meal plan dashboard is hidden on page load until user clicks "Synthesize Plan"
+                currentDietPlan = null;
+                document.getElementById('diet-data-dashboard')?.classList.add('hidden');
+                document.getElementById('diet-tabs-section')?.classList.add('hidden');
 
                 // 5. Load today's nutrition logs
                 await fetchTodayNutritionLogs();
@@ -1037,11 +1085,15 @@
 
                 const dietaryType = document.getElementById('diet-type-select').value;
                 const budget = document.getElementById('diet-budget-select').value;
-                const dailyCalories = Number(document.getElementById('diet-calories-input').value) || 2000;
+                const dailyCalories = Number(document.getElementById('diet-calories-input').value) || 0;
+
+                const token = localStorage.getItem('authToken');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
 
                 const profileResponse = await fetch('/api/user/diet-profile', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ email: userEmail, dietaryType, allergies, healthConditions, budget, dailyCalories })
                 });
 
@@ -1049,7 +1101,7 @@
 
                 const planResponse = await fetch('/api/user/diet-plan', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ email: userEmail })
                 });
 
@@ -1057,6 +1109,7 @@
 
                 const planData = await planResponse.json();
                 currentDietPlan = planData.plan;
+                try { localStorage.setItem(`dietPlan_${userEmail}`, JSON.stringify(currentDietPlan)); } catch(e) {}
                 try { localStorage.removeItem(`shoppingCheckOff_${userEmail}`); } catch(e) {}
                 renderDietPlan();
 
@@ -1362,6 +1415,7 @@
                 });
 
                 currentDietPlan = null;
+                try { localStorage.removeItem(`dietPlan_${userEmail}`); } catch(e) {}
 
                 // Hide dashboard and tabs sections
                 document.getElementById('diet-data-dashboard').classList.add('hidden');
