@@ -1,0 +1,25 @@
+﻿=== nutri-protein at 63471 ===
+trition, optimal hydration, and anti-inflammatory whole foods that support joint flexibility, connective tissue repair, and overall body recovery.";
+            }
+
+            document.getElementById('nutri-cals').innerText = cals.toLocaleString() + ' kcal';
+            document.getElementById('nutri-protein').innerText = prot + ' g';
+            document.getElementById('nutri-carbs').innerText = carbs + ' g';
+            document.getElementById('nutri-fats').innerText = fats + ' g';
+            document.getElementById('nutri-strategy-title').innerText = strategyTitle;
+            document.getElementById('nutri-strategy-desc').innerText = strategyDesc;
+
+            let breakfast = 
+
+=== meal-breakfast at 64978 ===
+fu stir-fry + broccoli + sweet potato/rice";
+            }
+
+            document.getElementById('meal-breakfast').innerText = breakfast;
+            document.getElementById('meal-lunch').innerText = lunch;
+            document.getElementById('meal-snack').innerText = snack;
+            document.getElementById('meal-dinner').innerText = dinner;
+        }
+
+        async function saveScanToHistory() {
+            const userEmail = localStorage.getItem('userEmail') || 'guest@fitforge.ai';

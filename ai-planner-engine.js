@@ -1996,7 +1996,7 @@ function findExerciseAlternatives(exerciseName = '', reason = 'equipment', equip
     if (reason === 'injury') {
         // Find joint-friendly alternatives targeting same muscle or tagged in injury list
         const injuryTags = targetExercise?.alternatives?.injury || [];
-        results = candidates.filter(c => 
+        results = candidates.filter(c =>
             injuryTags.some(tag => c.name.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(c.name.toLowerCase())) ||
             (targetExercise && c.muscle.toLowerCase().includes(targetExercise.muscle.split('&')[0].trim().toLowerCase()))
         );

@@ -1,0 +1,13 @@
+﻿--- Old block ---
+<div
+                            class="pt-2 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <p class="text-[11px] text-secondary/60 text-center sm:text-left">
+                                Stand 6–8 feet away from the camera for full-body tracking.
+                            </p>
+                            <button onclick="requestCameraAccessAndStart()"
+                                class="w-full sm:w-auto px-8 py-3.5 bg-primary text-on-primary font-headline font-bold text-xs uppercase tracking-wider rounded-full hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2.5 shadow-[0_0_25px_rgba(255,255,255,0.15)]">
+                                <span class="material-symbols-outlined text-base">videocam</span>
+                                Proceed to Camera Scan
+                            </button>
+                        </div>
+SUCCESS

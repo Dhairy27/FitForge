@@ -13,6 +13,8 @@
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="live-coach-engine.js"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -69,7 +71,8 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        .glass-card, .glass-panel {
+        .glass-card,
+        .glass-panel {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
@@ -78,7 +81,8 @@
             overflow: hidden;
         }
 
-        .glass-card::before, .glass-panel::before {
+        .glass-card::before,
+        .glass-panel::before {
             content: "";
             position: absolute;
             top: 0;
@@ -153,7 +157,8 @@
                 <img alt="FitForge Logo" class="h-10 w-auto object-contain" src="assets/logo.svg">
             </a>
             <h1 class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">FitForge</h1>
-            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine</p>
+            <p class="font-label-sm text-label-sm uppercase tracking-widest text-secondary opacity-60">Shape.Sweat.Shine
+            </p>
         </div>
         <nav class="flex-1 px-4 space-y-2 mt-4">
             <a class="flex items-center gap-4 px-4 py-3 rounded-lg text-secondary opacity-60 hover:bg-white/5 transition-all duration-300 active:scale-95"
@@ -205,7 +210,8 @@
         onclick="toggleSidebar()"></div>
 
     <!-- Main Content Shell -->
-    <main class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
+    <main
+        class="ml-0 lg:ml-64 min-h-screen flex flex-col bg-surface-obsidian text-on-surface transition-all duration-300">
         <!-- Top Navbar -->
         <header
             class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
@@ -278,19 +284,21 @@
 
             <!-- Workout Plans Carousel -->
             <section class="space-y-4">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
+                <div
+                    class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-white/5 pb-4">
                     <div>
-                        <h3 class="font-headline text-lg font-bold text-white uppercase tracking-tight">Structured Workout
+                        <h3 class="font-headline text-lg font-bold text-white uppercase tracking-tight">Structured
+                            Workout
                             Plans</h3>
                         <p class="text-[10px] text-secondary tracking-widest uppercase">Multi-Day Routine Presets</p>
                     </div>
                     <!-- Mode Switcher Toggle -->
                     <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 z-10 shrink-0">
-                        <button id="mode-btn-gym" onclick="changeWorkoutLocationMode('gym')" 
+                        <button id="mode-btn-gym" onclick="changeWorkoutLocationMode('gym')"
                             class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer bg-white/10 text-white border-0 focus:outline-none">
                             Standard Gym
                         </button>
-                        <button id="mode-btn-home" onclick="changeWorkoutLocationMode('home')" 
+                        <button id="mode-btn-home" onclick="changeWorkoutLocationMode('home')"
                             class="px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer text-secondary hover:text-white border-0 focus:outline-none">
                             Home Workout
                         </button>
@@ -369,7 +377,8 @@
                             <h4
                                 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
                                 FAT BURNER HOME</h4>
-                            <p class="text-xs text-secondary leading-relaxed">High intensity cardio/HIIT routines to accelerate metabolic rates at home.</p>
+                            <p class="text-xs text-secondary leading-relaxed">High intensity cardio/HIIT routines to
+                                accelerate metabolic rates at home.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-rose-400">HIIT Cardio</span>
@@ -384,7 +393,8 @@
                             <h4
                                 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
                                 CORE & BALANCE</h4>
-                            <p class="text-xs text-secondary leading-relaxed">Focused bodyweight training to reinforce structural core stabilizers.</p>
+                            <p class="text-xs text-secondary leading-relaxed">Focused bodyweight training to reinforce
+                                structural core stabilizers.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-emerald-400">Core stability</span>
@@ -399,7 +409,8 @@
                             <h4
                                 class="font-headline text-lg font-bold text-white group-hover:text-primary transition-colors">
                                 YOGA FLOW</h4>
-                            <p class="text-xs text-secondary leading-relaxed">Flexibility, deep muscular stretching, and restorative breathing.</p>
+                            <p class="text-xs text-secondary leading-relaxed">Flexibility, deep muscular stretching, and
+                                restorative breathing.</p>
                         </div>
                         <div class="flex justify-between items-center text-[10px] uppercase font-bold tracking-widest">
                             <span class="text-purple-400">Flexibility</span>
@@ -446,7 +457,8 @@
                                 <option value="Intermediate">Intermediate</option>
                                 <option value="Advanced">Advanced</option>
                             </select>
-                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary text-base">expand_more</span>
+                            <span
+                                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary text-base">expand_more</span>
                         </div>
 
                         <!-- Equipment Wrapper -->
@@ -458,7 +470,8 @@
                                 <option value="Dumbbell">Dumbbells</option>
                                 <option value="Gym Workout">Gym Machines / Barbell</option>
                             </select>
-                            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary text-base">expand_more</span>
+                            <span
+                                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-secondary text-base">expand_more</span>
                         </div>
 
                         <button id="btn-reset-filters"
@@ -522,173 +535,267 @@
         </div>
     </main>
 
-    <!-- LIVE TIMER INSTRUCTION COACH PLAYER MODAL -->
+    <!-- FULL-SCREEN LIVE COACHING SUITE (NIKE / APPLE FITNESS+ AESTHETIC) -->
     <div id="live-player-modal"
-        class="hidden fixed inset-0 z-50 bg-[#050505]/95 backdrop-blur-md flex flex-col items-center justify-center p-4">
-        <div
-            class="w-full max-w-4xl glass-panel p-8 rounded-[2.5rem] border-white/10 flex flex-col lg:flex-row gap-8 relative">
-            <!-- Close Modal -->
-            <button onclick="closeLivePlayer()"
-                class="absolute top-6 right-6 text-secondary hover:text-white transition-colors cursor-pointer bg-transparent border-0">
-                <span class="material-symbols-outlined text-2xl">close</span>
-            </button>
+        class="hidden fixed inset-0 z-50 bg-[#060609]/98 backdrop-blur-2xl flex flex-col p-3 md:p-6 overflow-hidden">
 
-            <!-- LEFT: Visualization and breathing guide -->
-            <div
-                class="flex-1 flex flex-col items-center justify-center text-center space-y-6 lg:border-r lg:border-white/5 lg:pr-8">
-                <span class="text-emerald-400 font-bold text-[9px] uppercase tracking-widest block font-headline">AI Live Coach</span>
-                <h3 id="player-ex-name"
-                    class="font-headline text-3xl font-bold tracking-tight text-white uppercase leading-none">Bench
-                    Press</h3>
-                <p id="player-ex-muscle"
-                    class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Chest, Shoulders</p>
-                <p id="player-ex-posture" class="text-[11px] text-emerald-400 font-medium max-w-xs mx-auto leading-relaxed mt-2 uppercase tracking-wide"></p>
-
-                <!-- Animation Visualizer box -->
-                <div id="player-vector-box"
-                    class="w-48 h-48 rounded-[2rem] border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden">
-                    <!-- Injected animated vector -->
+        <!-- TOP CONTROL HUD -->
+        <header class="w-full flex items-center justify-between pb-3 md:pb-4 border-b border-white/10 shrink-0 gap-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-2xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
+                    <span class="material-symbols-outlined text-xl">sports_gymnastics</span>
                 </div>
-
-                <!-- Breathing guide banner -->
-                <div id="player-breath-card"
-                    class="flex items-center gap-3 px-5 py-2.5 border border-white/10 bg-white/5 rounded-full">
-                    <span id="player-breath-title"
-                        class="text-[9px] font-bold uppercase tracking-widest text-primary animate-pulse">BREATHE
-                        IN</span>
-                    <span class="w-1.5 h-1.5 bg-primary rounded-full animate-ping"></span>
-                    <span id="player-breath-instruction"
-                        class="text-[9px] font-semibold text-white/75 uppercase tracking-widest">Lower weights
-                        slowly</span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <h2 class="font-headline text-sm md:text-base font-bold text-white tracking-wider uppercase">
+                            Live AI Coach</h2>
+                    </div>
+                    <p id="player-step-index" class="text-[11px] text-secondary">Exercise 1 of 3</p>
                 </div>
             </div>
 
-            <!-- RIGHT: Timer controls and navigation -->
-            <div class="flex-1 flex flex-col justify-between gap-6">
-                <!-- Rest Timer overlay (hidden by default) -->
-                <div id="player-rest-overlay"
-                    class="hidden flex-1 flex flex-col items-center justify-center text-center space-y-4">
-                    <span class="text-emerald-400 font-bold text-[10px] uppercase tracking-widest font-headline">Rest & Recovery</span>
+            <!-- Central/Right Action Badges -->
+            <div class="flex items-center gap-2 md:gap-3 flex-wrap justify-end">
+                <!-- Fullscreen Toggle -->
+                <button onclick="LiveCoachEngine.toggleFullscreen()"
+                    class="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 text-secondary hover:text-white transition-all cursor-pointer"
+                    title="Toggle Fullscreen">
+                    <span class="material-symbols-outlined text-lg">fullscreen</span>
+                </button>
 
-                    <div class="relative w-36 h-36 flex items-center justify-center">
+                <!-- Exit Modal -->
+                <button onclick="closeLivePlayer()"
+                    class="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-red-500/20 hover:border-red-500/40 text-secondary hover:text-red-400 transition-all cursor-pointer"
+                    title="Exit Live Session">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN ARENA WORKOUT STAGE & COACHING PANEL -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6 pt-3 md:pt-4 min-h-0 overflow-hidden">
+
+            <!-- LEFT: 60FPS FULL-BODY REALISTIC TRAINER STAGE (Cols 1-8) -->
+            <div
+                class="lg:col-span-8 flex flex-col h-full min-h-0 relative rounded-3xl border border-white/10 overflow-hidden bg-black shadow-2xl">
+
+                <!-- Main Canvas Container -->
+                <div id="live-stage-container" class="relative w-full h-full flex items-center justify-center">
+                    <!-- High-DPI Interactive 60fps Canvas -->
+                    <canvas id="trainer-live-canvas" class="w-full h-full block bg-black"></canvas>
+                </div>
+            </div>
+
+            <!-- RIGHT: LIVE COACHING PANEL (Cols 9-12) -->
+            <div class="lg:col-span-4 flex flex-col justify-between gap-4 h-full min-h-0 overflow-y-auto pr-1">
+
+                <!-- Card 1: Exercise Info & Certified Form Score -->
+                <div class="glass-panel p-5 rounded-3xl border-white/10 space-y-3 bg-white/[0.02]">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span
+                                class="text-[10px] uppercase tracking-widest text-purple-400 font-bold font-headline">Target
+                                Muscle Group</span>
+                            <p id="player-ex-muscle" class="text-xs text-secondary font-medium">Chest, Anterior Deltoids
+                            </p>
+                        </div>
+                        <div class="text-right">
+                            <span
+                                class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold font-headline">Form
+                                Score</span>
+                            <p id="live-form-score" class="text-lg font-headline font-bold text-emerald-400">98%</p>
+                        </div>
+                    </div>
+                    <h3 id="player-ex-name"
+                        class="font-headline text-2xl md:text-3xl font-bold tracking-tight text-white uppercase leading-tight">
+                        Standard Pushup
+                    </h3>
+                </div>
+
+                <!-- Rest Overlay (shown during recovery periods) -->
+                <div id="player-rest-overlay"
+                    class="hidden glass-panel p-6 rounded-3xl border-emerald-500/30 bg-emerald-950/20 flex flex-col items-center justify-center text-center space-y-4">
+                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-widest font-headline">Rest &
+                        Muscle Recovery</span>
+                    <div class="relative w-32 h-32 flex items-center justify-center">
                         <svg class="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
-                            <circle cx="60" cy="60" r="50" fill="transparent" stroke="rgba(255,255,255,0.03)"
+                            <circle cx="60" cy="60" r="50" fill="transparent" stroke="rgba(255,255,255,0.05)"
                                 stroke-width="6" />
                             <circle id="rest-timer-ring" cx="60" cy="60" r="50" fill="transparent" stroke="#10b981"
                                 stroke-width="6" stroke-dasharray="314.159" stroke-dashoffset="0"
                                 stroke-linecap="round" />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center">
-                            <span id="rest-timer-secs" class="text-3xl font-bold font-headline text-white">30</span>
-                            <span class="text-[8px] text-secondary opacity-60 uppercase font-semibold">Seconds Left</span>
+                            <span id="rest-timer-secs" class="text-3xl font-bold font-headline text-white">35</span>
+                            <span class="text-[8px] text-secondary opacity-60 uppercase font-semibold">Seconds
+                                Left</span>
                         </div>
                     </div>
-
-                    <button onclick="skipRestTime()"
-                        class="px-5 py-2 border border-white/10 rounded-full font-headline text-[10px] text-white uppercase font-bold hover:bg-white/5 transition-all">Done Resting / Skip</button>
+                    <button onclick="LiveCoachEngine.skipRest()"
+                        class="px-6 py-2.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-headline text-xs uppercase font-bold hover:bg-emerald-500/20 transition-all cursor-pointer">
+                        Skip Rest & Continue
+                    </button>
                 </div>
 
-                <!-- Active Step Controls (shown by default) -->
-                <div id="player-active-controls" class="flex-1 flex flex-col justify-between gap-6">
-                    <!-- Session Duration Info -->
-                    <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                        <div>
-                            <span class="text-[9px] uppercase tracking-widest text-secondary block font-semibold">Session Timer</span>
-                            <span id="player-session-time"
-                                class="text-2xl font-bold text-white font-headline">00:00</span>
-                        </div>
-                        <span id="player-step-index"
-                            class="px-3.5 py-1.5 border border-white/10 rounded-full text-[10px] font-bold text-white uppercase">Exercise 1 of 3</span>
-                    </div>
+                <!-- Active Live Coaching HUD & Metrics (shown during exercise) -->
+                <div id="player-active-controls" class="flex-1 flex flex-col justify-between gap-4">
 
-                    <!-- Targets Box -->
-                    <div class="grid grid-cols-3 gap-4 text-center">
-                        <div class="bg-white/5 border border-white/5 py-4 rounded-xl">
-                            <span
-                                class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Sets Goal</span>
-                            <span id="player-target-sets" class="text-lg font-bold text-white font-headline">4
-                                Sets</span>
+                    <!-- Rep Counter with SVG Progress Ring -->
+                    <div
+                        class="glass-panel p-5 rounded-3xl border-white/10 flex items-center justify-between gap-4 bg-white/[0.02]">
+                        <div class="relative w-24 h-24 shrink-0 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="46" fill="transparent" stroke="rgba(255,255,255,0.06)"
+                                    stroke-width="7" />
+                                <circle id="live-rep-ring" cx="50" cy="50" r="46" fill="transparent" stroke="#a855f7"
+                                    stroke-width="7" stroke-dasharray="289.026" stroke-dashoffset="289.026"
+                                    stroke-linecap="round" class="transition-all duration-300" />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span id="live-rep-count" class="text-3xl font-bold font-headline text-white">0</span>
+                            </div>
                         </div>
-                        <div class="bg-white/5 border border-white/5 py-4 rounded-xl">
-                            <span
-                                class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Reps Goal</span>
-                            <span id="player-target-reps" class="text-lg font-bold text-white font-headline">10
+
+                        <div class="space-y-1 flex-1">
+                            <span class="text-[10px] uppercase tracking-widest text-secondary font-bold block">Current
                                 Reps</span>
+                            <div id="live-target-reps" class="font-headline text-lg font-bold text-purple-300">/ 12 REPS
+                            </div>
+                            <p class="text-[11px] text-purple-400/90 font-medium">Kinematic Rep Demo Pacing</p>
                         </div>
-                        <div class="bg-white/5 border border-white/5 py-4 rounded-xl">
+                    </div>
+
+                    <!-- Telemetry Bento: Set, Time, Calories -->
+                    <div class="grid grid-cols-3 gap-2.5 text-center">
+                        <div class="glass-panel p-3.5 rounded-2xl border-white/10 bg-white/[0.02]">
                             <span
-                                class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Sets Completed</span>
-                            <span id="player-completed-sets"
-                                class="text-lg font-bold text-emerald-400 font-headline">0</span>
+                                class="text-[8px] uppercase tracking-widest text-secondary block font-semibold mb-1">Set</span>
+                            <span class="text-base font-bold text-white font-headline">
+                                <span id="player-completed-sets">1</span>/<span id="player-target-sets">3</span>
+                            </span>
+                        </div>
+                        <div class="glass-panel p-3.5 rounded-2xl border-white/10 bg-white/[0.02]">
+                            <span
+                                class="text-[8px] uppercase tracking-widest text-secondary block font-semibold mb-1">Elapsed</span>
+                            <span id="player-session-time"
+                                class="text-base font-bold text-white font-headline">00:00</span>
+                        </div>
+                        <div class="glass-panel p-3.5 rounded-2xl border-white/10 bg-white/[0.02]">
+                            <span
+                                class="text-[8px] uppercase tracking-widest text-secondary block font-semibold mb-1">Calories</span>
+                            <span id="live-calories-burned" class="text-base font-bold text-purple-400 font-headline">0
+                                kcal</span>
                         </div>
                     </div>
 
-                    <!-- Active Set Timer -->
-                    <div id="player-set-timer-box" class="flex flex-col items-center justify-center py-3 bg-white/5 border border-white/5 rounded-2xl mx-auto px-10 max-w-xs">
-                        <span id="set-timer-label" class="text-[9px] uppercase tracking-widest text-emerald-400 font-bold block mb-1">Set Timer</span>
-                        <span id="set-timer-val" class="text-3xl font-bold text-white font-headline">00:00</span>
+                    <!-- Certified Biomechanical Form Checklist -->
+                    <div class="glass-panel p-4 rounded-2xl border-white/10 space-y-2 bg-white/[0.02] text-xs">
+                        <span
+                            class="text-[9px] uppercase tracking-widest text-secondary font-bold block font-headline">Form
+                            Calibration Checklist</span>
+                        <div class="space-y-1.5 text-[11px]">
+                            <div class="flex items-center gap-2 text-emerald-400 font-medium">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span>Posture: Rigid Neutral Spine</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-emerald-400 font-medium">
+                                <span class="material-symbols-outlined text-sm">check_circle</span>
+                                <span>Joint Alignment: Full Safe Range</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-purple-300 font-medium">
+                                <span class="material-symbols-outlined text-sm">air</span>
+                                <span>Breathing: Exhale on Drive</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Pacing Controls -->
-                    <div class="flex justify-center items-center gap-6 py-2">
-                        <button id="player-btn-pause" onclick="togglePausePlay()"
-                            class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-on-primary active:scale-95 transition-transform hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.15)] cursor-pointer">
-                            <span id="player-play-icon"
-                                class="material-symbols-outlined text-2xl font-bold">pause</span>
+                    <!-- Action Control Bar: Unified START / PAUSE Button & LOG SET -->
+                    <div class="space-y-2.5 pt-2">
+                        <!-- Unified Start / Pause Control Button -->
+                        <button id="player-btn-toggle" onclick="LiveCoachEngine.togglePause()"
+                            class="w-full py-3.5 px-4 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-headline text-xs uppercase tracking-wider font-bold active:scale-95 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                            <span class="material-symbols-outlined text-lg">pause</span>
+                            <span>PAUSE DEMO</span>
                         </button>
-                    </div>
 
-                    <!-- Step actions -->
-                    <div class="flex gap-4">
-                        <button onclick="logSingleSet()"
-                            class="flex-1 py-3.5 border border-white/10 rounded-xl font-headline text-[10px] text-white uppercase font-bold hover:bg-white/5 active:scale-95 transition-all">Done (Start Rest)</button>
-                        <button onclick="finishLiveExercise()"
-                            class="flex-1 py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-headline text-[10px] uppercase font-bold active:scale-95 hover:scale-102 transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]">Finish Exercise</button>
+                        <!-- Secondary Controls: Log Set & Rest, and Skip/Next Exercise -->
+                        <div class="flex items-center gap-2.5">
+                            <button id="player-btn-log-set" onclick="logSingleSet()"
+                                class="flex-1 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-headline text-xs uppercase tracking-wider font-bold active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)] cursor-pointer flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-sm">check</span>
+                                <span>Log Set & Rest</span>
+                            </button>
+
+                            <button onclick="finishLiveExercise()"
+                                class="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/15 text-white font-headline text-xs uppercase font-bold active:scale-95 transition-all cursor-pointer shrink-0 flex items-center justify-center gap-1"
+                                title="Next Exercise / Complete">
+                                <span class="material-symbols-outlined text-sm">skip_next</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    <!-- WORKOUT COMPLETION MODAL OVERLAY -->
-    <div id="completion-modal" class="hidden fixed inset-0 z-[70] bg-[#050505]/95 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-panel p-8 rounded-[2.5rem] border-white/10 text-center space-y-6 relative overflow-hidden">
-            <!-- Glowing background -->
-            <div class="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/10 blur-[50px] rounded-full pointer-events-none"></div>
-            
-            <div class="w-20 h-20 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400">
+    </div>
+
+    <!-- WORKOUT COMPLETION CELEBRATION MODAL OVERLAY -->
+    <div id="completion-modal"
+        class="hidden fixed inset-0 z-[70] bg-[#050505]/95 backdrop-blur-md flex items-center justify-center p-4">
+        <div
+            class="w-full max-w-md glass-panel p-8 rounded-[2.5rem] border-purple-500/30 text-center space-y-6 relative overflow-hidden shadow-2xl">
+            <!-- Glowing Purple/Emerald Background Accents -->
+            <div
+                class="absolute -right-10 -top-10 w-36 h-36 bg-purple-500/20 blur-[60px] rounded-full pointer-events-none">
+            </div>
+            <div
+                class="absolute -left-10 -bottom-10 w-36 h-36 bg-emerald-500/15 blur-[60px] rounded-full pointer-events-none">
+            </div>
+
+            <div
+                class="w-20 h-20 bg-purple-600/20 border border-purple-500/40 rounded-full flex items-center justify-center mx-auto text-purple-300 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
                 <span class="material-symbols-outlined text-4xl animate-bounce">emoji_events</span>
             </div>
-            
+
             <div class="space-y-2">
-                <h3 class="font-headline text-2xl font-bold text-white uppercase tracking-tight">Workout Complete!</h3>
-                <p class="text-xs text-secondary">Incredible effort. Your session telemetry has been updated.</p>
+                <h3 class="font-headline text-2xl font-bold text-white uppercase tracking-tight">Session Completed!</h3>
+                <p class="text-xs text-secondary">Verified telemetry recorded & synchronized across FitForge.</p>
             </div>
-            
+
             <div class="grid grid-cols-2 gap-3 text-left">
                 <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
-                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Time Elapsed</span>
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Time
+                        Elapsed</span>
                     <span id="complete-duration" class="text-lg font-bold text-white font-headline">0 mins</span>
                 </div>
                 <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
-                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Calories Burned</span>
-                    <span id="complete-calories" class="text-lg font-bold text-emerald-400 font-headline">0 kcal</span>
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Calories
+                        Burned</span>
+                    <span id="complete-calories" class="text-lg font-bold text-purple-400 font-headline">0 kcal</span>
                 </div>
                 <div class="bg-white/5 border border-white/5 p-4 rounded-2xl col-span-2">
-                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Exercises Completed</span>
-                    <div id="complete-exercises-list" class="text-xs text-white/80 font-semibold space-y-1 mt-1 max-h-24 overflow-y-auto pr-1"></div>
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Exercises
+                        Completed</span>
+                    <div id="complete-exercises-list"
+                        class="text-xs text-white/80 font-semibold space-y-1 mt-1 max-h-24 overflow-y-auto pr-1"></div>
                 </div>
                 <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
-                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Workout Mode</span>
-                    <span id="complete-type" class="text-xs font-bold text-white uppercase font-headline">Home</span>
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Total
+                        Reps</span>
+                    <span id="complete-reps" class="text-xs font-bold text-white uppercase font-headline">0 Reps</span>
                 </div>
                 <div class="bg-white/5 border border-white/5 p-4 rounded-2xl">
-                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Sets Completed</span>
-                    <span id="complete-sets" class="text-xs font-bold text-white uppercase font-headline">0 Sets</span>
+                    <span class="text-[8px] uppercase tracking-widest text-secondary opacity-50 block mb-1">Form
+                        Quality</span>
+                    <span id="complete-form-score"
+                        class="text-xs font-bold text-emerald-400 uppercase font-headline">98% Certified Form</span>
                 </div>
             </div>
-            
+
             <button onclick="closeCompletionModal()"
-                class="w-full py-3 bg-primary text-on-primary rounded-full font-headline text-xs font-bold uppercase tracking-widest hover:scale-102 active:scale-98 transition-all cursor-pointer border-0">
-                Return to Dashboard
+                class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-full font-headline text-xs font-bold uppercase tracking-widest hover:scale-102 active:scale-98 transition-all cursor-pointer border-0 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                Return to Dashboard & Sync
             </button>
         </div>
     </div>
@@ -704,7 +811,9 @@
                     <p id="detail-muscle"
                         class="text-[10px] text-secondary uppercase tracking-widest font-semibold mt-1">Quadriceps,
                         Glutes</p>
-                    <p id="detail-posture" class="text-[11px] text-emerald-400 font-medium leading-relaxed mt-2 uppercase tracking-wide"></p>
+                    <p id="detail-posture"
+                        class="text-[11px] text-emerald-400 font-medium leading-relaxed mt-2 uppercase tracking-wide">
+                    </p>
                 </div>
                 <button onclick="closeDetailsDrawer()"
                     class="glass-button p-2 rounded-full text-secondary hover:text-white cursor-pointer border-0">
@@ -713,11 +822,14 @@
             </div>
 
             <!-- Vector Animation Box -->
-            <div class="w-full h-44 rounded-[2rem] border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden shrink-0">
+            <div
+                class="w-full h-44 rounded-[2rem] border border-white/5 bg-white/5 flex items-center justify-center relative overflow-hidden shrink-0">
                 <div id="detail-vector-box" class="w-full h-full flex items-center justify-center"></div>
-                <div class="absolute bottom-3 right-4 flex items-center gap-1.5 bg-black/50 px-2.5 py-1 rounded-full border border-white/10">
+                <div
+                    class="absolute bottom-3 right-4 flex items-center gap-1.5 bg-black/50 px-2.5 py-1 rounded-full border border-white/10">
                     <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                    <span class="text-[8px] font-bold text-white uppercase tracking-widest font-headline">AI Form Agent</span>
+                    <span class="text-[8px] font-bold text-white uppercase tracking-widest font-headline">AI Form
+                        Agent</span>
                 </div>
             </div>
 
@@ -965,7 +1077,7 @@
                 alternatives: "Pike Pushups, Standard Pushups",
                 rest: 60
             },
-            
+
             // --- BACK (Home) ---
             {
                 id: "ex-bw-superman",
@@ -1027,7 +1139,7 @@
                 alternatives: "Cobra stretch",
                 rest: 45
             },
-            
+
             // --- SHOULDERS (Home) ---
             {
                 id: "ex-bw-pikepushup",
@@ -1089,7 +1201,7 @@
                 alternatives: "Cobra stretch",
                 rest: 15
             },
-            
+
             // --- ARMS (Home) ---
             {
                 id: "ex-bw-tricepdips",
@@ -1121,7 +1233,7 @@
                 alternatives: "Diamond Push-ups",
                 rest: 45
             },
-            
+
             // --- LEGS (Home) ---
             {
                 id: "ex-home-squat",
@@ -1363,7 +1475,7 @@
                 alternatives: "Air Squat",
                 rest: 45
             },
-            
+
             // --- CORE (Home) ---
             {
                 id: "ex-plank",
@@ -1455,7 +1567,7 @@
                 alternatives: "Forearm Plank",
                 rest: 30
             },
-            
+
             // --- CARDIO & HIIT (Home) ---
             {
                 id: "ex-bw-mountainclimber",
@@ -1607,7 +1719,7 @@
                 alternatives: "Standard Push-ups",
                 rest: 60
             },
-            
+
             // --- YOGA (Home) ---
             {
                 id: "ex-stretch-cobra",
@@ -1822,7 +1934,7 @@
                 alternatives: "Cable Crossover",
                 rest: 60
             },
-            
+
             // --- BACK (Gym) ---
             {
                 id: "ex-gym-latpulldown",
@@ -1914,7 +2026,7 @@
                 alternatives: "Romanian Deadlift",
                 rest: 90
             },
-            
+
             // --- SHOULDERS (Gym) ---
             {
                 id: "ex-gym-ohp",
@@ -1976,7 +2088,7 @@
                 alternatives: "Standing Barbell OHP",
                 rest: 60
             },
-            
+
             // --- ARMS (Gym) ---
             {
                 id: "ex-gym-cablecurls",
@@ -2038,7 +2150,7 @@
                 alternatives: "Bench Dips, Tricep extensions",
                 rest: 45
             },
-            
+
             // --- LEGS (Gym) ---
             {
                 id: "ex-gym-squat",
@@ -2130,7 +2242,7 @@
                 alternatives: "Squats",
                 rest: 60
             },
-            
+
             // --- CORE (Gym) ---
             {
                 id: "ex-gym-cablecrunch",
@@ -2162,7 +2274,7 @@
                 alternatives: "Crunches, Ab Machine",
                 rest: 45
             },
-            
+
             // --- CARDIO (Gym) ---
             {
                 id: "ex-gym-rowmachine",
@@ -2251,7 +2363,7 @@
 
         function changeWorkoutLocationMode(mode) {
             preferredLocation = mode;
-            
+
             // Save to localStorage
             let cachedProto = {};
             try {
@@ -2281,13 +2393,13 @@
                 if (preferredLocation === 'home') {
                     btnHome.classList.add('bg-white/10', 'text-white');
                     btnHome.classList.remove('text-secondary', 'hover:text-white');
-                    
+
                     btnGym.classList.remove('bg-white/10', 'text-white');
                     btnGym.classList.add('text-secondary', 'hover:text-white');
                 } else {
                     btnGym.classList.add('bg-white/10', 'text-white');
                     btnGym.classList.remove('text-secondary', 'hover:text-white');
-                    
+
                     btnHome.classList.remove('bg-white/10', 'text-white');
                     btnHome.classList.add('text-secondary', 'hover:text-white');
                 }
@@ -2309,10 +2421,10 @@
                 const isAll = cat === 'All';
                 const label = isAll ? 'All Exercises' : cat;
                 const isActive = currentFilterCategory === cat;
-                
+
                 const activeClass = "bg-primary text-on-primary font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer";
                 const inactiveClass = "bg-white/5 border border-glass-border text-white/60 font-bold text-xs uppercase tracking-wider rounded-xl transition-all hover:bg-white/10 cursor-pointer";
-                
+
                 return `
                     <button class="category-btn snap-start shrink-0 px-5 py-2.5 ${isActive ? activeClass : inactiveClass}" 
                         onclick="filterCategory('${cat}')">
@@ -2764,7 +2876,7 @@
             document.getElementById('detail-difficulty').textContent = ex.difficulty;
             document.getElementById('detail-equipment').textContent = ex.equipment;
             document.getElementById('detail-breathing').textContent = ex.breathing;
-            
+
             // Common mistakes
             const mistakesEl = document.getElementById('detail-mistakes');
             if (Array.isArray(ex.commonMistakes)) {
@@ -2780,7 +2892,7 @@
             } else {
                 tipsEl.textContent = ex.tips || "Helps build strength and stability.";
             }
-            
+
             document.getElementById('detail-alternatives').textContent = ex.alternatives;
 
             // Instructions list
@@ -2844,71 +2956,34 @@
             launchWorkoutPlanSession("Single Exercise Session");
         }
 
-        // Launch Workout Plan Session player
+        // Launch Workout Plan Session player with Full-Body Motion Studio Dummy
         function launchWorkoutPlanSession(title) {
             currentWorkoutIndex = 0;
             currentSetCount = 0;
-            sessionSeconds = 0;
-            isPaused = true; // Timer starts paused by default!
 
-            // UI elements reset to show play arrow
-            document.getElementById('player-btn-pause').querySelector('span').textContent = "play_arrow";
+            if (window.LiveCoachEngine) {
+                window.LiveCoachEngine.init({
+                    canvasId: 'trainer-live-canvas'
+                });
+            }
 
             setupActiveExerciseUI();
 
             // Open Live player
-            document.getElementById('live-player-modal').classList.remove('hidden');
+            const modal = document.getElementById('live-player-modal');
+            if (modal) modal.classList.remove('hidden');
 
             // Reset Rest overlay
-            document.getElementById('player-rest-overlay').classList.add('hidden');
-            document.getElementById('player-active-controls').classList.remove('hidden');
+            const restOverlay = document.getElementById('player-rest-overlay');
+            if (restOverlay) restOverlay.classList.add('hidden');
+            const activeCtrls = document.getElementById('player-active-controls');
+            if (activeCtrls) activeCtrls.classList.remove('hidden');
 
-            // Run clock timer
-            if (sessionTimerInterval) clearInterval(sessionTimerInterval);
-            sessionTimerInterval = setInterval(() => {
-                if (!isPaused) {
-                    sessionSeconds++;
-                    updateSessionClockDisplay();
-
-                    // Tick active set timer
-                    if (isTimedExercise) {
-                        if (setSeconds > 0) {
-                            setSeconds--;
-                            updateSetTimerDisplay();
-                            if (setSeconds === 0) {
-                                document.getElementById('set-timer-val').classList.add('animate-bounce', 'text-emerald-400');
-                            }
-                        }
-                    } else {
-                        setSeconds++;
-                        updateSetTimerDisplay();
-                    }
-                }
-            }, 1000);
-        }
-
-        function updateSessionClockDisplay() {
-            const mins = Math.floor(sessionSeconds / 60);
-            const secs = sessionSeconds % 60;
-            document.getElementById('player-session-time').textContent =
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function updateSetTimerDisplay() {
-            const mins = Math.floor(setSeconds / 60);
-            const secs = setSeconds % 60;
-            document.getElementById('set-timer-val').textContent =
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                
-            const label = document.getElementById('set-timer-label');
-            if (isTimedExercise) {
-                label.textContent = "Set Hold Countdown";
-                label.classList.add('text-emerald-400');
-                label.classList.remove('text-secondary');
-            } else {
-                label.textContent = "Current Set Duration";
-                label.classList.remove('text-emerald-400');
-                label.classList.add('text-secondary');
+            const ex = currentDayWorkouts[currentWorkoutIndex];
+            if (window.LiveCoachEngine && ex) {
+                window.LiveCoachEngine.startSession(ex, {
+                    trainerGender: 'male'
+                });
             }
         }
 
@@ -2917,422 +2992,71 @@
             const ex = currentDayWorkouts[currentWorkoutIndex];
             if (!ex) return;
 
-            document.getElementById('player-ex-name').textContent = ex.name;
-            document.getElementById('player-ex-muscle').textContent = `Target: ${ex.muscle}`;
-            document.getElementById('player-ex-posture').textContent = ex.postureDescription || "";
-            document.getElementById('player-target-sets').textContent = `${ex.sets} Sets`;
-            document.getElementById('player-completed-sets').textContent = currentSetCount;
-            document.getElementById('player-step-index').textContent =
-                `Exercise ${currentWorkoutIndex + 1} of ${currentDayWorkouts.length}`;
+            const nameEl = document.getElementById('player-ex-name');
+            if (nameEl) nameEl.textContent = ex.name;
 
-            // Clean up Reps text
-            let targetRepsText = ex.reps;
-            if (typeof targetRepsText === 'string') {
-                if (!targetRepsText.toLowerCase().includes('rep') && 
-                    !targetRepsText.toLowerCase().includes('hold') && 
-                    !targetRepsText.toLowerCase().includes('sec') && 
-                    !targetRepsText.toLowerCase().includes('s') && 
-                    !targetRepsText.toLowerCase().includes('min')) {
-                    targetRepsText = `${targetRepsText} Reps`;
-                }
-            } else {
-                targetRepsText = `${targetRepsText} Reps`;
-            }
-            document.getElementById('player-target-reps').textContent = targetRepsText;
+            const muscleEl = document.getElementById('player-ex-muscle');
+            if (muscleEl) muscleEl.textContent = `Target: ${ex.muscle || ex.targetMuscles || 'Full Body'}`;
 
-            // Set up Active Set Timer
-            const repsStr = String(ex.reps).toLowerCase();
-            isTimedExercise = repsStr.includes('s') || repsStr.includes('sec') || repsStr.includes('hold') || repsStr.includes('min');
-            setTargetSeconds = 0;
-            
-            if (isTimedExercise) {
-                const num = parseInt(repsStr.replace(/[^0-9]/g, ''));
-                if (!isNaN(num)) {
-                    if (repsStr.includes('min')) {
-                        setTargetSeconds = num * 60;
-                    } else {
-                        setTargetSeconds = num;
-                    }
-                } else {
-                    setTargetSeconds = 30; // fallback
-                }
-                setSeconds = setTargetSeconds;
-            } else {
-                setSeconds = 0;
-            }
-            document.getElementById('set-timer-val').classList.remove('animate-bounce', 'text-emerald-400');
-            updateSetTimerDisplay();
+            const stepEl = document.getElementById('player-step-index');
+            if (stepEl) stepEl.textContent = `Exercise ${currentWorkoutIndex + 1} of ${currentDayWorkouts.length}`;
 
-            // Set up dynamic button text
-            const logBtn = document.querySelector('button[onclick="logSingleSet()"]');
-            if (logBtn) {
-                logBtn.disabled = false;
-                logBtn.classList.remove('opacity-50');
-                if (currentSetCount === ex.sets - 1) {
-                    logBtn.textContent = "Done (Finish Exercise)";
-                } else {
-                    logBtn.textContent = `Done (Start Rest ${ex.rest || 30}s)`;
-                }
-            }
-            
-            // Remove bounce from Complete Exercise button
-            const completeBtn = document.querySelector('button[onclick="finishLiveExercise()"]');
-            if (completeBtn) {
-                completeBtn.classList.remove('animate-bounce');
+            const targetSetsEl = document.getElementById('player-target-sets');
+            if (targetSetsEl) targetSetsEl.textContent = `${ex.sets || 3} Sets`;
+
+            const compSetsEl = document.getElementById('player-completed-sets');
+            if (compSetsEl) compSetsEl.textContent = '1';
+
+            const repTargetEl = document.getElementById('live-target-reps');
+            if (repTargetEl) {
+                const targetReps = parseInt(ex.reps) || 12;
+                repTargetEl.textContent = `/ ${targetReps} REPS`;
             }
 
-            // Inject animated vector placeholder matching ex name
-            document.getElementById('player-vector-box').innerHTML = getLiveAnimationSvg(ex.name);
-
-            // Breath rhythm interval setup
-            let phase = 0;
-            const breathTitle = document.getElementById('player-breath-title');
-            const breathInst = document.getElementById('player-breath-instruction');
-            const breathingPhases = getBreathingPhases(ex);
-
-            // Set initial state
-            breathTitle.textContent = breathingPhases.inhale.title;
-            breathInst.textContent = breathingPhases.inhale.instruction;
-
-            if (tempoInterval) clearInterval(tempoInterval);
-            tempoInterval = setInterval(() => {
-                if (!isPaused) {
-                    phase = (phase + 1) % 2;
-                    if (phase === 0) {
-                        breathTitle.textContent = breathingPhases.inhale.title;
-                        breathInst.textContent = breathingPhases.inhale.instruction;
-                    } else {
-                        breathTitle.textContent = breathingPhases.exhale.title;
-                        breathInst.textContent = breathingPhases.exhale.instruction;
-                    }
-                }
-            }, 2000);
-        }
-
-        // Parse breathing instructions into inhale/exhale phases
-        function getBreathingPhases(ex) {
-            const text = ex.breathing || "";
-
-            if (!text) {
-                if (ex.animationType === 'plank' || ex.animationType === 'yoga') {
-                    return {
-                        inhale: { title: "BREATHE IN", instruction: "Slow inhale" },
-                        exhale: { title: "BREATHE OUT", instruction: "Slow exhale" }
-                    };
-                }
-                return {
-                    inhale: { title: "BREATHE IN", instruction: "Lower weights slowly" },
-                    exhale: { title: "BREATHE OUT", instruction: "Press up powerfully" }
-                };
-            }
-
-            const parts = text.split('|');
-            if (parts.length >= 2) {
-                const inhaleParts = parts[0].split(':');
-                const exhaleParts = parts[1].split(':');
-                return {
-                    inhale: {
-                        title: inhaleParts[0]?.trim() || "BREATHE IN",
-                        instruction: inhaleParts[1]?.trim() || "Inhale deeply"
-                    },
-                    exhale: {
-                        title: exhaleParts[0]?.trim() || "BREATHE OUT",
-                        instruction: exhaleParts[1]?.trim() || "Exhale smoothly"
-                    }
-                };
-            }
-
-            return {
-                inhale: { title: "BREATHE IN", instruction: text },
-                exhale: { title: "BREATHE OUT", instruction: "Exhale smoothly" }
-            };
-        }
-
-        // Single live modal vector representations
-        let tempoInterval = null;
-        function getLiveAnimationSvg(name) {
-            const ex = EXERCISES_DATABASE.find(e => e.id === name || e.name.toLowerCase() === name.toLowerCase());
-            const animType = ex ? ex.animationType : '';
-            
-            if (animType === 'pushup') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                        <g class="animate-pushup" style="transform-origin: 25px 78px;">
-                            <line x1="25" y1="78" x2="75" y2="65" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <circle cx="80" cy="62" r="5.5" fill="#10b981" />
-                            <line x1="72" y1="66" x2="72" y2="80" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
-                        </g>
-                    </svg>
-                `;
-            } else if (animType === 'squat') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
-                        <g class="animate-squat" style="transform-origin: 50px 90px;">
-                            <circle cx="50" cy="30" r="6" fill="#10b981"/>
-                            <line x1="50" y1="36" x2="50" y2="58" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <line x1="50" y1="58" x2="42" y2="72" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                            <line x1="42" y1="72" x2="50" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                            <line x1="25" y1="38" x2="75" y2="38" stroke="#fff" stroke-width="3" />
-                            <circle cx="25" cy="38" r="5" fill="#fff"/>
-                            <circle cx="75" cy="38" r="5" fill="#fff"/>
-                        </g>
-                    </svg>
-                `;
-            } else if (animType === 'deadlift') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                        <g class="animate-deadlift-hinge" style="transform-origin: 40px 75px;">
-                            <line x1="40" y1="75" x2="45" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                            <line x1="40" y1="75" x2="40" y2="40" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <circle cx="40" cy="33" r="5.5" fill="#10b981" />
-                            <line x1="40" y1="45" x2="48" y2="65" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                            <line x1="28" y1="65" x2="68" y2="65" stroke="#fff" stroke-width="3" stroke-linecap="round" />
-                            <circle cx="28" cy="65" r="5" fill="#fff" />
-                            <circle cx="68" cy="65" r="5" fill="#fff" />
-                        </g>
-                    </svg>
-                `;
-            } else if (animType === 'curl') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <circle cx="50" cy="25" r="5.5" fill="#10b981" />
-                        <line x1="50" y1="30" x2="50" y2="60" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                        <line x1="50" y1="60" x2="45" y2="85" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
-                        <line x1="50" y1="60" x2="55" y2="85" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
-                        <g class="animate-curl" style="transform-origin: 50px 35px;">
-                            <line x1="50" y1="35" x2="58" y2="52" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                            <circle cx="58" cy="52" r="4" fill="#fff" />
-                        </g>
-                    </svg>
-                `;
-            } else if (animType === 'plank') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                        <g class="animate-plank">
-                            <line x1="20" y1="78" x2="80" y2="70" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <circle cx="83" cy="65" r="5.5" fill="#10b981" />
-                            <line x1="75" y1="71" x2="78" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
-                            <line x1="78" y1="80" x2="85" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
-                            <line x1="20" y1="78" x2="18" y2="80" stroke="#fff" stroke-width="2.5" />
-                            <circle cx="50" cy="74" r="7" fill="rgba(16,185,129,0.4)" class="animate-pulse" />
-                        </g>
-                    </svg>
-                `;
-            } else if (animType === 'lunge') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="10" y1="90" x2="90" y2="90" stroke="rgba(255,255,255,0.2)" stroke-width="3"/>
-                        <g class="animate-lunge" style="transform-origin: 50px 90px;">
-                            <circle cx="50" cy="30" r="6" fill="#10b981"/>
-                            <line x1="50" y1="36" x2="50" y2="58" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <line x1="50" y1="58" x2="62" y2="72" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                            <line x1="62" y1="72" x2="62" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                            <line x1="50" y1="58" x2="35" y2="72" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                            <line x1="35" y1="72" x2="28" y2="90" stroke="#10b981" stroke-width="4" stroke-linecap="round" />
-                        </g>
-                    </svg>
-                `;
-            } else if (animType === 'yoga') {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="10" y1="80" x2="90" y2="80" stroke="rgba(255,255,255,0.2)" stroke-width="3" />
-                        <g class="animate-yoga">
-                            <path d="M 20 78 Q 35 78 50 72 T 70 50" fill="none" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <circle cx="73" cy="43" r="5.5" fill="#10b981" />
-                            <line x1="55" y1="65" x2="55" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
-                            <line x1="60" y1="65" x2="60" y2="80" stroke="#fff" stroke-width="3" stroke-linecap="round" />
-                            <circle cx="55" cy="58" r="8" fill="rgba(16,185,129,0.25)" class="animate-pulse" />
-                        </g>
-                    </svg>
-                `;
-            } else {
-                return `
-                    <svg class="w-36 h-36" viewBox="0 0 100 100">
-                        <line x1="15" y1="80" x2="85" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="3" />
-                        <g class="animate-cardio-jump" style="transform-origin: 50px 80px;">
-                            <circle cx="50" cy="25" r="5.5" fill="#10b981" />
-                            <line x1="50" y1="30" x2="50" y2="55" stroke="#10b981" stroke-width="4.5" stroke-linecap="round" />
-                            <g class="animate-cardio-arms" style="transform-origin: 50px 35px;">
-                                <line x1="50" y1="35" x2="30" y2="22" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                                <line x1="50" y1="35" x2="70" y2="22" stroke="#10b981" stroke-width="3" stroke-linecap="round" />
-                            </g>
-                            <g class="animate-cardio-legs" style="transform-origin: 50px 55px;">
-                                <line x1="50" y1="55" x2="35" y2="78" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
-                                <line x1="50" y1="55" x2="65" y2="78" stroke="#10b981" stroke-width="3.5" stroke-linecap="round" />
-                            </g>
-                        </g>
-                    </svg>
-                `;
-            }
-        }
-
-        // Play/Pause toggle
-        function togglePausePlay() {
-            isPaused = !isPaused;
-            document.getElementById('player-btn-pause').querySelector('span').textContent =
-                isPaused ? "play_arrow" : "pause";
-        }
-
-        // Rest timer activation
-        function triggerRestPeriod() {
-            const ex = currentDayWorkouts[currentWorkoutIndex];
-            restSecsLeft = ex.rest || 30;
-
-            document.getElementById('player-active-controls').classList.add('hidden');
-            document.getElementById('player-rest-overlay').classList.remove('hidden');
-
-            document.getElementById('rest-timer-secs').textContent = restSecsLeft;
-
-            const ring = document.getElementById('rest-timer-ring');
-            const circ = 2 * Math.PI * 50; // ~314.159
-
-            if (restInterval) clearInterval(restInterval);
-            restInterval = setInterval(() => {
-                if (!isPaused) {
-                    restSecsLeft--;
-                    document.getElementById('rest-timer-secs').textContent = restSecsLeft;
-
-                    const offset = circ * (1 - (restSecsLeft / (ex.rest || 30)));
-                    ring.style.strokeDashoffset = offset;
-
-                    if (restSecsLeft <= 0) {
-                        skipRestTime();
-                    }
-                }
-            }, 1000);
-        }
-
-        function skipRestTime() {
-            if (restInterval) clearInterval(restInterval);
-            document.getElementById('player-rest-overlay').classList.add('hidden');
-            document.getElementById('player-active-controls').classList.remove('hidden');
-
-            // Reset set timer for the next set
-            if (isTimedExercise) {
-                setSeconds = setTargetSeconds;
-            } else {
-                setSeconds = 0;
-            }
-
-            setupActiveExerciseUI();
-
-            // Automatically resume play/timers on starting the next set
-            isPaused = false;
-            document.getElementById('player-btn-pause').querySelector('span').textContent = "pause";
-        }
-
-        // Traversal controls
-        function navigateExercise(direction) {
-            currentWorkoutIndex += direction;
-            if (currentWorkoutIndex < 0) currentWorkoutIndex = 0;
-            if (currentWorkoutIndex >= currentDayWorkouts.length) {
-                currentWorkoutIndex = currentDayWorkouts.length - 1;
-            }
-            currentSetCount = 0;
-            setupActiveExerciseUI();
+            const repCountEl = document.getElementById('live-rep-count');
+            if (repCountEl) repCountEl.textContent = '0';
         }
 
         // Log completed set
         function logSingleSet() {
-            const ex = currentDayWorkouts[currentWorkoutIndex];
-            if (currentSetCount < ex.sets) {
-                currentSetCount++;
-                document.getElementById('player-completed-sets').textContent = currentSetCount;
-
-                // Triggers recovery rest countdown!
-                if (currentSetCount < ex.sets) {
-                    triggerRestPeriod();
-                } else {
-                    // All sets completed! Change button text and pulse complete exercise button
-                    const logBtn = document.querySelector('button[onclick="logSingleSet()"]');
-                    if (logBtn) {
-                        logBtn.textContent = "All Sets Completed!";
-                        logBtn.disabled = true;
-                        logBtn.classList.add('opacity-50');
-                    }
-                    const completeBtn = document.querySelector('button[onclick="finishLiveExercise()"]');
-                    if (completeBtn) {
-                        completeBtn.classList.add('animate-bounce');
-                    }
-                }
+            if (window.LiveCoachEngine && window.LiveCoachEngine.active) {
+                window.LiveCoachEngine.logSet();
+                const compSetsEl = document.getElementById('player-completed-sets');
+                if (compSetsEl) compSetsEl.textContent = window.LiveCoachEngine.currentSet;
             }
         }
 
-        // Finish active exercise
+        // Finish active exercise or advance to next
         function finishLiveExercise() {
             if (currentWorkoutIndex < currentDayWorkouts.length - 1) {
-                navigateExercise(1);
-            } else {
-                saveLoggedWorkoutSession();
-            }
-        }
-
-        // Save session stats to Database
-        async function saveLoggedWorkoutSession() {
-            if (sessionTimerInterval) clearInterval(sessionTimerInterval);
-            if (tempoInterval) clearInterval(tempoInterval);
-            if (restInterval) clearInterval(restInterval);
-
-            // Compute total calories and sets based on aggregated exercises
-            let totalCals = 0;
-            let totalSets = 0;
-            currentDayWorkouts.forEach(ex => {
-                totalCals += ex.calories;
-                totalSets += ex.sets;
-            });
-
-            // Populate Completion Modal elements
-            document.getElementById('complete-duration').textContent = `${Math.floor(sessionSeconds / 60)} mins`;
-            document.getElementById('complete-calories').textContent = `${totalCals} kcal`;
-            document.getElementById('complete-type').textContent = preferredLocation === 'home' ? 'Home Workout' : 'Standard Gym';
-            document.getElementById('complete-sets').textContent = `${totalSets} Sets`;
-            document.getElementById('complete-exercises-list').innerHTML = currentDayWorkouts.map(ex => `<div class="py-0.5">• ${ex.name}</div>`).join('');
-
-            // Send POST request
-            try {
-                const response = await fetch('/api/workouts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        email: userEmail,
-                        workoutName: currentDayWorkouts.length === 1 ? currentDayWorkouts[0].name : "Plan Combo Routine",
-                        duration: sessionSeconds,
-                        steps: currentDayWorkouts.length * 120,
-                        distance: currentDayWorkouts.length * 80,
-                        calories: totalCals,
-                        date: new Date().toISOString()
-                    })
-                });
-
-                if (response.ok) {
-                    // Show custom completion modal overlay!
-                    document.getElementById('completion-modal').classList.remove('hidden');
-                } else {
-                    alert("Error saving workout to database. Displaying stats locally.");
-                    document.getElementById('completion-modal').classList.remove('hidden');
+                currentWorkoutIndex++;
+                setupActiveExerciseUI();
+                const ex = currentDayWorkouts[currentWorkoutIndex];
+                if (window.LiveCoachEngine && ex) {
+                    window.LiveCoachEngine.startSession(ex);
                 }
-            } catch (err) {
-                console.error("Save log error:", err);
-                alert("Connection error. Displaying stats locally.");
-                document.getElementById('completion-modal').classList.remove('hidden');
+            } else {
+                if (window.LiveCoachEngine) {
+                    window.LiveCoachEngine.finishWorkout();
+                }
             }
         }
 
         function closeCompletionModal() {
-            document.getElementById('completion-modal').classList.add('hidden');
+            const compModal = document.getElementById('completion-modal');
+            if (compModal) compModal.classList.add('hidden');
             closeLivePlayer();
-            fetchStatsAndLogs();
+            if (typeof fetchStatsAndLogs === 'function') {
+                fetchStatsAndLogs();
+            }
         }
 
         function closeLivePlayer() {
-            if (sessionTimerInterval) clearInterval(sessionTimerInterval);
-            if (tempoInterval) clearInterval(tempoInterval);
-            if (restInterval) clearInterval(restInterval);
-            document.getElementById('live-player-modal').classList.add('hidden');
+            if (window.LiveCoachEngine) {
+                window.LiveCoachEngine.exitSession();
+            }
+            const modal = document.getElementById('live-player-modal');
+            if (modal) modal.classList.add('hidden');
         }
     </script>
 
@@ -3431,87 +3155,166 @@
 
         /* Stick figure dummy animation keyframes */
         @keyframes pushup {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(-18deg); }
-            100% { transform: rotate(0deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(-18deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
         }
+
         .animate-pushup {
             animation: pushup 3s infinite ease-in-out;
         }
 
         @keyframes deadliftHinge {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(40deg); }
-            100% { transform: rotate(0deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(40deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
         }
+
         .animate-deadlift-hinge {
             animation: deadliftHinge 4.5s infinite ease-in-out;
         }
 
         @keyframes curl {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(-65deg); }
-            100% { transform: rotate(0deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(-65deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
         }
+
         .animate-curl {
             animation: curl 2.5s infinite ease-in-out;
         }
 
         @keyframes cardioJump {
-            0% { transform: translateY(12px) scaleY(0.95); }
-            50% { transform: translateY(-8px) scaleY(1.05); }
-            100% { transform: translateY(12px) scaleY(0.95); }
+            0% {
+                transform: translateY(12px) scaleY(0.95);
+            }
+
+            50% {
+                transform: translateY(-8px) scaleY(1.05);
+            }
+
+            100% {
+                transform: translateY(12px) scaleY(0.95);
+            }
         }
+
         .animate-cardio-jump {
             animation: cardioJump 0.9s infinite ease-in-out;
         }
 
         @keyframes cardioArms {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(35deg); }
-            100% { transform: rotate(0deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(35deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
         }
+
         .animate-cardio-arms {
             animation: cardioArms 0.9s infinite ease-in-out;
         }
 
         @keyframes cardioLegs {
-            0% { transform: rotate(0deg); }
-            50% { transform: rotate(-25deg); }
-            100% { transform: rotate(0deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(-25deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
         }
+
         @keyframes lunge {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(18px); }
-            100% { transform: translateY(0px); }
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(18px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
         }
+
         .animate-lunge {
             animation: lunge 3s infinite ease-in-out;
         }
 
         @keyframes yogaBreathe {
-            0% { transform: scale(1); opacity: 0.7; }
-            50% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); opacity: 0.7; }
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
         }
+
         .animate-yoga {
             animation: yogaBreathe 4s infinite ease-in-out;
         }
 
         /* Ensure select and input text/background colors are white on dark backgrounds */
-        select, input[type="text"] {
+        select,
+        input[type="text"] {
             background-color: #121214 !important;
             color: #ffffff !important;
             border-color: rgba(255, 255, 255, 0.1) !important;
         }
+
         input[type="text"]::placeholder {
             color: rgba(255, 255, 255, 0.4) !important;
         }
+
         select {
             appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
         }
+
         select option {
             background-color: #121214 !important;
             color: #ffffff !important;

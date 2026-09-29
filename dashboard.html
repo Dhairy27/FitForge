@@ -359,8 +359,6 @@
                 </div>
             </div>
 
-
-
             <!-- Weekly Analytics & Diagnostics Section -->
             <div class="grid grid-cols-12 gap-6">
                 <!-- Weekly Calorie Intake vs Burn Analytics Chart -->
@@ -438,6 +436,8 @@
                             class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white">Workouts</button>
                         <button id="tab-nutrition" onclick="filterType('nutrition')"
                             class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white">Meals</button>
+                        <button id="tab-bodyscan" onclick="filterType('bodyscan')"
+                            class="flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white">AI Scans</button>
                     </div>
                 </div>
 
@@ -530,6 +530,9 @@
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
             localStorage.removeItem('userProtocol');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('isProUser');
             window.location.href = 'login.html';
         }
 
@@ -558,19 +561,31 @@
             }
         });
 
+        // Real-Time Cross-Module Sync Channel
+        if (typeof BroadcastChannel !== 'undefined') {
+            const syncChannel = new BroadcastChannel('fitforge_sync_channel');
+            syncChannel.onmessage = (event) => {
+                if (event.data && event.data.type === 'fitforge:state-changed') {
+                    console.log('[Dashboard] Ecosystem update received from Planner:', event.data.action);
+                    fetchStatsAndLogs();
+                }
+            };
+        }
+
         // Parallel telemetry database fetcher
         async function fetchStatsAndLogs() {
             try {
-                // Fetch user data (weight/height for calculations) and diet goals (calories)
-                const [protocolRes, profileRes, workoutRes, nutritionRes] = await Promise.all([
-                    fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`),
-                    fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`),
-                    fetch(`/api/workouts?email=${encodeURIComponent(userEmail)}`),
-                    fetch(`/api/nutrition/logs?email=${encodeURIComponent(userEmail)}`)
+                // Fetch user data, diet goals, workouts, nutrition, and body scans
+                const [protocolRes, profileRes, workoutRes, nutritionRes, scanRes] = await Promise.all([
+                    fetch(`/api/user/protocol?email=${encodeURIComponent(userEmail)}`).catch(() => null),
+                    fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`).catch(() => null),
+                    fetch(`/api/workouts?email=${encodeURIComponent(userEmail)}`).catch(() => null),
+                    fetch(`/api/nutrition/logs?email=${encodeURIComponent(userEmail)}`).catch(() => null),
+                    fetch(`/api/bodyscan?email=${encodeURIComponent(userEmail)}`).catch(() => null)
                 ]);
 
                 // 1. Calibrate Stride Length & Weight
-                if (protocolRes.ok) {
+                if (protocolRes && protocolRes.ok) {
                     const data = await protocolRes.json();
                     if (data.protocol) {
                         const p = data.protocol;
@@ -580,7 +595,7 @@
                 }
 
                 // 2. Load Diet Calories Target
-                if (profileRes.ok) {
+                if (profileRes && profileRes.ok) {
                     const data = await profileRes.json();
                     if (data.dailyCalories) {
                         dailyCaloriesTarget = data.dailyCalories;
@@ -591,10 +606,36 @@
                     }
                 }
 
-                // 3. Store workout and nutrition telemetry logs
-                rawWorkoutLogs = workoutRes.ok ? await workoutRes.json() : [];
-                const nutritionData = nutritionRes.ok ? await nutritionRes.json() : { logs: [] };
+                // 3. Store workout, nutrition, and bodyscan telemetry logs
+                rawWorkoutLogs = (workoutRes && workoutRes.ok) ? await workoutRes.json() : [];
+                const nutritionData = (nutritionRes && nutritionRes.ok) ? await nutritionRes.json() : { logs: [] };
                 rawNutritionLogs = nutritionData.logs || [];
+
+                let rawBodyScanLogs = [];
+                if (scanRes && scanRes.ok) {
+                    const scanData = await scanRes.json();
+                    rawBodyScanLogs = scanData.scans || [];
+                }
+
+                // Fallback to local storage cache if server DB has no scan logs yet
+                if (rawBodyScanLogs.length === 0) {
+                    try {
+                        const localScans = JSON.parse(localStorage.getItem('fitforge_scans') || '[]');
+                        if (localScans.length > 0) {
+                            rawBodyScanLogs = localScans;
+                        } else {
+                            const latest = JSON.parse(localStorage.getItem('latestBodyScan') || 'null');
+                            if (latest) rawBodyScanLogs = [latest];
+                        }
+                    } catch (e) { }
+                }
+
+                // Render dynamic AI Body Scan Results card in Progress Analysis
+                if (rawBodyScanLogs.length > 0) {
+                    renderBodyScanCard(rawBodyScanLogs[0]);
+                } else {
+                    renderBodyScanCard(null);
+                }
 
                 // 4. Merge logs chronologically (latest first)
                 const formattedWorkouts = rawWorkoutLogs.map(w => ({
@@ -617,7 +658,17 @@
                     raw: n
                 }));
 
-                mergedLogs = [...formattedWorkouts, ...formattedNutrition].sort((a, b) => b.date - a.date);
+                const formattedBodyScans = rawBodyScanLogs.map(s => ({
+                    id: s._id || 'scan_' + new Date(s.date || s.createdAt || Date.now()).getTime(),
+                    logType: 'bodyscan',
+                    title: `AI Body Scan - Score ${s.fitnessScore || 82}/100`,
+                    subtitle: `Posture: ${s.posture || 'Good'} • Symmetry: ${s.bodySymmetry || 88}% • Body Fat: ${(s.recommendations && s.recommendations.estimatedBodyFat) || s.estimatedBodyFat || '15.8%'}`,
+                    calories: 0,
+                    date: new Date(s.date || s.createdAt || Date.now()),
+                    raw: s
+                }));
+
+                mergedLogs = [...formattedWorkouts, ...formattedNutrition, ...formattedBodyScans].sort((a, b) => b.date - a.date);
 
                 // 5. Update UI Blocks & Chart
                 calculateTodayTotals();
@@ -627,6 +678,167 @@
             } catch (err) {
                 console.error("Telemetry sync error:", err);
             }
+        }
+
+        // Render AI Body Scan Results Bento Card
+        function renderBodyScanCard(scan) {
+            const container = document.getElementById('dashboard-bodyscan-content');
+            if (!container) return;
+
+            if (!scan) {
+                container.innerHTML = `
+                    <div class="p-8 text-center space-y-3 bg-white/5 rounded-2xl border border-glass-border">
+                        <span class="material-symbols-outlined text-4xl text-purple-400/50">body_system</span>
+                        <p class="text-sm text-secondary">No AI Body Scan saved yet.</p>
+                        <a href="body-scan.html" class="inline-block px-5 py-2.5 bg-primary text-on-primary rounded-full text-xs font-bold hover:scale-105 active:scale-95 transition-all">Start AI Body Scan</a>
+                    </div>
+                `;
+                return;
+            }
+
+            const dateStr = scan.date ? new Date(scan.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recently Saved';
+            const dateSubtitle = document.getElementById('bodyscan-date-subtitle');
+            if (dateSubtitle) dateSubtitle.textContent = `Scanned on ${dateStr}`;
+
+            const score = scan.fitnessScore || 82;
+            const bmi = scan.bmi || (scan.weight && scan.height ? (scan.weight / ((scan.height / 100) * (scan.height / 100))).toFixed(1) : '20.8');
+            const height = scan.height || 170;
+            const weight = scan.weight || 60;
+            const posture = scan.posture || 'Good';
+            const symmetry = scan.bodySymmetry || 88;
+            const shoulder = scan.shoulderAlignment || (scan.recommendations && scan.recommendations.shoulderAlignment) || 'Good (0.8°)';
+            const hip = scan.hipAlignment || (scan.recommendations && scan.recommendations.hipAlignment) || 'Good (0.5°)';
+            const spine = scan.spineVerticality || (scan.recommendations && scan.recommendations.spineVerticality) || '1.2° Tilt';
+            const bodyFat = scan.estimatedBodyFat || (scan.recommendations && scan.recommendations.estimatedBodyFat) || '15.8%';
+            const focusArea = (scan.recommendations && scan.recommendations.focusArea) || scan.focusArea || 'Upper Back & Core';
+            const exercises = (scan.recommendations && scan.recommendations.exercises) || scan.exercises || ['Plank', 'Rows', 'Face Pulls', 'Bird Dog', 'Shoulder Mobility'];
+            const measurements = scan.measurements || { chest: '98 cm', waist: '80 cm', hips: '96 cm', bicep: '35 cm', thigh: '56 cm', neck: '38 cm' };
+
+            const exPillsHtml = exercises.map(ex => `<span class="px-3 py-1 bg-white/10 border border-white/10 rounded-full text-xs text-white font-medium">${ex}</span>`).join(' ');
+
+            container.innerHTML = `
+                <div class="space-y-6">
+                    <!-- 4 Top Metric Bento Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Card 1: AI Fitness Score -->
+                        <div class="bg-surface-container-low/80 p-5 rounded-2xl border border-glass-border space-y-2">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-secondary">AI Fitness Score</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="font-headline text-3xl font-extrabold text-white">${score}</span>
+                                <span class="text-xs text-secondary font-bold">/ 100</span>
+                            </div>
+                            <p class="text-[11px] text-emerald-400 font-semibold">Website Generated Score</p>
+                        </div>
+
+                        <!-- Card 2: BMI -->
+                        <div class="bg-surface-container-low/80 p-5 rounded-2xl border border-glass-border space-y-2">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-secondary">BMI</p>
+                            <div class="flex items-center gap-2">
+                                <span class="font-headline text-3xl font-extrabold text-white">${bmi}</span>
+                                <span class="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/30">OPTIMAL</span>
+                            </div>
+                            <p class="text-[11px] text-secondary">Height: <strong class="text-white">${height} cm</strong> | Weight: <strong class="text-white">${weight} kg</strong></p>
+                        </div>
+
+                        <!-- Card 3: Posture Evaluation -->
+                        <div class="bg-surface-container-low/80 p-5 rounded-2xl border border-glass-border space-y-2">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-secondary">Posture Evaluation</p>
+                            <span class="font-headline text-2xl font-extrabold text-white block">${posture}</span>
+                            <p class="text-[11px] text-emerald-400 font-semibold">Spine &amp; Shoulder Alignment: Normal</p>
+                        </div>
+
+                        <!-- Card 4: Body Symmetry -->
+                        <div class="bg-surface-container-low/80 p-5 rounded-2xl border border-glass-border space-y-2">
+                            <p class="text-[10px] uppercase font-bold tracking-wider text-secondary">Body Symmetry</p>
+                            <span class="font-headline text-3xl font-extrabold text-purple-400 block">${symmetry}%</span>
+                            <p class="text-[11px] text-secondary font-semibold">High Left/Right Symmetry</p>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Analysis & Focus Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                        <!-- Left: Posture Analysis Breakdown (7 cols) -->
+                        <div class="lg:col-span-7 bg-surface-container-low/80 p-6 rounded-2xl border border-glass-border space-y-4">
+                            <h4 class="font-headline text-base font-bold text-white tracking-tight">Detailed Posture Analysis</h4>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
+                                    <p class="text-[9px] uppercase font-bold tracking-wider text-secondary">Shoulder Alignment</p>
+                                    <p class="text-sm font-bold text-white">${shoulder}</p>
+                                    <p class="text-[10px] text-secondary/70">Left and right clavicle levels are balanced.</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
+                                    <p class="text-[9px] uppercase font-bold tracking-wider text-secondary">Hip Alignment</p>
+                                    <p class="text-sm font-bold text-white">${hip}</p>
+                                    <p class="text-[10px] text-secondary/70">Pelvic tilt and hip symmetry within normal range.</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
+                                    <p class="text-[9px] uppercase font-bold tracking-wider text-secondary">Spine Verticality</p>
+                                    <p class="text-sm font-bold text-purple-400">${spine}</p>
+                                    <p class="text-[10px] text-secondary/70">Optimal spinal verticality score.</p>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-1">
+                                    <p class="text-[9px] uppercase font-bold tracking-wider text-secondary">Estimated Body Fat %</p>
+                                    <p class="text-sm font-bold text-emerald-400">${bodyFat}</p>
+                                    <p class="text-[10px] text-secondary/70">Healthy athletic reference index.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Recommended Focus & Exercises (5 cols) -->
+                        <div class="lg:col-span-5 bg-surface-container-low/80 p-6 rounded-2xl border border-glass-border space-y-4 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <h4 class="font-headline text-base font-bold text-white tracking-tight">Recommended Focus</h4>
+                                    <span class="text-[10px] font-bold text-purple-400 uppercase tracking-widest">Primary Focus</span>
+                                </div>
+                                <div class="bg-white/5 p-4 rounded-xl border border-white/5 space-y-2 mb-4">
+                                    <p class="text-sm font-bold text-white">${focusArea}</p>
+                                    <p class="text-[11px] text-secondary/80">Your shoulders appear slightly rounded. Add chest-opening and upper-back mobility exercises.</p>
+                                </div>
+
+                                <p class="text-[10px] uppercase font-bold tracking-wider text-secondary mb-2">Recommended Exercises:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    ${exPillsHtml}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Body Measurements Section -->
+                    <div class="bg-surface-container-low/80 p-6 rounded-2xl border border-glass-border space-y-3">
+                        <div class="flex justify-between items-center">
+                            <p class="text-xs uppercase font-bold tracking-wider text-white">Saved Body Circumference Measurements</p>
+                            <span class="text-[10px] text-purple-400 font-mono">3D Scan Telemetry</span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                            <div class="bg-white/5 p-3 rounded-xl text-center">
+                                <span class="text-[9px] uppercase text-secondary/70 block">Chest</span>
+                                <span class="text-sm font-bold text-white font-headline">${measurements.chest || '98 cm'}</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center">
+                                <span class="text-[9px] uppercase text-secondary/70 block">Waist</span>
+                                <span class="text-sm font-bold text-white font-headline">${measurements.waist || '80 cm'}</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center">
+                                <span class="text-[9px] uppercase text-secondary/70 block">Hips</span>
+                                <span class="text-sm font-bold text-white font-headline">${measurements.hips || '96 cm'}</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center">
+                                <span class="text-[9px] uppercase text-secondary/70 block">Bicep</span>
+                                <span class="text-sm font-bold text-white font-headline">${measurements.bicep || '35 cm'}</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center">
+                                <span class="text-[9px] uppercase text-secondary/70 block">Thigh</span>
+                                <span class="text-sm font-bold text-white font-headline">${measurements.thigh || '56 cm'}</span>
+                            </div>
+                            <div class="bg-white/5 p-3 rounded-xl text-center">
+                                <span class="text-[9px] uppercase text-secondary/70 block">Neck</span>
+                                <span class="text-sm font-bold text-white font-headline">${measurements.neck || '38 cm'}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // Calculate and render bento grid stats
@@ -772,8 +984,20 @@
             document.getElementById('tab-all').className = type === 'all' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
             document.getElementById('tab-workout').className = type === 'workout' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
             document.getElementById('tab-nutrition').className = type === 'nutrition' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
+            const tabScan = document.getElementById('tab-bodyscan');
+            if (tabScan) tabScan.className = type === 'bodyscan' ? 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all bg-white text-black' : 'flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all text-secondary hover:text-white';
 
             applyFiltersAndRender();
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
         }
 
         // Apply filters and print Activity Feed list
@@ -785,6 +1009,7 @@
                 // Category Filter
                 if (currentFilterType === 'workout' && item.logType !== 'workout') return false;
                 if (currentFilterType === 'nutrition' && item.logType !== 'nutrition') return false;
+                if (currentFilterType === 'bodyscan' && item.logType !== 'bodyscan') return false;
 
                 // Search Query matches
                 if (query) {
@@ -812,12 +1037,13 @@
 
             container.innerHTML = filtered.map(item => {
                 const isWorkout = item.logType === 'workout';
-                const icon = isWorkout ? 'fitness_center' : 'restaurant';
-                const iconColor = isWorkout ? 'text-emerald-400' : 'text-sky-400';
-                const badgeBg = isWorkout ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-sky-500/10 text-sky-400 border-sky-500/20';
-                const badgeText = isWorkout ? 'WORKOUT' : 'MEAL';
-                const calLabel = isWorkout ? `-${item.calories} kcal burned` : `+${item.calories} kcal consumed`;
-                const calColor = isWorkout ? 'text-emerald-400' : 'text-sky-400';
+                const isBodyscan = item.logType === 'bodyscan';
+                const icon = isWorkout ? 'fitness_center' : (isBodyscan ? 'body_system' : 'restaurant');
+                const iconColor = isWorkout ? 'text-emerald-400' : (isBodyscan ? 'text-purple-400' : 'text-sky-400');
+                const badgeBg = isWorkout ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : (isBodyscan ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' : 'bg-sky-500/10 text-sky-400 border-sky-500/20');
+                const badgeText = isWorkout ? 'WORKOUT' : (isBodyscan ? 'BODY SCAN' : 'MEAL');
+                const calLabel = isWorkout ? `-${item.calories} kcal burned` : (isBodyscan ? `Fitness Score: ${item.raw.fitnessScore || 82}` : `+${item.calories} kcal consumed`);
+                const calColor = isWorkout ? 'text-emerald-400' : (isBodyscan ? 'text-purple-400' : 'text-sky-400');
 
                 const formattedDate = item.date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
                 const formattedTime = item.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -833,8 +1059,8 @@
                                     <span class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${badgeBg}">${badgeText}</span>
                                     <span class="text-[10px] text-secondary/60 font-mono">${formattedDate} @ ${formattedTime}</span>
                                 </div>
-                                <h4 class="text-sm font-bold text-white font-headline">${item.title}</h4>
-                                <p class="text-xs text-secondary/75">${item.subtitle}</p>
+                                <h4 class="text-sm font-bold text-white font-headline">${escapeHTML(item.title)}</h4>
+                                <p class="text-xs text-secondary/75">${escapeHTML(item.subtitle)}</p>
                             </div>
                         </div>
 
@@ -842,7 +1068,7 @@
                             <div class="text-left sm:text-right">
                                 <p class="text-xs sm:text-sm font-bold ${calColor}">${calLabel}</p>
                             </div>
-                            <button onclick="deleteLogEntry('${item.id}', '${item.logType}')" class="p-2 text-secondary/40 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0" title="Delete Log Entry">
+                            <button onclick="deleteLogEntry('${escapeHTML(item.id)}', '${escapeHTML(item.logType)}')" class="p-2 text-secondary/40 hover:text-rose-400 transition-colors cursor-pointer bg-transparent border-0" title="Delete Log Entry">
                                 <span class="material-symbols-outlined text-lg">delete</span>
                             </button>
                         </div>
@@ -856,9 +1082,16 @@
             if (!confirm(`Are you sure you want to delete this ${type} log entry?`)) return;
 
             try {
-                const endpoint = type === 'workout'
-                    ? `/api/workout/${id}?email=${encodeURIComponent(userEmail)}`
-                    : `/api/nutrition/log/${id}?email=${encodeURIComponent(userEmail)}`;
+                let endpoint;
+                if (type === 'workout') {
+                    endpoint = `/api/workout/${id}?email=${encodeURIComponent(userEmail)}`;
+                } else if (type === 'nutrition') {
+                    endpoint = `/api/nutrition/log/${id}?email=${encodeURIComponent(userEmail)}`;
+                } else if (type === 'bodyscan') {
+                    endpoint = `/api/bodyscan?email=${encodeURIComponent(userEmail)}`;
+                    localStorage.removeItem('latestBodyScan');
+                    localStorage.removeItem('fitforge_scans');
+                }
 
                 const res = await fetch(endpoint, { method: 'DELETE' });
                 if (res.ok) {
@@ -1464,6 +1697,8 @@
             </div>
         </div>
     </div>
+
+
 
     <script src="subscription-check.js"></script>
 </body>

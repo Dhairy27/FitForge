@@ -267,6 +267,12 @@
                     return;
                 }
 
+                if (!passwordInput.value || passwordInput.value.length < 6) {
+                    errorContainer.textContent = "Password must be at least 6 characters in length.";
+                    errorContainer.classList.remove('hidden');
+                    return;
+                }
+
                 submitBtn.disabled = true;
                 const originalBtnText = submitBtn.innerHTML;
                 submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> INITIALIZING...`;
@@ -294,6 +300,10 @@
                     localStorage.removeItem('userProtocol');
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
+                    localStorage.setItem('userRole', data.role || 'user');
 
                     // Redirect to protocol customization
                     window.location.href = 'protocol.html';

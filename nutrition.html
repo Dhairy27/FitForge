@@ -6,6 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Nutrition &amp; Macro Synthesis | FitForge</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
@@ -338,7 +339,7 @@
                             <label
                                 class="block text-[10px] text-secondary/40 uppercase tracking-wider font-bold mb-2">Caloric
                                 Load Goal (kcal)</label>
-                            <input type="number" id="diet-calories-input" min="1000" max="6000"
+                            <input type="number" id="diet-calories-input" min="0" max="6000" placeholder="0" value="0"
                                 class="w-full bg-surface-container border border-glass-border rounded-xl px-3 py-2 text-sm text-primary focus:outline-none focus:border-primary">
                         </div>
                         <button id="btn-generate-diet"
@@ -713,6 +714,61 @@
         }
 
         let userProtocol = {};
+        const defaultFallbackDietPlan = {
+            dailyCalories: 2000,
+            dailyMeals: {
+                breakfast: {
+                    name: "Greek Yogurt Parfait with Honey & Berries",
+                    calories: 500,
+                    protein: 27,
+                    carbs: 60,
+                    fat: 13,
+                    ingredients: [
+                        "1 cup low fat greek yogurt",
+                        "1 tbsp honey",
+                        "0.5 cup organic berries",
+                        "2 tbsp granola"
+                    ]
+                },
+                lunch: {
+                    name: "Mediterranean Quinoa Bowl with Feta & Olives",
+                    calories: 700,
+                    protein: 22,
+                    carbs: 81,
+                    fat: 27,
+                    ingredients: [
+                        "1 cup cooked quinoa",
+                        "50g Greek feta cheese",
+                        "6 Kalamata olives",
+                        "diced cucumber & tomato"
+                    ]
+                },
+                snack: {
+                    name: "Mixed Dry Roasted Almonds & Raisins",
+                    calories: 200,
+                    protein: 7,
+                    carbs: 18,
+                    fat: 13,
+                    ingredients: [
+                        "30g roasted almonds",
+                        "30g organic dark raisins"
+                    ]
+                },
+                dinner: {
+                    name: "Chickpea Coconut Curry with Basmati Rice",
+                    calories: 600,
+                    protein: 18,
+                    carbs: 81,
+                    fat: 23,
+                    ingredients: [
+                        "1 cup boiled chickpeas",
+                        "0.5 cup light coconut milk",
+                        "curry spices",
+                        "1 cup basmati rice"
+                    ]
+                }
+            }
+        };
         let currentDietPlan = null;
         let selectedWeeklyDay = 1;
 
@@ -720,13 +776,92 @@
             localStorage.removeItem('userEmail');
             localStorage.removeItem('userName');
             localStorage.removeItem('userProtocol');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userRole');
+            sessionStorage.clear();
             window.location.href = 'login.html';
+        }
+
+        function applyDietProfile(dProfile) {
+            if (!dProfile) return;
+
+            const elCal = document.getElementById('diet-calories-input');
+            if (elCal) {
+                const val = Number(dProfile.dailyCalories);
+                elCal.value = (!isNaN(val) && val >= 100) ? val : 0;
+            }
+            if (dProfile.dietaryType) {
+                const el = document.getElementById('diet-type-select');
+                if (el) el.value = dProfile.dietaryType;
+            }
+            if (dProfile.budget) {
+                const el = document.getElementById('diet-budget-select');
+                if (el) el.value = dProfile.budget;
+            }
+
+            if (Array.isArray(dProfile.allergies)) {
+                const checkboxes = document.querySelectorAll('.diet-allergy-cb');
+                checkboxes.forEach(cb => {
+                    const isChecked = dProfile.allergies.includes(cb.value);
+                    if (cb.checked !== isChecked) {
+                        cb.checked = isChecked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+
+            if (Array.isArray(dProfile.healthConditions)) {
+                const checkboxes = document.querySelectorAll('.diet-health-cb');
+                checkboxes.forEach(cb => {
+                    const isChecked = dProfile.healthConditions.includes(cb.value);
+                    if (cb.checked !== isChecked) {
+                        cb.checked = isChecked;
+                        cb.dispatchEvent(new Event('change'));
+                    }
+                });
+            }
+        }
+
+        function saveDietProfileToLocal() {
+            try {
+                const cbList = document.querySelectorAll('.diet-allergy-cb:checked');
+                const allergies = Array.from(cbList).map(cb => cb.value);
+
+                const hcList = document.querySelectorAll('.diet-health-cb:checked');
+                const healthConditions = Array.from(hcList).map(cb => cb.value);
+
+                const dietaryType = document.getElementById('diet-type-select')?.value || 'non-vegetarian';
+                const budget = document.getElementById('diet-budget-select')?.value || 'mid';
+                const rawCal = document.getElementById('diet-calories-input')?.value;
+                const numCal = Number(rawCal);
+                const dailyCalories = (rawCal !== '' && !isNaN(numCal) && numCal >= 100) ? numCal : 0;
+
+                const profile = { dietaryType, budget, allergies, healthConditions, dailyCalories };
+                localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(profile));
+            } catch(e) {}
+        }
+
+        function attachDietProfileAutoSave() {
+            ['diet-type-select', 'diet-budget-select', 'diet-calories-input'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('change', saveDietProfileToLocal);
+                    el.addEventListener('input', saveDietProfileToLocal);
+                }
+            });
+            document.querySelectorAll('.diet-allergy-cb').forEach(cb => {
+                cb.addEventListener('change', saveDietProfileToLocal);
+            });
+            document.querySelectorAll('.diet-health-cb').forEach(cb => {
+                cb.addEventListener('change', saveDietProfileToLocal);
+            });
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadUserProfileAndCalculate();
             setupAllergiesChips();
             setupHealthChips();
+            attachDietProfileAutoSave();
 
             document.getElementById('btn-generate-diet').addEventListener('click', generatePlan);
         });
@@ -882,56 +1017,37 @@
                 const waterGoalEl = document.getElementById('calced-water-goal');
                 if (waterGoalEl) waterGoalEl.innerText = `${recWater} L`;
 
-                // Set input default calorie
-                document.getElementById('diet-calories-input').value = calorieTarget;
+                // Set input default calorie to 0
+                document.getElementById('diet-calories-input').value = 0;
 
-                // 3. Load saved diet profile
-                const profileResponse = await fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`);
-                const profData = await profileResponse.json();
-                const dProfile = profData.dietProfile || {};
+                // 3. Load saved diet profile (load from local cache first for instant render, then fetch from server)
+                try {
+                    const cachedProf = localStorage.getItem(`dietProfile_${userEmail}`);
+                    if (cachedProf) {
+                        applyDietProfile(JSON.parse(cachedProf));
+                    }
+                } catch(e) {}
 
-                if (dProfile.dailyCalories) {
-                    document.getElementById('diet-calories-input').value = dProfile.dailyCalories;
-                }
-                if (dProfile.dietaryType) {
-                    document.getElementById('diet-type-select').value = dProfile.dietaryType;
-                }
-                if (dProfile.budget) {
-                    document.getElementById('diet-budget-select').value = dProfile.budget;
-                }
-
-                // Check allergy checkboxes
-                if (Array.isArray(dProfile.allergies)) {
-                    const checkboxes = document.querySelectorAll('.diet-allergy-cb');
-                    checkboxes.forEach(cb => {
-                        if (dProfile.allergies.includes(cb.value)) {
-                            cb.checked = true;
-                            cb.dispatchEvent(new Event('change'));
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+                    const profileResponse = await fetch(`/api/user/diet-profile?email=${encodeURIComponent(userEmail)}`, { headers });
+                    if (profileResponse.ok) {
+                        const profData = await profileResponse.json();
+                        const dProfile = profData.dietProfile || {};
+                        if (dProfile && Object.keys(dProfile).length > 0) {
+                            applyDietProfile(dProfile);
+                            try { localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(dProfile)); } catch(e) {}
                         }
-                    });
+                    }
+                } catch (e) {
+                    console.error("Failed to load diet profile from server:", e);
                 }
 
-                // Check health condition checkboxes
-                if (Array.isArray(dProfile.healthConditions)) {
-                    const checkboxes = document.querySelectorAll('.diet-health-cb');
-                    checkboxes.forEach(cb => {
-                        if (dProfile.healthConditions.includes(cb.value)) {
-                            cb.checked = true;
-                            cb.dispatchEvent(new Event('change'));
-                        } else {
-                            cb.checked = false;
-                            cb.dispatchEvent(new Event('change'));
-                        }
-                    });
-                }
-
-                // 4. Load saved diet plan if any
-                const planResponse = await fetch(`/api/user/diet-plan?email=${encodeURIComponent(userEmail)}`);
-                const planData = await planResponse.json();
-                if (planData.plan) {
-                    currentDietPlan = planData.plan;
-                    renderDietPlan();
-                }
+                // 4. Ensure meal plan dashboard is hidden on page load until user clicks "Synthesize Plan"
+                currentDietPlan = null;
+                document.getElementById('diet-data-dashboard')?.classList.add('hidden');
+                document.getElementById('diet-tabs-section')?.classList.add('hidden');
 
                 // 5. Load today's nutrition logs
                 await fetchTodayNutritionLogs();
@@ -969,11 +1085,15 @@
 
                 const dietaryType = document.getElementById('diet-type-select').value;
                 const budget = document.getElementById('diet-budget-select').value;
-                const dailyCalories = Number(document.getElementById('diet-calories-input').value) || 2000;
+                const dailyCalories = Number(document.getElementById('diet-calories-input').value) || 0;
+
+                const token = localStorage.getItem('authToken');
+                const headers = { 'Content-Type': 'application/json' };
+                if (token) headers['Authorization'] = `Bearer ${token}`;
 
                 const profileResponse = await fetch('/api/user/diet-profile', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ email: userEmail, dietaryType, allergies, healthConditions, budget, dailyCalories })
                 });
 
@@ -981,7 +1101,7 @@
 
                 const planResponse = await fetch('/api/user/diet-plan', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify({ email: userEmail })
                 });
 
@@ -989,7 +1109,13 @@
 
                 const planData = await planResponse.json();
                 currentDietPlan = planData.plan;
+                try { localStorage.setItem(`dietPlan_${userEmail}`, JSON.stringify(currentDietPlan)); } catch(e) {}
+                try { localStorage.removeItem(`shoppingCheckOff_${userEmail}`); } catch(e) {}
                 renderDietPlan();
+
+                setTimeout(() => {
+                    document.getElementById('diet-data-dashboard')?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
 
             } catch (error) {
                 console.error(error);
@@ -1126,8 +1252,24 @@
             });
         }
 
+        function cleanIngredientName(ing) {
+            if (!ing || typeof ing !== 'string') return '';
+            let str = ing.trim();
+            if (/^(\d+(\.\d+)?\s*(cup|glass|l|ml)?\s*)?water$/i.test(str)) {
+                return '';
+            }
+            str = str.replace(/^[\d\/\.\s]+(g|kg|ml|l|oz|lb|tbsp|tsp|cup|cups|medium|small|large|slice|slices|whole|handful|scoop|scoops|can|cans|pinch|pinches|head|heads)?\b(\s+of\s+)?/i, '').trim();
+            str = str.replace(/^(g|kg|ml|l|oz|lb|tbsp|tsp|cup|cups|medium|small|large|slice|slices|whole|handful|scoop|scoops|can|cans|pinch|pinches|head|heads)\b(\s+of\s+)?/i, '').trim();
+            str = str.replace(/^(cooked|steamed|grilled|baked|sautéed|sauteed|pan-seared|roasted|fresh|organic|ripe)\s+/i, '').trim();
+            if (!str) return '';
+            return str.split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                .join(' ');
+        }
+
         function renderShoppingChecklist() {
             const checklist = document.getElementById('shopping-checklist-items');
+            if (!checklist || !currentDietPlan) return;
 
             // Adjust the layout of the checklist container to hold sections vertically
             checklist.className = "col-span-full space-y-8";
@@ -1136,24 +1278,23 @@
             const itemsStr = localStorage.getItem(`shoppingCheckOff_${userEmail}`) || '[]';
             const checkedOff = JSON.parse(itemsStr);
 
-            let allItems = [];
-            if (currentDietPlan.shoppingList && currentDietPlan.shoppingList.length > 0) {
-                allItems = currentDietPlan.shoppingList;
-            } else {
-                const listItemsSet = new Set();
-                const mealTypes = ['breakfast', 'lunch', 'snack', 'dinner'];
-                mealTypes.forEach(t => {
-                    const meal = currentDietPlan.dailyMeals[t];
-                    if (meal && Array.isArray(meal.ingredients)) {
-                        meal.ingredients.forEach(ing => {
-                            const cleanedText = ing.replace(/^\d+(\.\d+)?\s+(\w+)\s+(of\s+)?/i, '').trim();
-                            const capitalized = cleanedText.charAt(0).toUpperCase() + cleanedText.slice(1);
-                            listItemsSet.add(capitalized);
+            // Extract ingredients ONLY from the active Daily Meal Plan (dailyMeals)
+            const shoppingSet = new Set();
+            if (currentDietPlan.dailyMeals) {
+                Object.keys(currentDietPlan.dailyMeals).forEach(type => {
+                    const m = currentDietPlan.dailyMeals[type];
+                    if (m && Array.isArray(m.ingredients)) {
+                        m.ingredients.forEach(ing => {
+                            const cleaned = cleanIngredientName(ing);
+                            if (cleaned && cleaned.length > 1) {
+                                shoppingSet.add(cleaned);
+                            }
                         });
                     }
                 });
-                allItems = Array.from(listItemsSet);
             }
+
+            const allItems = Array.from(shoppingSet).sort();
 
             // Categorization setup
             const categories = [
@@ -1274,6 +1415,7 @@
                 });
 
                 currentDietPlan = null;
+                try { localStorage.removeItem(`dietPlan_${userEmail}`); } catch(e) {}
 
                 // Hide dashboard and tabs sections
                 document.getElementById('diet-data-dashboard').classList.add('hidden');
@@ -1322,7 +1464,13 @@
                 const logId = localStorage.getItem(logKey);
                 if (logId) {
                     try {
-                        const res = await fetch(`/api/nutrition/log/${logId}`, { method: 'DELETE' });
+                        const token = localStorage.getItem('authToken');
+                        const headers = {};
+                        if (token) headers['Authorization'] = `Bearer ${token}`;
+                        const res = await fetch(`/api/nutrition/log/${logId}?email=${encodeURIComponent(userEmail)}`, {
+                            method: 'DELETE',
+                            headers
+                        });
                         if (res.ok) {
                             localStorage.removeItem(logKey);
                             showToast(`Removed meal from Progress Analysis.`);
@@ -1341,9 +1489,13 @@
                     const meal = currentDietPlan.dailyMeals[mealType];
                     if (meal) {
                         try {
+                            const token = localStorage.getItem('authToken');
+                            const headers = { 'Content-Type': 'application/json' };
+                            if (token) headers['Authorization'] = `Bearer ${token}`;
+
                             const response = await fetch('/api/nutrition/log', {
                                 method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
+                                headers,
                                 body: JSON.stringify({
                                     email: userEmail,
                                     foodName: meal.name,
@@ -1755,6 +1907,37 @@
                 sidebar.classList.add('-translate-x-full');
                 backdrop.classList.add('hidden');
             }
+        }
+
+        // Real-time Ecosystem Synchronization (Scanner / Planner / Dashboard)
+        try {
+            const syncChannel = new BroadcastChannel('fitforge_sync_channel');
+            syncChannel.onmessage = (event) => {
+                if (event.data && (event.data.type === 'nutrition:updated' || event.data.type === 'fitforge:state-changed')) {
+                    console.log("[Nutrition] Real-time sync update received via BroadcastChannel:", event.data);
+                    fetchTodayNutritionLogs();
+                }
+            };
+        } catch (e) {
+            console.warn("BroadcastChannel sync not supported:", e);
+        }
+
+        try {
+            if (typeof io !== 'undefined') {
+                const socket = io();
+                socket.on('nutrition:updated', (data) => {
+                    console.log("[Nutrition] Socket sync nutrition:updated received:", data);
+                    fetchTodayNutritionLogs();
+                });
+                socket.on('fitforge:state-changed', (data) => {
+                    if (!data || data.entity === 'nutrition' || data.entity === 'all') {
+                        console.log("[Nutrition] Socket sync state-changed received:", data);
+                        fetchTodayNutritionLogs();
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn("Socket.io sync skipped in nutrition:", e);
         }
     </script>
     <script src="subscription-check.js"></script>

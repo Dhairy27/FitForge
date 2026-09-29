@@ -157,7 +157,6 @@
         }
     </style>
 </head>
-</head>
 
 <body
     class="min-h-screen font-body-md flex items-center justify-center py-6 sm:py-10 px-4 sm:px-6 lg:px-8 overflow-x-hidden relative font-['Space_Grotesk'] bg-surface-dim text-[#e5e2e1]">
@@ -585,6 +584,10 @@
                 submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHENTICATING...`;
 
                 try {
+                    if (!passwordInput.value || passwordInput.value.length < 6) {
+                        throw new Error("Password must be at least 6 characters in length.");
+                    }
+
                     const response = await fetch('/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -604,6 +607,9 @@
 
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
                     const role = data.role || (data.email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user');
                     localStorage.setItem('userRole', role);
 
@@ -747,6 +753,11 @@
 
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
+                    const role = data.role || (data.email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user');
+                    localStorage.setItem('userRole', role);
 
                     if (data.isNewUser) {
                         localStorage.removeItem('userProtocol');

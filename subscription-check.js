@@ -4,10 +4,29 @@
 
   async function checkSubscription() {
     try {
-      const response = await fetch(`/api/user/subscription?email=${encodeURIComponent(userEmail)}`);
+      const token = localStorage.getItem('authToken');
+      const cacheKey = `sub_cache_${userEmail}`;
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        try {
+          const { sub, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < 120000) { // 2 min TTL
+            updateUpgradeButton(sub);
+            return;
+          }
+        } catch (e) {}
+      }
+
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
+      const response = await fetch(`/api/user/subscription?email=${encodeURIComponent(userEmail)}`, {
+        headers
+      });
       if (response.ok) {
         const data = await response.json();
         const sub = data.subscription;
+        sessionStorage.setItem(cacheKey, JSON.stringify({ sub, timestamp: Date.now() }));
         updateUpgradeButton(sub);
       }
     } catch (err) {

@@ -1,0 +1,13 @@
+﻿rcase tracking-wider rounded-full transition-all cursor-pointer">
+                            Run Demo Mode
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+
+            <!-- STEP 2: CAMERA SCAN VIEWPORT -->
+            <section id="step-camera" class="hidden space-y-6">
+                <!-- Positioning Instructions Header (Simplified) -->
+                <div class="flex justify-between items-center px-2">
+                  
