@@ -668,8 +668,11 @@ class PlannerServicesManager {
                 const normalizedEmail = email.toLowerCase();
 
                 const sessionId = sessionDetails.sessionId || ('ws-' + Date.now());
-                const durationMinutes = Number(sessionDetails.duration) || Math.max(1, Math.round((Number(sessionDetails.durationSeconds) || 1800) / 60));
-                const calories = Number(sessionDetails.calories) || 350;
+                const durationSecs = Number.isFinite(Number(sessionDetails.durationSeconds))
+                    ? Number(sessionDetails.durationSeconds)
+                    : (Number.isFinite(Number(sessionDetails.duration)) ? Number(sessionDetails.duration) : 0);
+                const durationMinutes = Math.round(durationSecs / 60);
+                const calories = Number.isFinite(Number(sessionDetails.calories)) ? Math.max(0, Math.round(Number(sessionDetails.calories))) : 0;
                 const workoutName = sessionDetails.workoutName || "Live Workout Session";
                 const day = sessionDetails.day || getTodayWeekdayName();
                 const todayDate = getTodayDateString(0);
@@ -702,12 +705,12 @@ class PlannerServicesManager {
                     { upsert: true, new: true }
                 );
 
-                // 2. Also log to Workout collection for workout analytics
-                if (Workout) {
+                // 2. Also log to Workout collection for workout analytics (only if there was actual workout activity)
+                if (Workout && (durationSecs > 0 || reps > 0 || calories > 0)) {
                     await Workout.create({
                         email: normalizedEmail,
                         workoutName: workoutName,
-                        duration: durationMinutes,
+                        duration: durationSecs,
                         steps: reps * 12,
                         distance: reps * 8,
                         calories: calories,

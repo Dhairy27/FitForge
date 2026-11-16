@@ -194,7 +194,7 @@
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-4 md:px-12 py-8 flex-1 space-y-8">
+        <div class="px-4 md:px-12 py-8 flex-1 space-y-8 pb-24 lg:pb-8">
 
             <!-- Hero Grid -->
             <div class="grid grid-cols-12 gap-6">
@@ -461,7 +461,7 @@
 
         <!-- Footer -->
         <footer
-            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
+            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto mb-16 lg:mb-0">
             <div class="flex items-center gap-3">
                 <div class="h-6 w-6">
                     <img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
@@ -480,6 +480,34 @@
                 &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
+
+        <!-- Mobile Bottom Navigation Bar (Mobile-friendly persistent quick tab bar) -->
+        <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-obsidian/95 backdrop-blur-xl border-t border-glass-border flex justify-around items-center h-16 px-1 safe-area-pb">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-primary font-bold transition-colors">
+                <span class="material-symbols-outlined text-xl text-primary">query_stats</span>
+                <span class="text-[10px] font-bold tracking-tight">Progress</span>
+            </a>
+            <a href="workout.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">fitness_center</span>
+                <span class="text-[10px] font-bold tracking-tight">Workouts</span>
+            </a>
+            <a href="planner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">auto_awesome</span>
+                <span class="text-[10px] font-bold tracking-tight">Planner</span>
+            </a>
+            <a href="nutrition.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">restaurant</span>
+                <span class="text-[10px] font-bold tracking-tight">Nutrition</span>
+            </a>
+            <a href="scanner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+                <span class="text-[10px] font-bold tracking-tight">Scanner</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">person</span>
+                <span class="text-[10px] font-bold tracking-tight">Profile</span>
+            </a>
+        </nav>
     </main>
 
     <script>
@@ -638,15 +666,28 @@
                 }
 
                 // 4. Merge logs chronologically (latest first)
-                const formattedWorkouts = rawWorkoutLogs.map(w => ({
-                    id: w._id,
-                    logType: 'workout',
-                    title: w.workoutName || 'Completed Workout Session',
-                    subtitle: `${Math.round((w.duration || 0) / 60)} minutes • ${w.steps || 0} steps`,
-                    calories: w.calories || 0,
-                    date: new Date(w.date || w.createdAt || Date.now()),
-                    raw: w
-                }));
+                const formattedWorkouts = rawWorkoutLogs.map(w => {
+                    const totalSecs = Number(w.duration) || 0;
+                    let durationText = '0 mins';
+                    if (totalSecs === 1 && (w.calories || 0) > 0) {
+                        durationText = '1 min';
+                    } else if (totalSecs >= 60) {
+                        const mins = Math.floor(totalSecs / 60);
+                        const secs = totalSecs % 60;
+                        durationText = secs > 0 ? `${mins}m ${secs}s` : `${mins} min${mins === 1 ? '' : 's'}`;
+                    } else if (totalSecs > 0) {
+                        durationText = `${totalSecs}s`;
+                    }
+                    return {
+                        id: w._id,
+                        logType: 'workout',
+                        title: w.workoutName || 'Completed Workout Session',
+                        subtitle: durationText,
+                        calories: w.calories || 0,
+                        date: new Date(w.date || w.createdAt || Date.now()),
+                        raw: w
+                    };
+                });
 
                 const formattedNutrition = rawNutritionLogs.map(n => ({
                     id: n._id,

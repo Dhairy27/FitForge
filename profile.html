@@ -180,26 +180,24 @@
         <!-- Top Navbar -->
         <header
             class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                 <!-- Hamburger Toggle Menu Button -->
                 <button onclick="toggleSidebar()"
-                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h2 class="font-headline-md text-headline-md text-primary font-bold">My Profile</h2>
+                <h2 class="font-headline text-base sm:text-xl md:text-2xl text-primary font-bold truncate">My Profile</h2>
             </div>
-            <div class="flex items-center gap-stack-md">
-                <div class="flex items-center gap-4">
-                    <button
-                        class="text-primary opacity-100 transition-opacity active:scale-95 border border-primary/20 bg-white/5 rounded-full p-1">
-                        <span class="material-symbols-outlined text-primary text-xl">person</span>
-                    </button>
-                </div>
+            <div class="flex items-center gap-4 shrink-0">
+                <button
+                    class="text-primary opacity-100 transition-opacity active:scale-95 border border-primary/20 bg-white/5 rounded-full p-1">
+                    <span class="material-symbols-outlined text-primary text-xl">person</span>
+                </button>
             </div>
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-4 md:px-12 py-stack-lg flex-1">
+        <div class="px-4 md:px-12 py-stack-lg flex-1 pb-24 lg:pb-8">
             <!-- Profile Banner Card -->
             <div
                 class="glass-card rounded-xl p-8 mb-gutter flex flex-col md:flex-row items-center gap-8 border-glass-border">
@@ -361,7 +359,7 @@
 
         <!-- Footer -->
         <footer
-            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
+            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto mb-16 lg:mb-0">
             <div class="flex items-center gap-3">
                 <div class="h-6 w-6">
                     <img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
@@ -380,6 +378,34 @@
                 &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
+
+        <!-- Mobile Bottom Navigation Bar (Mobile-friendly persistent quick tab bar) -->
+        <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-obsidian/95 backdrop-blur-xl border-t border-glass-border flex justify-around items-center h-16 px-1 safe-area-pb">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">query_stats</span>
+                <span class="text-[10px] font-bold tracking-tight">Progress</span>
+            </a>
+            <a href="workout.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">fitness_center</span>
+                <span class="text-[10px] font-bold tracking-tight">Workouts</span>
+            </a>
+            <a href="planner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">auto_awesome</span>
+                <span class="text-[10px] font-bold tracking-tight">Planner</span>
+            </a>
+            <a href="nutrition.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">restaurant</span>
+                <span class="text-[10px] font-bold tracking-tight">Nutrition</span>
+            </a>
+            <a href="scanner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+                <span class="text-[10px] font-bold tracking-tight">Scanner</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-primary font-bold transition-colors">
+                <span class="material-symbols-outlined text-xl text-primary">person</span>
+                <span class="text-[10px] font-bold tracking-tight">Profile</span>
+            </a>
+        </nav>
     </main>
 
     <script>
@@ -860,7 +886,7 @@
 
     <!-- EDIT BASELINE MODAL -->
     <div id="edit-baseline-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeEditBaselineModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>
@@ -906,7 +932,7 @@
 
     <!-- EDIT ACTIVITY & LIFESTYLE MODAL -->
     <div id="edit-activity-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeEditActivityModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>
@@ -968,7 +994,7 @@
 
     <!-- EDIT GOALS & EQUIPMENT MODAL -->
     <div id="edit-goals-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeEditGoalsModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>
@@ -1040,7 +1066,7 @@
     </div>
     <!-- EDIT PROFILE MODAL -->
     <div id="edit-profile-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative">
+        <div class="w-full max-w-md glass-card p-6 rounded-3xl border-glass-border space-y-5 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeEditProfileModal()" class="absolute top-4 right-4 text-secondary hover:text-white cursor-pointer bg-transparent border-0">
                 <span class="material-symbols-outlined text-2xl">close</span>
             </button>

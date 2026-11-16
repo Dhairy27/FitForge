@@ -7,6 +7,7 @@ try {
 }
 const express = require('express');
 const mongoose = require('mongoose');
+mongoose.set('bufferCommands', false);
 
 function cleanAndParseJson(rawText) {
   if (typeof rawText !== 'string') return rawText;
@@ -235,13 +236,13 @@ mongoose.model = function (name, schema) {
 
   const handler = {
     get(target, prop) {
-      if (useMockDb || process.env.MOCK_DB === 'true') {
+      if (useMockDb || process.env.MOCK_DB === 'true' || mongoose.connection.readyState !== 1) {
         return MockSubclass[prop];
       }
       return RealModel[prop];
     },
     construct(target, args) {
-      if (useMockDb || process.env.MOCK_DB === 'true') {
+      if (useMockDb || process.env.MOCK_DB === 'true' || mongoose.connection.readyState !== 1) {
         return new MockSubclass(...args);
       }
       return new RealModel(...args);
@@ -764,8 +765,8 @@ const workoutSessionSchema = new mongoose.Schema({
   workoutName: { type: String, required: true },
   category: { type: String, default: 'Strength' },
   difficulty: { type: String, default: 'Intermediate' },
-  duration: { type: Number, default: 45 },
-  calories: { type: Number, default: 350 },
+  duration: { type: Number, default: 0 },
+  calories: { type: Number, default: 0 },
   targetMuscles: { type: String },
   day: { type: String },
   date: { type: Date, default: Date.now, index: true },
@@ -2218,8 +2219,11 @@ app.post('/api/workout-session/complete', verifyUserOwnership, async (req, res) 
       syncResult = await plannerServices.WorkoutService.completeLiveWorkoutSession(email, sessionPayload);
     } else {
       // Fallback direct persistence if plannerServices not yet initialized
-      const durationMinutes = Number(sessionPayload.duration) || Math.max(1, Math.round((Number(sessionPayload.durationSeconds) || 1800) / 60));
-      const calories = Number(sessionPayload.calories) || 350;
+      const durationSecs = Number.isFinite(Number(sessionPayload.durationSeconds))
+        ? Number(sessionPayload.durationSeconds)
+        : (Number.isFinite(Number(sessionPayload.duration)) ? Number(sessionPayload.duration) : 0);
+      const durationMinutes = Math.round(durationSecs / 60);
+      const calories = Number.isFinite(Number(sessionPayload.calories)) ? Math.max(0, Math.round(Number(sessionPayload.calories))) : 0;
       const workoutName = sessionPayload.workoutName || "Live Workout Session";
       const reps = Number(sessionPayload.repsCompleted) || 0;
       const sets = Number(sessionPayload.setsCompleted) || 0;
@@ -2244,15 +2248,17 @@ app.post('/api/workout-session/complete', verifyUserOwnership, async (req, res) 
         avgFormScore: formScore
       });
 
-      await Workout.create({
-        email: email.toLowerCase(),
-        workoutName,
-        duration: durationMinutes,
-        steps: reps * 12,
-        distance: reps * 8,
-        calories,
-        date: new Date()
-      });
+      if (durationSecs > 0 || reps > 0 || calories > 0) {
+        await Workout.create({
+          email: email.toLowerCase(),
+          workoutName,
+          duration: durationSecs,
+          steps: reps * 12,
+          distance: reps * 8,
+          calories,
+          date: new Date()
+        });
+      }
 
       syncResult = { success: true, session };
     }
@@ -2264,8 +2270,8 @@ app.post('/api/workout-session/complete', verifyUserOwnership, async (req, res) 
         action: 'session_completed',
         email: email.toLowerCase(),
         workoutName: sessionPayload.workoutName || "Live Workout Session",
-        calories: Number(sessionPayload.calories) || 350,
-        duration: Number(sessionPayload.duration) || 30
+        calories: Number.isFinite(Number(sessionPayload.calories)) ? Math.max(0, Math.round(Number(sessionPayload.calories))) : 0,
+        duration: Number.isFinite(Number(sessionPayload.duration)) ? Number(sessionPayload.duration) : 0
       });
     }
 
@@ -4283,6 +4289,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
         const prompt = `${promptText} Identify each item, estimate/extract its portion/weight, and its approximate calories, protein (g), carbs (g), fat (g), fiber (g), sugar (g), sodium (mg), cholesterol (mg), and potassium (mg). Calculate the overall total calories and total macros/micronutrients for the entire meal. Perform a health analysis on the meal (suitabilities, flags, balance, health score 0-100, explanation), and generate personalized recommendations (best time to eat, portion advice, water amount, healthier alternatives, suggested workout to burn it, and foods to pair with this meal).
         You must respond ONLY with a JSON object in this exact format (no markdown formatting, no code blocks, no backticks, no comments):
         {
+          "foodDetected": true,
           "foodName": "name of the overall meal",
           "confidence": 100,
           "totalCalories": 450,
@@ -4330,6 +4337,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
 
         if (responseText) {
           const data = cleanAndParseJson(responseText);
+          data.foodDetected = true;
           if (data.items && data.items.length > 0) {
             data.items.forEach(item => {
               if (!item.estimatedGrams) {
@@ -4348,10 +4356,99 @@ app.post('/api/analyze-text-food', async (req, res) => {
             data.cholesterol = resolved.cholesterol;
             data.potassium = resolved.potassium;
           }
+          await syncAndPersistMeal(data, email);
           return res.status(200).json(data);
         }
       } catch (geminiError) {
         console.error("Gemini text analysis failed, using local database parser:", geminiError);
+      }
+    }
+
+    async function syncAndPersistMeal(mealData, rawEmail) {
+      const targetEmail = (rawEmail || '').toLowerCase().trim();
+      if (!targetEmail || !mealData || !mealData.foodDetected || mealData.totalCalories <= 0) return;
+
+      try {
+        const plannerAdvisory = await calculatePlannerNutritionAdvisory(
+          targetEmail,
+          mealData.totalCalories,
+          mealData.protein,
+          mealData.carbs,
+          mealData.fat
+        );
+        mealData.plannerAdvisory = plannerAdvisory;
+
+        const foodScanEntry = new FoodScan({
+          userId: targetEmail,
+          email: targetEmail,
+          foodImage: "",
+          foodName: mealData.foodName || "Manual Meal Log",
+          confidence: mealData.confidence || 100,
+          nutritionValues: {
+            calories: mealData.totalCalories,
+            protein: mealData.protein,
+            carbs: mealData.carbs,
+            fat: mealData.fat,
+            fiber: mealData.fiber || 0,
+            sugar: mealData.sugar || 0,
+            sodium: mealData.sodium || 0,
+            cholesterol: mealData.cholesterol || 0,
+            potassium: mealData.potassium || 0
+          },
+          items: mealData.items || [],
+          portion: `${(mealData.items || []).length} items`,
+          healthScore: (mealData.healthAnalysis && mealData.healthAnalysis.healthScore) || 85,
+          healthAnalysis: mealData.healthAnalysis,
+          recommendations: mealData.recommendations,
+          plannerAdvisory: plannerAdvisory,
+          timestamp: new Date(),
+          date: new Date()
+        });
+        await foodScanEntry.save();
+        mealData.scanId = foodScanEntry._id;
+
+        const nutritionDoc = new NutritionLog({
+          email: targetEmail,
+          foodName: mealData.foodName || "Manual Meal Log",
+          calories: mealData.totalCalories,
+          protein: mealData.protein,
+          carbs: mealData.carbs,
+          fat: mealData.fat,
+          fiber: mealData.fiber || 0,
+          sugar: mealData.sugar || 0,
+          sodium: mealData.sodium || 0,
+          cholesterol: mealData.cholesterol || 0,
+          potassium: mealData.potassium || 0,
+          items: mealData.items || [],
+          healthAnalysis: mealData.healthAnalysis,
+          recommendations: mealData.recommendations,
+          imageUrl: "",
+          date: new Date()
+        });
+        await nutritionDoc.save();
+        mealData.nutritionLogId = nutritionDoc._id;
+
+        if (plannerServices && plannerServices.ProgressService) {
+          await plannerServices.ProgressService.recalculateMetrics(targetEmail);
+          plannerServices.emitStateChange(targetEmail, {
+            type: 'food_scanned',
+            scanId: foodScanEntry._id,
+            calories: mealData.totalCalories,
+            plannerAdvisory
+          });
+        }
+
+        if (io) {
+          io.to(targetEmail).emit('nutrition:updated', {
+            email: targetEmail,
+            calories: mealData.totalCalories,
+            protein: mealData.protein,
+            carbs: mealData.carbs,
+            fat: mealData.fat
+          });
+        }
+      } catch (err) {
+        console.error("Auto-syncing nutrition log error:", err);
       }
     }
 
@@ -4449,6 +4546,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
     const resolved = resolveNutritionForMeal(items);
 
     const payload = {
+      foodDetected: true,
       foodName: dominantMealName,
       confidence: 100,
       totalCalories: resolved.totalCalories,
@@ -4485,6 +4583,7 @@ app.post('/api/analyze-text-food', async (req, res) => {
       },
       simulated: true
     };
+    await syncAndPersistMeal(payload, email);
     return res.status(200).json(payload);
   } catch (error) {
     console.error("Text analyze error:", error);
@@ -6234,6 +6333,150 @@ app.delete('/api/admin/bodyscan/:id', requireAdmin, async (req, res) => {
   }
 });
 
+// ==========================================
+// AI EXERCISE DATABASE & VIDEO GENERATION API
+// ==========================================
+const exerciseVideoService = require('./video-generation-service');
+
+// 1. Get all 45 exercises with instructions, target muscles, equipment, videoUrl, videoStatus, prompt
+app.get('/api/exercises', (req, res) => {
+  try {
+    const summary = exerciseVideoService.getExerciseStatusSummary();
+    res.json({
+      success: true,
+      total: summary.totalExercises,
+      completed: summary.completedCount,
+      pending: summary.pendingCount,
+      completionPercentage: summary.completionPercentage,
+      exercises: summary.exercises
+    });
+  } catch (error) {
+    console.error('Error fetching exercises:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 2. Get single exercise by ID
+app.get('/api/exercises/:id', (req, res) => {
+  try {
+    exerciseVideoService.loadDatabase();
+    const ex = exerciseVideoService.exercises.find(item => item.id === req.params.id);
+    if (!ex) {
+      return res.status(404).json({ success: false, error: 'Exercise not found.' });
+    }
+    res.json({
+      success: true,
+      exercise: {
+        ...ex,
+        aiPrompt: exerciseVideoService.buildAIPrompt(ex)
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 3. Status summary of AI Video generation & connected providers
+app.get('/api/video-generator/status', (req, res) => {
+  try {
+    const summary = exerciseVideoService.getExerciseStatusSummary();
+    res.json({ success: true, ...summary });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.post('/api/video-generator/status', (req, res) => {
+  try {
+    const summary = exerciseVideoService.getExerciseStatusSummary();
+    res.json({ success: true, ...summary });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 4. Trigger video generation or get biomechanical generation prompt & provider configuration
+app.post('/api/video-generator/generate', async (req, res) => {
+  try {
+    const { exerciseId, provider = 'webglRenderer' } = req.body;
+    if (!exerciseId) {
+      return res.status(400).json({ success: false, error: 'Missing exerciseId.' });
+    }
+
+    exerciseVideoService.loadDatabase();
+    const ex = exerciseVideoService.exercises.find(item => item.id === exerciseId);
+    if (!ex) {
+      return res.status(404).json({ success: false, error: 'Exercise not found in database.' });
+    }
+
+    const prompt = exerciseVideoService.buildAIPrompt(ex);
+    const providers = exerciseVideoService.getProviderStatus();
+
+    if (provider === 'webglRenderer' || provider === 'builtin') {
+      return res.json({
+        success: true,
+        method: 'webgl_stream',
+        exerciseId,
+        exerciseName: ex.name,
+        targetMuscles: ex.targetMuscles || ex.muscle,
+        prompt,
+        message: 'Built-in 3D Anatomical WebGL synthesizer ready for rendering & recording.'
+      });
+    }
+
+    const selectedProvider = providers[provider];
+    if (!selectedProvider) {
+      return res.status(400).json({ success: false, error: `Unknown provider '${provider}'.` });
+    }
+
+    if (!selectedProvider.configured) {
+      return res.status(400).json({
+        success: false,
+        error: 'PROVIDER_NOT_CONFIGURED',
+        provider,
+        providerName: selectedProvider.name,
+        message: `External AI Video API (${selectedProvider.name}) is not configured. Add the required API key to your .env file or use the built-in Three.js 3D Anatomical Kinematic Synthesizer.`,
+        requiredEnvKey: provider === 'runway' ? 'RUNWAY_API_KEY' : (provider === 'luma' ? 'LUMA_API_KEY' : (provider === 'replicate' ? 'REPLICATE_API_TOKEN' : 'INVIDEO_API_KEY')),
+        aiPrompt: prompt
+      });
+    }
+
+    return res.json({
+      success: true,
+      provider,
+      providerName: selectedProvider.name,
+      message: `Prompt queued for ${selectedProvider.name}.`,
+      aiPrompt: prompt
+    });
+  } catch (error) {
+    console.error('Video generation error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 5. Save recorded WebGL / generated video stream for an exercise
+app.post('/api/video-generator/upload-recorded-video', (req, res) => {
+  try {
+    const { exerciseId, base64Data, format = 'mp4' } = req.body;
+    if (!exerciseId || !base64Data) {
+      return res.status(400).json({ success: false, error: 'exerciseId and base64Data are required.' });
+    }
+
+    const cleanBase64 = base64Data.replace(/^data:video\/[a-z0-9]+;base64,/, '');
+    const buffer = Buffer.from(cleanBase64, 'base64');
+
+    const updatedExercise = exerciseVideoService.saveRecordedVideoBuffer(exerciseId, buffer, format);
+    res.json({
+      success: true,
+      message: `Video successfully saved for ${updatedExercise.name}`,
+      exercise: updatedExercise
+    });
+  } catch (error) {
+    console.error('Error saving recorded video:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Protect sensitive backend source files and config from being statically leaked
 app.use((req, res, next) => {
   const urlPath = req.path.toLowerCase();
@@ -6269,6 +6512,11 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Explicit routes for videos & public assets
+app.use('/public/videos', express.static(path.join(__dirname, 'public', 'videos')));
+app.use('/videos', express.static(path.join(__dirname, 'public', 'videos')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname)));
 
 // Fallback to index page if non-matching HTML

@@ -215,26 +215,24 @@
         <!-- Top Navbar -->
         <header
             class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                 <!-- Hamburger Toggle Menu Button -->
                 <button onclick="toggleSidebar()"
-                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h2 class="font-headline-md text-headline-md text-primary font-bold">Food Scanner</h2>
+                <h2 class="font-headline text-base sm:text-xl md:text-2xl text-primary font-bold truncate">Food Scanner</h2>
             </div>
-            <div class="flex items-center gap-stack-md">
-                <div class="flex items-center gap-4">
-                    <a href="profile.html"
-                        class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
-                        <span class="material-symbols-outlined">account_circle</span>
-                    </a>
-                </div>
+            <div class="flex items-center gap-4 shrink-0">
+                <a href="profile.html"
+                    class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                    <span class="material-symbols-outlined">account_circle</span>
+                </a>
             </div>
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-4 md:px-12 py-stack-lg flex-1">
+        <div class="px-4 md:px-12 py-stack-lg flex-1 pb-24 lg:pb-8">
             <!-- Input Mode Selection Tabs -->
             <div class="flex gap-4 mb-6">
                 <button id="tab-btn-camera"
@@ -247,31 +245,31 @@
                 </button>
             </div>
 
-            <!-- SCANNER 5-STATE PIPELINE STATUS BAR -->
-            <div class="glass-panel p-3.5 rounded-2xl border-white/10 flex items-center justify-between gap-2 overflow-x-auto mb-6 text-[11px] font-headline font-bold">
+            <!-- SCANNER 5-STATE PIPELINE STATUS BAR (Photo Scanner Mode Only) -->
+            <div id="scanner-pipeline-bar" class="glass-panel p-3.5 rounded-2xl border-white/10 flex items-center justify-between gap-2 overflow-x-auto mb-6 text-[11px] font-headline font-bold">
                 <div id="step-state-1" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white text-black border border-white transition-all shrink-0">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>State 1: Camera Ready</span>
+                    <span>Camera Ready</span>
                 </div>
                 <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
                 <div id="step-state-2" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
                     <span class="w-2 h-2 rounded-full bg-white/20"></span>
-                    <span>State 2: Scanning</span>
+                    <span>Scanning</span>
                 </div>
                 <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
                 <div id="step-state-3" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
                     <span class="w-2 h-2 rounded-full bg-white/20"></span>
-                    <span>State 3: Food Detected</span>
+                    <span>Food Detected</span>
                 </div>
                 <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
                 <div id="step-state-4" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
                     <span class="w-2 h-2 rounded-full bg-white/20"></span>
-                    <span>State 4: Food Not Detected</span>
+                    <span>Food Not Detected</span>
                 </div>
                 <div class="h-px w-4 bg-white/10 hidden md:block shrink-0"></div>
                 <div id="step-state-5" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-secondary/40 border border-transparent transition-all shrink-0">
                     <span class="w-2 h-2 rounded-full bg-white/20"></span>
-                    <span>State 5: Analysis Complete</span>
+                    <span>Analysis Complete</span>
                 </div>
             </div>
 
@@ -329,36 +327,37 @@
 
                     <!-- BOTTOM CONTROLS -->
                     <div
-                        class="absolute bottom-8 left-0 right-0 z-30 flex justify-center items-center px-4 md:px-12 gap-4 w-full">
+                        class="absolute bottom-4 sm:bottom-8 left-0 right-0 z-30 flex justify-center items-center px-2 sm:px-6 md:px-12 gap-2 sm:gap-4 w-full">
                         <!-- Main Actions Container -->
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-2 sm:gap-4 flex-wrap justify-center">
                             <!-- Reset/Retake Button -->
                             <button id="btn-reset"
-                                class="hidden px-6 py-3.5 glass-panel text-white font-headline text-xs font-bold rounded-full hover:bg-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+                                class="hidden px-3.5 sm:px-6 py-2.5 sm:py-3.5 glass-panel text-white font-headline text-[11px] sm:text-xs font-bold rounded-full hover:bg-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer">
                                 <span class="material-symbols-outlined text-sm">refresh</span>
                                 RETAKE
                             </button>
 
                             <!-- Main Action Button -->
                             <button id="btn-primary-action"
-                                class="px-10 py-5 bg-primary text-black font-headline font-bold rounded-full hover:scale-105 active:scale-95 transition-transform cursor-pointer flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.3)] active:shadow-[0_0_40px_rgba(255,255,255,0.5)]">
-                                <span class="material-symbols-outlined" id="primary-action-icon">photo_camera</span>
+                                class="px-5 sm:px-10 py-3 sm:py-5 bg-primary text-black font-headline font-bold text-xs sm:text-base rounded-full hover:scale-105 active:scale-95 transition-transform cursor-pointer flex items-center gap-2 shadow-[0_0_30px_rgba(255,255,255,0.3)] active:shadow-[0_0_40px_rgba(255,255,255,0.5)]">
+                                <span class="material-symbols-outlined text-lg sm:text-xl" id="primary-action-icon">photo_camera</span>
                                 <span id="primary-action-text">CAPTURE PHOTO</span>
                             </button>
 
                             <!-- Gallery Button -->
                             <button id="btn-gallery"
-                                class="px-6 py-3.5 glass-panel text-white font-headline text-xs font-bold rounded-full hover:bg-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+                                class="px-3.5 sm:px-6 py-2.5 sm:py-3.5 glass-panel text-white font-headline text-[11px] sm:text-xs font-bold rounded-full hover:bg-white/10 hover:scale-105 active:scale-95 transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer">
                                 <span class="material-symbols-outlined text-sm">photo_library</span>
                                 GALLERY
                             </button>
                         </div>
 
-                        <!-- Flash & Options -->
+                        <!-- Flash & Options (Visible on mobile for camera switching!) -->
                         <div
-                            class="absolute right-4 md:right-12 flex items-center glass-panel px-6 py-3 rounded-full gap-4 select-none opacity-40 hover:opacity-100 transition-opacity hidden md:flex">
+                            class="absolute top-4 right-4 sm:top-auto sm:bottom-8 sm:right-4 md:right-12 flex items-center glass-panel p-2.5 sm:px-6 sm:py-3 rounded-full gap-4 select-none opacity-80 hover:opacity-100 transition-opacity z-30">
                             <button id="btn-toggle-camera"
-                                class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95">flip_camera_ios</button>
+                                class="material-symbols-outlined text-secondary hover:text-primary transition-colors active:scale-95 text-xl"
+                                title="Switch Front/Back Camera">flip_camera_ios</button>
                         </div>
                     </div>
 
@@ -844,26 +843,30 @@
                                 </div>
                             </div>
 
-                            <!-- Action Bar: Logged confirmation + Re-scan + Go to Nutrition -->
-                            <div class="pt-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <!-- Action Bar: Logged confirmation + Re-scan + Go to Nutrition / Progress Analysis -->
+                            <div class="pt-4 border-t border-white/5 flex flex-col lg:flex-row items-center justify-between gap-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                                    <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
                                         <span class="material-symbols-outlined text-sm">check_circle</span>
                                     </div>
                                     <div>
-                                        <p class="text-xs font-headline font-bold text-white uppercase tracking-wider">Saved to MongoDB FoodScans & Nutrition Journal</p>
-                                        <p class="text-[11px] text-secondary">Dashboard, Analytics, and Planner updated instantly</p>
+                                        <p class="text-xs font-headline font-bold text-white uppercase tracking-wider">Logged & Saved to Progress Analysis & Nutrition Journal</p>
+                                        <p class="text-[11px] text-secondary">Dashboard metrics, telemetry charts, and daily targets updated instantly</p>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-3 w-full sm:w-auto">
-                                    <button id="btn-scan-another" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-white/10 border border-white/15 hover:bg-white/20 text-white font-headline text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
-                                        <span class="material-symbols-outlined text-sm">photo_camera</span>
-                                        <span>Scan Another Food</span>
+                                <div class="flex items-center gap-3 w-full lg:w-auto flex-wrap sm:flex-nowrap">
+                                    <button id="btn-scan-another" class="flex-1 sm:flex-none px-4 py-3 rounded-xl bg-white/10 border border-white/15 hover:bg-white/20 text-white font-headline text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        <span class="material-symbols-outlined text-sm" id="btn-scan-another-icon">photo_camera</span>
+                                        <span id="btn-scan-another-text">Scan Another Food</span>
                                     </button>
-                                    <a href="nutrition.html" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-primary text-black font-headline text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer">
-                                        <span>View Nutrition Journal</span>
-                                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                                    <a href="nutrition.html" class="flex-1 sm:flex-none px-4 py-3 rounded-xl bg-white/10 border border-white/15 hover:bg-white/20 text-white font-headline text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                        <span class="material-symbols-outlined text-sm">restaurant</span>
+                                        <span>Journal</span>
+                                    </a>
+                                    <a href="dashboard.html" class="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-primary text-black font-headline text-xs font-bold uppercase tracking-wider hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(255,255,255,0.25)]">
+                                        <span class="material-symbols-outlined text-sm">query_stats</span>
+                                        <span>Progress Analysis</span>
                                     </a>
                                 </div>
                             </div>
@@ -873,7 +876,7 @@
         </div>
         <!-- Footer -->
         <footer
-            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
+            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto mb-16 lg:mb-0">
             <div class="flex items-center gap-3">
                 <div class="h-6 w-6">
                     <img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
@@ -892,6 +895,34 @@
                 &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
+
+        <!-- Mobile Bottom Navigation Bar (Mobile-friendly persistent quick tab bar) -->
+        <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-obsidian/95 backdrop-blur-xl border-t border-glass-border flex justify-around items-center h-16 px-1 safe-area-pb">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">query_stats</span>
+                <span class="text-[10px] font-bold tracking-tight">Progress</span>
+            </a>
+            <a href="workout.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">fitness_center</span>
+                <span class="text-[10px] font-bold tracking-tight">Workouts</span>
+            </a>
+            <a href="planner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">auto_awesome</span>
+                <span class="text-[10px] font-bold tracking-tight">Planner</span>
+            </a>
+            <a href="nutrition.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">restaurant</span>
+                <span class="text-[10px] font-bold tracking-tight">Nutrition</span>
+            </a>
+            <a href="scanner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-primary font-bold transition-colors">
+                <span class="material-symbols-outlined text-xl text-primary">qr_code_scanner</span>
+                <span class="text-[10px] font-bold tracking-tight">Scanner</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">person</span>
+                <span class="text-[10px] font-bold tracking-tight">Profile</span>
+            </a>
+        </nav>
     </main>
     <!-- Micro-interaction Scripts -->
     <script>
@@ -1045,6 +1076,7 @@
             // Text Mode Entry Elements
             const tabBtnCamera = document.getElementById('tab-btn-camera');
             const tabBtnText = document.getElementById('tab-btn-text');
+            const scannerPipelineBar = document.getElementById('scanner-pipeline-bar');
             const cameraViewport = document.getElementById('camera-viewport');
             const textEntryViewport = document.getElementById('text-entry-viewport');
             const textEntryInputs = document.getElementById('text-entry-inputs');
@@ -1560,21 +1592,24 @@
 
             // State 3 & 5: Food Detected -> Analysis Complete
             function showScannerResults(data) {
-                // Step 3: Food Detected visual confirmation
-                updatePipelineIndicator(3);
-                if (matrixStatusText) matrixStatusText.innerText = "FOOD_DETECTED";
-                if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                if (currentInputMode === 'camera') {
+                    // Step 3: Food Detected visual confirmation
+                    updatePipelineIndicator(3);
+                    if (matrixStatusText) matrixStatusText.innerText = "FOOD_DETECTED";
+                    if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                }
 
                 setTimeout(() => {
-                    // Step 5: Analysis Complete
-                    updatePipelineIndicator(5);
-                    scanState = 'complete';
-
                     const errCard = document.getElementById('scanner-error-card');
+                    const manualErr = document.getElementById('manual-log-error');
                     const resultsSec = document.getElementById('scanner-results-section');
                     if (errCard) {
                         errCard.classList.add('hidden');
                         errCard.classList.remove('flex');
+                    }
+                    if (manualErr) {
+                        manualErr.classList.add('hidden');
+                        manualErr.classList.remove('flex');
                     }
                     if (resultsSec) resultsSec.classList.remove('hidden');
 
@@ -1587,13 +1622,30 @@
                     const resHealth = document.getElementById('result-health-score');
                     const resCalories = document.getElementById('result-total-calories');
 
-                    if (resImg && currentImageBase64) resImg.src = currentImageBase64;
+                    if (resImg) {
+                        if (currentInputMode === 'camera' && currentImageBase64) {
+                            resImg.src = currentImageBase64;
+                        } else {
+                            resImg.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&auto=format&fit=crop&q=80";
+                        }
+                    }
                     if (resName) resName.innerText = data.foodName || "Verified Meal";
                     if (resConfText) resConfText.innerText = `${data.confidence || 95}% Confidence`;
-                    if (resCuisine) resCuisine.innerText = (data.cuisine || "Worldwide Food Database").toUpperCase();
+                    if (resCuisine) resCuisine.innerText = currentInputMode === 'text' ? "MANUAL MEAL ENTRY" : (data.cuisine || "Worldwide Food Database").toUpperCase();
                     if (resPortion) resPortion.innerText = `${data.portion || 'Calibrated plate portion'} • ${data.estimatedGrams || 0}g total`;
                     if (resHealth) resHealth.innerHTML = `${data.healthScore || 85}<span class="text-xs text-secondary/60">/100</span>`;
                     if (resCalories) resCalories.innerHTML = `${data.totalCalories || 0} <span class="text-xs text-secondary/60">kcal</span>`;
+
+                    // Update action buttons text according to active mode
+                    const btnScanAnotherText = document.getElementById('btn-scan-another-text');
+                    const btnScanAnotherIcon = document.getElementById('btn-scan-another-icon');
+                    if (currentInputMode === 'text') {
+                        if (btnScanAnotherText) btnScanAnotherText.innerText = "Enter Another Meal";
+                        if (btnScanAnotherIcon) btnScanAnotherIcon.innerText = "edit_note";
+                    } else {
+                        if (btnScanAnotherText) btnScanAnotherText.innerText = "Scan Another Food";
+                        if (btnScanAnotherIcon) btnScanAnotherIcon.innerText = "photo_camera";
+                    }
 
                     // Render Bento Total Nutrition Cards
                     animateValue(valCalories, 0, data.totalCalories || 0, "");
@@ -1619,18 +1671,26 @@
                     // Render Component 3: AI Master Planner Advisory
                     renderPlannerAdvisory(data.plannerAdvisory);
 
-                    // AR Overlays on camera preview
-                    renderAROverlays(data.items || []);
+                    if (currentInputMode === 'camera') {
+                        // Step 5: Analysis Complete for camera
+                        updatePipelineIndicator(5);
+                        scanState = 'complete';
+                        renderAROverlays(data.items || []);
 
-                    if (primaryIcon) primaryIcon.innerText = "photo_camera";
-                    if (primaryText) primaryText.innerText = "SCAN ANOTHER MEAL";
-                    if (matrixStatusText) matrixStatusText.innerText = "ANALYSIS_COMPLETE";
-                    if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                        if (primaryIcon) primaryIcon.innerText = "photo_camera";
+                        if (primaryText) primaryText.innerText = "SCAN ANOTHER MEAL";
+                        if (matrixStatusText) matrixStatusText.innerText = "ANALYSIS_COMPLETE";
+                        if (matrixStatusDot) matrixStatusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+                    }
 
                     // Real-time Ecosystem Broadcast: sync with Nutrition, Progress, AI Planner
                     broadcastEcosystemSync(data);
 
-                    showToast("Meal Analysed & Synced to FitForge!");
+                    if (typeof fetchTodayIntake === 'function') {
+                        fetchTodayIntake();
+                    }
+
+                    showToast("Meal analyzed & logged to Progress Analysis!");
                 }, 350);
             }
 
@@ -2283,6 +2343,7 @@
 
                 cameraViewport.classList.remove('hidden');
                 textEntryViewport.classList.add('hidden');
+                if (scannerPipelineBar) scannerPipelineBar.classList.remove('hidden');
 
                 if (scanState === 'ready' && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                     startCamera();
@@ -2298,6 +2359,7 @@
 
                 cameraViewport.classList.add('hidden');
                 textEntryViewport.classList.remove('hidden');
+                if (scannerPipelineBar) scannerPipelineBar.classList.add('hidden');
 
                 if (mediaStream) {
                     mediaStream.getTracks().forEach(track => track.stop());

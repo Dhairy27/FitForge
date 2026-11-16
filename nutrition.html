@@ -178,30 +178,28 @@
         <!-- Top Navbar -->
         <header
             class="h-20 flex justify-between items-center px-4 md:px-12 w-full z-40 bg-transparent sticky top-0 backdrop-blur-sm">
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 sm:gap-4 min-w-0">
                 <!-- Hamburger Toggle Menu Button -->
                 <button onclick="toggleSidebar()"
-                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center">
+                    class="lg:hidden text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95 flex items-center justify-center shrink-0">
                     <span class="material-symbols-outlined text-2xl">menu</span>
                 </button>
-                <h2 class="font-headline-md text-headline-md text-primary font-bold">Nutrition Synthesis</h2>
+                <h2 class="font-headline text-base sm:text-xl md:text-2xl text-primary font-bold truncate">Nutrition Synthesis</h2>
             </div>
-            <div class="flex items-center gap-stack-md">
-                <div class="flex items-center gap-4">
-                    <a href="profile.html"
-                        class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
-                        <span class="material-symbols-outlined">account_circle</span>
-                    </a>
-                </div>
+            <div class="flex items-center gap-4 shrink-0">
+                <a href="profile.html"
+                    class="text-primary opacity-60 hover:opacity-100 transition-opacity active:scale-95">
+                    <span class="material-symbols-outlined">account_circle</span>
+                </a>
             </div>
         </header>
 
         <!-- Content Canvas -->
-        <div class="px-4 md:px-12 py-stack-lg flex-1">
+        <div class="px-4 md:px-12 py-stack-lg flex-1 pb-24 lg:pb-8">
             <!-- Header Section -->
-            <section class="mb-8 flex justify-between items-end">
+            <section class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
-                    <h2 class="text-4xl font-bold tracking-tight text-primary mb-2 gradient-text"
+                    <h2 class="text-2xl sm:text-4xl font-bold tracking-tight text-primary mb-2 gradient-text"
                         id="diet-header-title">Nutrition &amp; Diet Synthesis</h2>
                     <p class="text-secondary/40 font-bold uppercase tracking-[0.2em] text-[10px]" id="diet-subtitle">AI
                         Nutritional Balancing Protocol</p>
@@ -219,7 +217,7 @@
             <section id="diet-settings-section" class="grid grid-cols-12 gap-6 mb-8">
                 <div class="col-span-12 glass-card rounded-2xl p-6">
                     <h3 class="font-bold text-lg mb-4 text-primary">Nutritional Specifications</h3>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label
                                 class="block text-[10px] text-secondary/40 uppercase tracking-wider font-bold mb-2">Dietary
@@ -595,7 +593,7 @@
         </div>
         <!-- Footer -->
         <footer
-            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto">
+            class="px-4 md:px-12 py-8 border-t border-glass-border bg-surface-obsidian flex flex-col md:flex-row justify-between items-center gap-4 text-xs mt-auto mb-16 lg:mb-0">
             <div class="flex items-center gap-3">
                 <div class="h-6 w-6">
                     <img alt="FitForge Logo" class="h-full w-full object-contain" src="assets/logo.svg">
@@ -614,12 +612,40 @@
                 &copy; 2026 FitForge. Engineered for Excellence.
             </div>
         </footer>
+
+        <!-- Mobile Bottom Navigation Bar (Mobile-friendly persistent quick tab bar) -->
+        <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface-obsidian/95 backdrop-blur-xl border-t border-glass-border flex justify-around items-center h-16 px-1 safe-area-pb">
+            <a href="dashboard.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">query_stats</span>
+                <span class="text-[10px] font-bold tracking-tight">Progress</span>
+            </a>
+            <a href="workout.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">fitness_center</span>
+                <span class="text-[10px] font-bold tracking-tight">Workouts</span>
+            </a>
+            <a href="planner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">auto_awesome</span>
+                <span class="text-[10px] font-bold tracking-tight">Planner</span>
+            </a>
+            <a href="nutrition.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-primary font-bold transition-colors">
+                <span class="material-symbols-outlined text-xl text-primary">restaurant</span>
+                <span class="text-[10px] font-bold tracking-tight">Nutrition</span>
+            </a>
+            <a href="scanner.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+                <span class="text-[10px] font-bold tracking-tight">Scanner</span>
+            </a>
+            <a href="profile.html" class="flex flex-col items-center justify-center gap-1 flex-1 py-1 text-secondary/60 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-xl">person</span>
+                <span class="text-[10px] font-bold tracking-tight">Profile</span>
+            </a>
+        </nav>
     </main>
 
     <!-- Manual Log Modal -->
     <div id="manual-log-modal"
-        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md hidden">
-        <div class="glass-card rounded-[2rem] p-8 max-w-md w-full border border-glass-border m-4">
+        class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md hidden p-4">
+        <div class="glass-card rounded-[2rem] p-6 sm:p-8 max-w-md w-full border border-glass-border max-h-[90vh] overflow-y-auto">
             <h3 class="font-headline font-bold text-xl text-primary mb-2">Log Meal Manually</h3>
             <p class="text-xs text-secondary mb-6">Enter nutritional estimates for your consumed food.</p>
 
@@ -838,7 +864,7 @@
 
                 const profile = { dietaryType, budget, allergies, healthConditions, dailyCalories };
                 localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(profile));
-            } catch(e) {}
+            } catch (e) { }
         }
 
         function attachDietProfileAutoSave() {
@@ -953,7 +979,7 @@
         async function loadUserProfileAndCalculate() {
             try {
                 // 1. Get user protocol - check localStorage first (avoids offline mode redirect loop)
-                const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch(e) { return {}; } })();
+                const cachedProto = (() => { try { return JSON.parse(localStorage.getItem('userProtocol') || '{}'); } catch (e) { return {}; } })();
                 if (cachedProto.age && cachedProto.height && cachedProto.weight && cachedProto.biologicalSex) {
                     userProtocol = cachedProto;
                 } else {
@@ -1026,7 +1052,7 @@
                     if (cachedProf) {
                         applyDietProfile(JSON.parse(cachedProf));
                     }
-                } catch(e) {}
+                } catch (e) { }
 
                 try {
                     const token = localStorage.getItem('authToken');
@@ -1037,7 +1063,7 @@
                         const dProfile = profData.dietProfile || {};
                         if (dProfile && Object.keys(dProfile).length > 0) {
                             applyDietProfile(dProfile);
-                            try { localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(dProfile)); } catch(e) {}
+                            try { localStorage.setItem(`dietProfile_${userEmail}`, JSON.stringify(dProfile)); } catch (e) { }
                         }
                     }
                 } catch (e) {
@@ -1109,8 +1135,8 @@
 
                 const planData = await planResponse.json();
                 currentDietPlan = planData.plan;
-                try { localStorage.setItem(`dietPlan_${userEmail}`, JSON.stringify(currentDietPlan)); } catch(e) {}
-                try { localStorage.removeItem(`shoppingCheckOff_${userEmail}`); } catch(e) {}
+                try { localStorage.setItem(`dietPlan_${userEmail}`, JSON.stringify(currentDietPlan)); } catch (e) { }
+                try { localStorage.removeItem(`shoppingCheckOff_${userEmail}`); } catch (e) { }
                 renderDietPlan();
 
                 setTimeout(() => {
@@ -1415,7 +1441,7 @@
                 });
 
                 currentDietPlan = null;
-                try { localStorage.removeItem(`dietPlan_${userEmail}`); } catch(e) {}
+                try { localStorage.removeItem(`dietPlan_${userEmail}`); } catch (e) { }
 
                 // Hide dashboard and tabs sections
                 document.getElementById('diet-data-dashboard').classList.add('hidden');
@@ -1458,7 +1484,7 @@
                 // Was done, toggle to undone
                 completed.splice(index, 1);
                 localStorage.setItem(completedKey, JSON.stringify(completed));
-                
+
                 // Remove meal log from database
                 const logKey = `mealLogId_${mealType}_${new Date().toLocaleDateString()}`;
                 const logId = localStorage.getItem(logKey);
@@ -1652,7 +1678,7 @@
         window.logWater = function (amount) {
             const key = `waterLogged_${userEmail}`;
             let logged = Number(localStorage.getItem(key)) || 0.0;
-            
+
             // Allow logging more than target
             logged += amount;
             localStorage.setItem(key, logged.toFixed(2));
