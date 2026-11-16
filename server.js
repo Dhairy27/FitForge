@@ -6517,7 +6517,7 @@ app.use((req, res, next) => {
 app.use('/public/videos', express.static(path.join(__dirname, 'public', 'videos')));
 app.use('/videos', express.static(path.join(__dirname, 'public', 'videos')));
 app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), { extensions: ['html'] }));
 
 // Fallback to index page if non-matching HTML
 app.get('*', (req, res) => {
