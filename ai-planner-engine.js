@@ -13,7 +13,7 @@
 /**
  * Calculates Basal Metabolic Rate using the Mifflin-St Jeor equation.
  * Men: BMR = (10 * weight in kg) + (6.25 * height in cm) - (5 * age in years) + 5
- * Women: BMR = (10 * weight in kg) + (6.25 * height in cm) - (5 * age in years) - 161
+ * Women: BMR = (10 * weight in kg) + (6.25 * height in cm) - (5 * age in years) - 1611
  */
 function calculateBMR(weightKg, heightCm, ageYears, biologicalSex = 'male') {
     const isFemale = String(biologicalSex).toLowerCase() === 'female';
