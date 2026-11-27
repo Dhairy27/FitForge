@@ -157,7 +157,6 @@
         }
     </style>
 </head>
-</head>
 
 <body
     class="min-h-screen font-body-md flex items-center justify-center py-6 sm:py-10 px-4 sm:px-6 lg:px-8 overflow-x-hidden relative font-['Space_Grotesk'] bg-surface-dim text-[#e5e2e1]">
@@ -291,8 +290,9 @@
                     </div>
 
                     <!-- Google Login -->
-                    <div class="flex flex-col gap-3 w-full mt-2 relative z-10">
-                        <button id="google-login-btn"
+                    <div class="flex flex-col gap-3 w-full mt-2 relative z-10 items-center">
+                        <div id="google-btn-container" class="w-full flex justify-center"></div>
+                        <button id="google-login-btn" type="button"
                             class="btn-secondary w-full rounded-full py-2.5 sm:py-3 flex items-center justify-center gap-3 text-sm cursor-pointer">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path
@@ -585,6 +585,10 @@
                 submitBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHENTICATING...`;
 
                 try {
+                    if (!passwordInput.value || passwordInput.value.length < 6) {
+                        throw new Error("Password must be at least 6 characters in length.");
+                    }
+
                     const response = await fetch('/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -604,6 +608,9 @@
 
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
                     const role = data.role || (data.email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user');
                     localStorage.setItem('userRole', role);
 
@@ -620,30 +627,133 @@
                 }
             });
 
-            // 2. Google OAuth Integration & Mock Handler
+            // 2. Google OAuth Integration & Handler
             let googleClientId = '';
             let tokenClient;
+            let googleIdInitialized = false;
+            const googleBtnContainer = document.getElementById('google-btn-container');
+            const originalGoogleBtnHtml = googleBtn ? googleBtn.innerHTML : 'Continue with Google';
+
+            function resetGoogleBtn() {
+                if (googleIdInitialized && googleBtnContainer) {
+                    googleBtnContainer.classList.remove('hidden');
+                    if (googleBtn) googleBtn.classList.add('hidden');
+                    return;
+                }
+                if (!googleBtn) return;
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = originalGoogleBtnHtml;
+            }
+
+            function showGoogleLoading(text = 'AUTHORIZING...') {
+                if (googleBtnContainer) googleBtnContainer.classList.add('hidden');
+                if (googleBtn) {
+                    googleBtn.classList.remove('hidden');
+                    googleBtn.disabled = true;
+                    googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> ${text}`;
+                }
+            }
+
+            function showGoogleError(msg) {
+                if (errorContainer) {
+                    errorContainer.textContent = msg;
+                    errorContainer.classList.remove('hidden');
+                } else {
+                    alert(msg);
+                }
+                resetGoogleBtn();
+            }
+
+            function decodeJwtPayload(token) {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            }
+
+            async function handleGoogleCredentialResponse(response) {
+                if (!response || !response.credential) {
+                    showGoogleError('Google Sign-In did not return a valid credential.');
+                    return;
+                }
+                showGoogleLoading('CONNECTING...');
+                try {
+                    const payload = decodeJwtPayload(response.credential);
+                    if (!payload.email) {
+                        throw new Error('Google account email was not provided.');
+                    }
+                    await handleGoogleAuth(payload.email, payload.name || payload.email.split('@')[0]);
+                } catch (err) {
+                    console.error('Google credential decode error:', err);
+                    showGoogleError(err.message || 'Failed to process Google Sign-In.');
+                }
+            }
+
+            function initGoogleIdSignIn() {
+                if (googleIdInitialized || !googleClientId || !window.google?.accounts?.id || !googleBtnContainer) return;
+                try {
+                    google.accounts.id.initialize({
+                        client_id: googleClientId,
+                        callback: handleGoogleCredentialResponse,
+                        use_fedcm_for_prompt: true
+                    });
+                    const btnWidth = Math.min(380, Math.max(240, googleBtnContainer.parentElement.clientWidth || 340));
+                    google.accounts.id.renderButton(googleBtnContainer, {
+                        type: 'standard',
+                        theme: 'filled_black',
+                        size: 'large',
+                        shape: 'pill',
+                        text: 'continue_with',
+                        logo_alignment: 'center',
+                        width: btnWidth
+                    });
+                    googleIdInitialized = true;
+                    if (googleBtn) {
+                        googleBtn.classList.add('hidden');
+                    }
+                } catch (err) {
+                    console.error('Failed to initialize Google ID Sign-In:', err);
+                }
+            }
 
             function initGoogleTokenClient() {
-                if (tokenClient || !googleClientId || !window.google) return;
+                initGoogleIdSignIn();
+                if (tokenClient || !googleClientId || !window.google?.accounts?.oauth2) return;
                 try {
                     tokenClient = google.accounts.oauth2.initTokenClient({
                         client_id: googleClientId,
                         scope: 'profile email',
                         callback: async (tokenResponse) => {
+                            if (tokenResponse?.error) {
+                                showGoogleError(`Google Sign-In failed: ${tokenResponse.error_description || tokenResponse.error}`);
+                                return;
+                            }
                             if (tokenResponse && tokenResponse.access_token) {
                                 try {
                                     googleBtn.disabled = true;
                                     googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> CONNECTING...`;
                                     const gRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`);
+                                    if (!gRes.ok) throw new Error('Failed to fetch Google user profile.');
                                     const gUser = await gRes.json();
                                     await handleGoogleAuth(gUser.email, gUser.name);
                                 } catch (err) {
                                     console.error('Google profile fetch error:', err);
-                                    googleBtn.disabled = false;
-                                    googleBtn.innerHTML = `Continue with Google`;
-                                    alert('Failed to retrieve profile info from Google.');
+                                    showGoogleError('Failed to retrieve profile info from Google.');
                                 }
+                            } else {
+                                resetGoogleBtn();
+                            }
+                        },
+                        error_callback: (err) => {
+                            console.error('Google OAuth error_callback:', err);
+                            if (err?.type === 'popup_failed_to_open') {
+                                showGoogleError('Google sign-in popup was blocked by your browser. Please allow popups for this site and try again.');
+                            } else if (err?.type === 'popup_closed') {
+                                resetGoogleBtn();
+                            } else {
+                                showGoogleError(`Google Sign-In error: ${err?.message || err?.type || 'Unable to open Google sign-in.'}`);
                             }
                         }
                     });
@@ -657,9 +767,9 @@
                 .then(data => {
                     googleClientId = data.googleClientId;
                     initGoogleTokenClient();
-                    if (googleClientId && !window.google) {
+                    if (googleClientId && !window.google?.accounts?.oauth2) {
                         const waitForGoogle = setInterval(() => {
-                            if (window.google) {
+                            if (window.google?.accounts?.oauth2) {
                                 clearInterval(waitForGoogle);
                                 initGoogleTokenClient();
                             }
@@ -672,13 +782,37 @@
             window.addEventListener('load', () => initGoogleTokenClient());
 
             async function loginWithGoogle() {
+                errorContainer.classList.add('hidden');
+
+                // Fast synchronous path: keep user gesture intact so popups are never blocked
+                if (!tokenClient && googleClientId && window.google?.accounts?.oauth2) {
+                    initGoogleTokenClient();
+                }
+
+                if (tokenClient) {
+                    try {
+                        googleBtn.disabled = true;
+                        googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> WAITING FOR GOOGLE...`;
+                        tokenClient.requestAccessToken({ prompt: 'select_account' });
+                        // Safety fallback in case popup is closed without triggering error_callback
+                        setTimeout(() => {
+                            if (googleBtn.disabled && googleBtn.innerHTML.includes('WAITING FOR GOOGLE')) {
+                                resetGoogleBtn();
+                            }
+                        }, 15000);
+                        return;
+                    } catch (err) {
+                        console.error('Google Sign-In synchronous request error:', err);
+                        showGoogleError(err.message || 'Failed to open Google Sign-In.');
+                        return;
+                    }
+                }
+
+                // Slow fallback path if config or Google SDK hasn't finished loading yet
                 try {
-                    errorContainer.classList.add('hidden');
                     googleBtn.disabled = true;
-                    const originalBtnText = googleBtn.innerHTML;
                     googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> INITIALIZING...`;
 
-                    // 1. Fetch Client ID if we don't have it
                     if (!googleClientId) {
                         const res = await fetch('/api/auth/google-config');
                         if (!res.ok) throw new Error('Failed to retrieve Google OAuth configuration.');
@@ -690,51 +824,37 @@
                         throw new Error('Google Sign-In is not configured on the server.');
                     }
 
-                    // 2. Load Google SDK if not present
-                    if (!window.google) {
-                        // Try to wait for it first in case it's still loading
-                        for (let i = 0; i < 20; i++) {
-                            if (window.google) break;
+                    if (!window.google?.accounts?.oauth2) {
+                        for (let i = 0; i < 30; i++) {
+                            if (window.google?.accounts?.oauth2) break;
                             await new Promise(resolve => setTimeout(resolve, 100));
                         }
                     }
 
-                    if (!window.google) {
-                        throw new Error('Google Identity Services library failed to load. Please check your internet connection or disable any ad-blockers.');
+                    if (!window.google?.accounts?.oauth2) {
+                        throw new Error('Google Identity Services library failed to load. Please check your internet connection or disable any ad-blockers / tracking prevention.');
                     }
 
-                    // 3. Initialize token client if not yet done
-                    if (!tokenClient) {
-                        initGoogleTokenClient();
-                    }
-
+                    initGoogleTokenClient();
                     if (!tokenClient) {
                         throw new Error('Failed to initialize Google Sign-In client.');
                     }
 
-                    // 4. Request token
-                    tokenClient.requestAccessToken();
-
-                    // Restore button
-                    googleBtn.disabled = false;
-                    googleBtn.innerHTML = originalBtnText;
-
+                    tokenClient.requestAccessToken({ prompt: 'select_account' });
+                    resetGoogleBtn();
                 } catch (err) {
                     console.error('Google Sign-In error:', err);
-                    errorContainer.textContent = err.message;
-                    errorContainer.classList.remove('hidden');
-                    googleBtn.disabled = false;
-                    googleBtn.innerHTML = 'Continue with Google';
+                    showGoogleError(err.message || 'Google Sign-In failed.');
                 }
             }
 
-            googleBtn.addEventListener('click', loginWithGoogle);
+            if (googleBtn) {
+                googleBtn.addEventListener('click', loginWithGoogle);
+            }
 
             async function handleGoogleAuth(email, name) {
                 errorContainer.classList.add('hidden');
-                googleBtn.disabled = true;
-                const originalBtnText = googleBtn.innerHTML;
-                googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHORIZING...`;
+                showGoogleLoading('AUTHORIZING...');
 
                 try {
                     const response = await fetch('/api/auth/google', {
@@ -747,6 +867,11 @@
 
                     localStorage.setItem('userEmail', data.email);
                     localStorage.setItem('userName', data.name);
+                    if (data.token) {
+                        localStorage.setItem('authToken', data.token);
+                    }
+                    const role = data.role || (data.email.toLowerCase() === 'admin@gmail.com' ? 'admin' : 'user');
+                    localStorage.setItem('userRole', role);
 
                     if (data.isNewUser) {
                         localStorage.removeItem('userProtocol');
@@ -755,10 +880,7 @@
                         window.location.href = 'dashboard.html';
                     }
                 } catch (err) {
-                    errorContainer.textContent = err.message;
-                    errorContainer.classList.remove('hidden');
-                    googleBtn.disabled = false;
-                    googleBtn.innerHTML = originalBtnText;
+                    showGoogleError(err.message || 'Failed to authenticate via Google.');
                 }
             }
         });

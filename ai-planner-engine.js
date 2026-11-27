@@ -13,7 +13,7 @@
 /**
  * Calculates Basal Metabolic Rate using the Mifflin-St Jeor equation.
  * Men: BMR = (10 * weight in kg) + (6.25 * height in cm) - (5 * age in years) + 5
- * Women: BMR = (10 * weight in kg) + (6.25 * height in cm) - (5 * age in years) - 161
+ * Women: BMR = (10 * weight in kg) + (6.25 * height in cm) - (5 * age in years) - 1611
  */
 function calculateBMR(weightKg, heightCm, ageYears, biologicalSex = 'male') {
     const isFemale = String(biologicalSex).toLowerCase() === 'female';
@@ -1996,7 +1996,7 @@ function findExerciseAlternatives(exerciseName = '', reason = 'equipment', equip
     if (reason === 'injury') {
         // Find joint-friendly alternatives targeting same muscle or tagged in injury list
         const injuryTags = targetExercise?.alternatives?.injury || [];
-        results = candidates.filter(c => 
+        results = candidates.filter(c =>
             injuryTags.some(tag => c.name.toLowerCase().includes(tag.toLowerCase()) || tag.toLowerCase().includes(c.name.toLowerCase())) ||
             (targetExercise && c.muscle.toLowerCase().includes(targetExercise.muscle.split('&')[0].trim().toLowerCase()))
         );
