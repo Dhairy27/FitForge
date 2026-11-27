@@ -635,9 +635,23 @@
             const originalGoogleBtnHtml = googleBtn ? googleBtn.innerHTML : 'Continue with Google';
 
             function resetGoogleBtn() {
+                if (googleIdInitialized && googleBtnContainer) {
+                    googleBtnContainer.classList.remove('hidden');
+                    if (googleBtn) googleBtn.classList.add('hidden');
+                    return;
+                }
                 if (!googleBtn) return;
                 googleBtn.disabled = false;
                 googleBtn.innerHTML = originalGoogleBtnHtml;
+            }
+
+            function showGoogleLoading(text = 'AUTHORIZING...') {
+                if (googleBtnContainer) googleBtnContainer.classList.add('hidden');
+                if (googleBtn) {
+                    googleBtn.classList.remove('hidden');
+                    googleBtn.disabled = true;
+                    googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> ${text}`;
+                }
             }
 
             function showGoogleError(msg) {
@@ -664,6 +678,7 @@
                     showGoogleError('Google Sign-In did not return a valid credential.');
                     return;
                 }
+                showGoogleLoading('CONNECTING...');
                 try {
                     const payload = decodeJwtPayload(response.credential);
                     if (!payload.email) {
@@ -839,9 +854,7 @@
 
             async function handleGoogleAuth(email, name) {
                 errorContainer.classList.add('hidden');
-                googleBtn.disabled = true;
-                const originalBtnText = googleBtn.innerHTML;
-                googleBtn.innerHTML = `<span class="material-symbols-outlined animate-spin text-[15px] mr-1">sync</span> AUTHORIZING...`;
+                showGoogleLoading('AUTHORIZING...');
 
                 try {
                     const response = await fetch('/api/auth/google', {
