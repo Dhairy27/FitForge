@@ -1177,7 +1177,100 @@ app.get('/api/auth/google-config', (req, res) => {
   res.status(200).json({ googleClientId: process.env.GOOGLE_CLIENT_ID || '' });
 });
 
-// Google Authentication API
+// Google OAuth Server-Side Redirect Flow (no popups)
+app.get('/api/auth/google-redirect', (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  if (!clientId) {
+    return res.status(500).send('Google Sign-In is not configured.');
+  }
+  const protocol = req.headers['x-forwarded-proto'] || 'https';
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  const redirectUri = `${protocol}://${host}/api/auth/google-callback`;
+  const scope = encodeURIComponent('openid email profile');
+  const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${scope}&access_type=offline&prompt=select_account`;
+  res.redirect(authUrl);
+});
+
+app.get('/api/auth/google-callback', async (req, res) => {
+  try {
+    const { code } = req.query;
+    if (!code) {
+      return res.redirect('/login.html?error=' + encodeURIComponent('Google sign-in was cancelled.'));
+    }
+    const clientId = process.env.GOOGLE_CLIENT_ID;
+    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+    if (!clientId || !clientSecret) {
+      return res.redirect('/login.html?error=' + encodeURIComponent('Google Sign-In is not configured on the server.'));
+    }
+    const protocol = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const redirectUri = `${protocol}://${host}/api/auth/google-callback`;
+
+    // Exchange authorization code for tokens
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code'
+      })
+    });
+    const tokenData = await tokenRes.json();
+    if (!tokenData.access_token) {
+      console.error('Google token exchange failed:', tokenData);
+      return res.redirect('/login.html?error=' + encodeURIComponent('Failed to authenticate with Google. Please try again.'));
+    }
+
+    // Get user profile
+    const profileRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${tokenData.access_token}` }
+    });
+    const profile = await profileRes.json();
+    if (!profile.email) {
+      return res.redirect('/login.html?error=' + encodeURIComponent('Could not retrieve your Google email.'));
+    }
+
+    await connectDB();
+
+    const normalizedEmail = profile.email.toLowerCase().trim();
+    let user = await User.findOne({ email: normalizedEmail });
+    let isNewUser = false;
+
+    if (!user) {
+      isNewUser = true;
+      const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+      user = new User({
+        name: profile.name || normalizedEmail.split('@')[0],
+        email: normalizedEmail,
+        password: hashedPassword
+      });
+      await user.save();
+    }
+
+    const isAdmin = user.role === 'admin' || normalizedEmail === 'admin@gmail.com';
+    const token = generateJWT({ id: user._id, email: user.email, role: isAdmin ? 'admin' : (user.role || 'user'), name: user.name });
+
+    const redirectPage = isNewUser ? 'protocol.html' : (isAdmin ? 'admin.html' : 'dashboard.html');
+    // Redirect to a small landing page that stores auth data and navigates
+    res.send(`<!DOCTYPE html><html><head><title>Signing in...</title></head><body><script>
+      localStorage.setItem('userEmail','${user.email}');
+      localStorage.setItem('userName','${(user.name || '').replace(/'/g, "\\'")}');
+      localStorage.setItem('authToken','${token}');
+      localStorage.setItem('userRole','${isAdmin ? 'admin' : (user.role || 'user')}');
+      window.location.href='/${redirectPage}';
+    </script></body></html>`);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    res.redirect('/login.html?error=' + encodeURIComponent('Google sign-in failed. Please try again.'));
+  }
+});
+
+// Google Authentication API (kept for backward compatibility)
 app.post('/api/auth/google', async (req, res) => {
   try {
     const { email, name } = req.body;
@@ -1190,20 +1283,15 @@ app.post('/api/auth/google', async (req, res) => {
     let isNewUser = false;
 
     if (!user) {
-      // User is registering via Google for the first time
       isNewUser = true;
-
-      // Hash a random placeholder password since schema requires password
       const randomPassword = Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10);
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(randomPassword, salt);
-
       user = new User({
         name,
         email: normalizedEmail,
         password: hashedPassword
       });
-
       await user.save();
     }
 
