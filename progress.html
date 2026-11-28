@@ -344,6 +344,6 @@ function setText(id,val){var el=document.getElementById(id);if(el)el.textContent
 function fmtDate(iso){if(!iso)return '--';try{var d=new Date(iso);return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch(e){return iso;}}
 function catLabel(cat){var m={desk:'Desk',workout:'Workout',daily:'Daily Life',sleep:'Sleep'};return m[cat]||cat;}
 </script>
-<script src="subscription-check.js"></script>
+<script src="/subscription-check.js"></script>
 </body>
 </html>

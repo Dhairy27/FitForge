@@ -5,7 +5,14 @@
       "src": "api/index.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["*.html", "exercises_database.json", "assets/**", "services/**", "public/**"]
+        "includeFiles": [
+          "*.html",
+          "*.js",
+          "exercises_database.json",
+          "assets/**",
+          "services/**",
+          "public/**"
+        ]
       }
     }
   ],
